@@ -2,3 +2,4 @@
 backup
 data
 compose.yaml
+.env

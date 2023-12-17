@@ -11,6 +11,18 @@ MySQL Backup docker container image
 ## Storage:
 - local
 - s3
+- Object storage
+## Usage
+
+| Options       | Shorts | Usage                              |
+|---------------|--------|------------------------------------|
+| --operation   | -o     | Set operation (default: backup)    |
+| --destination | -d     | Set destination (default: local)   |
+| --source      | -s     | Set source (default: local)        |
+| --file        | -f     | Set file name for restoration      |
+| --timeout     | -t     | Set timeout (default: 120s)        |
+| --help        | -h     | Print this help message and exit   |
+| --version     | -V     | Print version information and exit |
 
 ## Backup database :
 ```yaml
@@ -28,9 +40,9 @@ services:
     image: jkaninda/mysql-bkup:latest
     container_name: mysql-bkup
     command:
-     - /bin/sh
-     - -c
-     - backup
+      - /bin/sh
+      - -c
+      - bkup --operation backup
     volumes:
       - ./backup:/backup
     environment:
@@ -55,11 +67,14 @@ services:
   mysql-bkup:
     image: jkaninda/mysql-bkup:latest
     container_name: mysql-bkup
-    command: ["restore"]
+    command:
+      - /bin/sh
+      - -c
+      - bkup --operation restore -file database_20231217_115621.sql
     volumes:
       - ./backup:/backup
     environment:
-      - FILE_NAME=mariadb_20231217_040238.sql
+      #- FILE_NAME=mariadb_20231217_040238.sql # Optional if file name is set from command
       - DB_PORT=3306
       - DB_HOST=mariadb
       - DB_DATABASE=mariadb
@@ -90,7 +105,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - backup; 
+            - bkup --operation backup 
             env:
               - name: DB_PORT
                 value: "3306"
@@ -104,4 +119,32 @@ spec:
               - name: DB_PASSWORD
                 value: "password"
           restartPolicy: Never
+```
+## Backup to S3
+Simple backup usage
+```yaml
+  mysql-bkup:
+    image: jkaninda/mysql-bkup:latest
+    container_name: mysql-bkup
+    tty: true
+    privileged: true
+    devices:
+    - "/dev/fuse"
+    command:
+      - /bin/sh
+      - -c
+      - mysql_bkup --operation restore -d s3 -f database_20231217_115621.sql
+    volumes:
+      - ./backup:/backup
+    environment:
+      - DB_PORT=3306
+      - DB_HOST=mysql
+      - DB_DATABASE=bkup
+      - DB_USERNAME=jonas
+      - DB_PASSWORD=password
+      - ACCESS_KEY=${ACCESS_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - BUCKETNAME=${BUCKETNAME}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+
 ```
