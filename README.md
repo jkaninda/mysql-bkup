@@ -24,7 +24,7 @@ MySQL Backup docker container image
 | --source      | -s     | Set source (default: local)        |
 | --database        | -db     | Set database name      |
 | --port        | -p     | Set database port (default: 3306)      |
-| --timeout     | -t     | Set timeout (default: 120s)        |
+| --timeout     | -t     | Set timeout (default: 60s)        |
 | --help        | -h     | Print this help message and exit   |
 | --version     | -V     | Print version information and exit |
 

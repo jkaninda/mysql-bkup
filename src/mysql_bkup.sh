@@ -8,6 +8,7 @@ export OPERATION=backup
 export DESTINATION=local
 export DESTINATION_DIR=/backup
 export SOURCE=local
+export TIMEOUT=60
 export FILE_COMPRESION=true
 usage_info()
 {
