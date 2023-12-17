@@ -38,6 +38,11 @@ bkup --operation backup
 ```sh
 bkup -o backup
 ```
+### S3
+
+```sh
+bkup --operation backup --destination s3
+```
 
 ```yaml
 version: '3'
