@@ -1,0 +1,31 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: mysql-bkup-job
+spec:
+  schedule: "0 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          backoffLimit: 4
+          containers:
+          - name: mysql-bkup
+            image: jkaninda/mysql-bkup:latest
+            command:
+            - /bin/sh
+            - -c
+            - backup; 
+            env:
+              - name: DB_PORT
+                value: "3306"
+              - name: DB_HOST
+                value: "mysql-svc"
+              - name: DB_DATABASE
+                value: "mariadb"
+              - name: DB_USERNAME
+                value: "mariadb"
+              # Please use secret!
+              - name: DB_PASSWORD
+                value: "password"
+          restartPolicy: Never

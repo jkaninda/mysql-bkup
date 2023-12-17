@@ -1,0 +1,30 @@
+version: '3'
+services:
+  mariadb:
+    container_name: mariadb
+    image: mariadb:latest
+    environment:
+      MYSQL_DATABASE: mariadb
+      MYSQL_USER: mariadb
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: password
+    networks:
+      - web
+  mysql-bkup:
+    image: jkaninda/mysql-bkup:latest
+    container_name: mysql-bkup
+    command:
+     - /bin/sh
+     - -c
+     - backup
+    volumes:
+      - ./backup:/backup
+    environment:
+      - FILE_NAME=napata_20231217_051339.sql
+      - DB_PORT=3306
+      - DB_HOST=mysql
+      - DB_DATABASE=bkup
+      - DB_USERNAME=jonas
+      - DB_PASSWORD=password
+    networks:
+     - web
