@@ -39,15 +39,15 @@ error()
 help()
 {
     echo
-    echo "  -o|--operation         -- Set operation (default: backup)"
-    echo "  -d|--destination       -- Set destination (default: local)"
-    echo "  -s|--source            -- Set source (default: local)"
-    echo "  -s|--file              -- Set file name "
-    echo "  -db|--database         -- Set database name "
-    echo "  -p|--port              -- Set database port (default: 3306)"
-    echo "  -t|--timeout           -- Set timeout (default: 120s)"
-    echo "  -h|--help              -- Print this help message and exit"
-    echo "  -v|--version           -- Print version information and exit"
+    echo "  -o |--operation         -- Set operation (default: backup)"
+    echo "  -d |--destination       -- Set destination (default: local)"
+    echo "  -s |--source            -- Set source (default: local)"
+    echo "  -s |--file              -- Set file name "
+    echo "  -db|--database          -- Set database name "
+    echo "  -p |--port              -- Set database port (default: 3306)"
+    echo "  -t |--timeout           -- Set timeout (default: 120s)"
+    echo "  -h |--help              -- Print this help message and exit"
+    echo "  -v |--version           -- Print version information and exit"
     exit 0
 }
 

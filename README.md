@@ -17,8 +17,8 @@ MySQL Backup docker container image
 | Options       | Shorts | Usage                              |
 |---------------|--------|------------------------------------|
 | mysql_bkup    | bkup   | Command utility                    |
-| --operation   | -o     | Set operation, local or s3 (default: backup)    |
-| --destination | -d     | Set destination (default: local)   |
+| --operation   | -o     | Set operation, backup or restore (default: backup)    |
+| --destination | -d     | Set destination, local or s3 (default: local)   |
 | --source      | -s     | Set source, local or s3 (default: local)        |
 | --file        | -f     | Set file name for restoration      |
 | --source      | -s     | Set source (default: local)        |
