@@ -77,6 +77,11 @@ bkup --operation restore --file database_20231217_115621.sql
 ```sh
 bkup --o restore --f database_20231217_115621.sql 
 ```
+### S3
+
+```sh
+bkup --operation restore --source s3 --file database_20231217_115621.sql 
+```
 ```yaml
 version: '3'
 services:
