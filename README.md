@@ -145,7 +145,7 @@ spec:
                 value: "mariadb"
               - name: DB_USERNAME
                 value: "mariadb"
-              # Please use secret!
+              # Please use secret instead!
               - name: DB_PASSWORD
                 value: "password"
           restartPolicy: Never
