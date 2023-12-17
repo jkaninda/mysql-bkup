@@ -8,6 +8,7 @@ export OPERATION=backup
 export DESTINATION=local
 export DESTINATION_DIR=/backup
 export SOURCE=local
+export FILE_COMPRESION=true
 usage_info()
 {
     echo "Usage: \\"
@@ -41,6 +42,8 @@ help()
     echo "  -d|--destination       -- Set destination (default: local)"
     echo "  -s|--source            -- Set source (default: local)"
     echo "  -s|--file              -- Set file name "
+    echo "  -db|--database         -- Set database name "
+    echo "  -p|--port              -- Set database port (default: 3306)"
     echo "  -t|--timeout           -- Set timeout (default: 120s)"
     echo "  -h|--help              -- Print this help message and exit"
     echo "  -v|--version           -- Print version information and exit"
@@ -74,6 +77,11 @@ flags()
             [ $# = 0 ] && error "No file specified - file to restore"
             export FILE_NAME="$1"
             shift;;
+        (-db|--database)
+            shift
+            [ $# = 0 ] && error "No database name specified"
+            export DB_DATABASE="$1"
+            shift;;
         (-t|--timeout)
             shift
             [ $# = 0 ] && error "No timeout specified"
@@ -96,7 +104,7 @@ backup()
    echo "Please make sure all required options are set "
 else
       ## Backup database
-      mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE} > ${DESTINATION_DIR}/${DB_DATABASE}_${TIME}.sql
+      mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE} | gzip > ${DESTINATION_DIR}/${DB_DATABASE}_${TIME}.sql.gz
       echo "Database has been saved"
 fi
 exit
@@ -109,7 +117,11 @@ if [ -z "${DB_HOST}" ] ||  [ -z "${DB_DATABASE}" ] ||  [ -z "${DB_USERNAME}" ] |
 else
     ## Restore database
      if [ -f "${DESTINATION_DIR}/$FILE_NAME" ]; then
-       cat ${DESTINATION_DIR}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE}
+         if gzip -t ${DESTINATION_DIR}/$FILE_NAME; then
+            zcat ${DESTINATION_DIR}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE}
+         else 
+             cat ${DESTINATION_DIR}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE}
+           fi
         echo "Database has been restored"
       else
         echo "Error, file not found in /backup folder"
@@ -139,11 +151,15 @@ if [ -z "${ACCESS_KEY}"] ||  [ -z "${SECRET_KEY}"]; then
 echo "Please make sure all environment variables are set "
 echo "BUCKETNAME=$BUCKETNAME \nACCESS_KEY=$nACCESS_KEY \nSECRET_KEY=$SECRET_KEY"
 else
-echo "$ACCESS_KEY:$SECRET_KEY" | tee /etc/passwd-s3fs
-chmod 600 /etc/passwd-s3fs
-echo "Mounting Object storage in /s3mnt .... "
-s3fs $BUCKETNAME /s3mnt -o passwd_file=/etc/passwd-s3fs -o use_cache=/tmp/s3cache -o allow_other -o url=$S3_ENDPOINT -o use_path_request_style
-ls /s3mnt | wc -l
+    echo "$ACCESS_KEY:$SECRET_KEY" | tee /etc/passwd-s3fs
+    chmod 600 /etc/passwd-s3fs
+    echo "Mounting Object storage in /s3mnt .... "
+    if [ -z "$(ls -A /s3mnt)" ]; then
+       s3fs $BUCKETNAME /s3mnt -o passwd_file=/etc/passwd-s3fs -o use_cache=/tmp/s3cache -o allow_other -o url=$S3_ENDPOINT -o use_path_request_style
+       ls /s3mnt | wc -l
+    else
+     echo "Object storage already mounted in /s3mnt"
+    fi
 export DESTINATION_DIR=/s3mnt
 fi
 }

@@ -21,6 +21,9 @@ MySQL Backup docker container image
 | --destination | -d     | Set destination (default: local)   |
 | --source      | -s     | Set source (default: local)        |
 | --file        | -f     | Set file name for restoration      |
+| --source      | -s     | Set source (default: local)        |
+| --database        | -db     | Set database name      |
+| --port        | -p     | Set database port (default: 3306)      |
 | --timeout     | -t     | Set timeout (default: 120s)        |
 | --help        | -h     | Print this help message and exit   |
 | --version     | -V     | Print version information and exit |
@@ -43,7 +46,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - bkup --operation backup
+      - bkup --operation backup -db mariadb
     volumes:
       - ./backup:/backup
     environment:
@@ -54,6 +57,7 @@ services:
       - DB_PASSWORD=password
 ```
 ## Restore database :
+
 ```yaml
 version: '3'
 services:
@@ -99,7 +103,7 @@ Simple S3 backup usage
     command:
       - /bin/sh
       - -c
-      - mysql_bkup --operation restore --source s3 -f database_20231217_115621.sql
+      - mysql_bkup --operation restore --source s3 -f database_20231217_115621.sql.gz
     volumes:
       - ./backup:/backup
     environment:
