@@ -18,7 +18,7 @@ usage_info()
 }
 version_info()
 {
-   echo "Version: 1.0"
+   echo "Version: $VERSION"
    exit 0
 }
 usage()
