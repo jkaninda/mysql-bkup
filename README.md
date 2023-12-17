@@ -16,6 +16,7 @@ MySQL Backup docker container image
 
 | Options       | Shorts | Usage                              |
 |---------------|--------|------------------------------------|
+| mysql_bkup    | bkup   | Command utility                    |
 | --operation   | -o     | Set operation (default: backup)    |
 | --destination | -d     | Set destination (default: local)   |
 | --source      | -s     | Set source (default: local)        |
@@ -70,7 +71,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - bkup --operation restore -file database_20231217_115621.sql
+      - bkup --operation restore --file database_20231217_115621.sql
     volumes:
       - ./backup:/backup
     environment:
@@ -85,6 +86,35 @@ services:
 ```sh
 docker-compose up -d
 ```
+## Backup to S3
+Simple S3 backup usage
+```yaml
+  mysql-bkup:
+    image: jkaninda/mysql-bkup:latest
+    container_name: mysql-bkup
+    tty: true
+    privileged: true
+    devices:
+    - "/dev/fuse"
+    command:
+      - /bin/sh
+      - -c
+      - mysql_bkup --operation restore -d s3 -f database_20231217_115621.sql
+    volumes:
+      - ./backup:/backup
+    environment:
+      - DB_PORT=3306
+      - DB_HOST=mysql
+      - DB_DATABASE=mariadb
+      - DB_USERNAME=mariadb
+      - DB_PASSWORD=password
+      - ACCESS_KEY=${ACCESS_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - BUCKETNAME=${BUCKETNAME}
+      - S3_ENDPOINT=${S3_ENDPOINT}
+
+```
+
 ## Run on Kubernetes
 
 ```yaml
@@ -119,32 +149,4 @@ spec:
               - name: DB_PASSWORD
                 value: "password"
           restartPolicy: Never
-```
-## Backup to S3
-Simple backup usage
-```yaml
-  mysql-bkup:
-    image: jkaninda/mysql-bkup:latest
-    container_name: mysql-bkup
-    tty: true
-    privileged: true
-    devices:
-    - "/dev/fuse"
-    command:
-      - /bin/sh
-      - -c
-      - mysql_bkup --operation restore -d s3 -f database_20231217_115621.sql
-    volumes:
-      - ./backup:/backup
-    environment:
-      - DB_PORT=3306
-      - DB_HOST=mysql
-      - DB_DATABASE=bkup
-      - DB_USERNAME=jonas
-      - DB_PASSWORD=password
-      - ACCESS_KEY=${ACCESS_KEY}
-      - SECRET_KEY=${SECRET_KEY}
-      - BUCKETNAME=${BUCKETNAME}
-      - S3_ENDPOINT=${S3_ENDPOINT}
-
 ```
