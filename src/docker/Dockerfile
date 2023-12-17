@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 ENV DB_HOST=""
 ENV DB_DATABASE=""
 ENV DB_USERNAME=""
