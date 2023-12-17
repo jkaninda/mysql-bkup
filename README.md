@@ -99,7 +99,7 @@ Simple S3 backup usage
     command:
       - /bin/sh
       - -c
-      - mysql_bkup --operation restore -d s3 -f database_20231217_115621.sql
+      - mysql_bkup --operation restore --source s3 -f database_20231217_115621.sql
     volumes:
       - ./backup:/backup
     environment:
