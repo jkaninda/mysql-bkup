@@ -15,7 +15,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - backup; 
+            - bkup --operation backup 
             env:
               - name: DB_PORT
                 value: "3306"
