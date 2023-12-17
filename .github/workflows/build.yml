@@ -36,4 +36,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
            "${{env.BUILDKIT_IMAGE}}:latest"
-           "${{env.BUILDKIT_IMAGE}}:1.0"
+           "${{env.BUILDKIT_IMAGE}}:v1.0"
