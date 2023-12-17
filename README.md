@@ -17,9 +17,9 @@ MySQL Backup docker container image
 | Options       | Shorts | Usage                              |
 |---------------|--------|------------------------------------|
 | mysql_bkup    | bkup   | Command utility                    |
-| --operation   | -o     | Set operation (default: backup)    |
+| --operation   | -o     | Set operation, local or s3 (default: backup)    |
 | --destination | -d     | Set destination (default: local)   |
-| --source      | -s     | Set source (default: local)        |
+| --source      | -s     | Set source, local or s3 (default: local)        |
 | --file        | -f     | Set file name for restoration      |
 | --source      | -s     | Set source (default: local)        |
 | --database        | -db     | Set database name      |
@@ -29,6 +29,16 @@ MySQL Backup docker container image
 | --version     | -V     | Print version information and exit |
 
 ## Backup database :
+
+Simple backup usage
+
+```sh
+bkup --operation backup
+```
+```sh
+bkup -o backup
+```
+
 ```yaml
 version: '3'
 services:
@@ -58,6 +68,15 @@ services:
 ```
 ## Restore database :
 
+Simple database restore operation usage
+
+```sh
+bkup --operation restore --file database_20231217_115621.sql 
+```
+
+```sh
+bkup --o restore --f database_20231217_115621.sql 
+```
 ```yaml
 version: '3'
 services:
@@ -87,11 +106,17 @@ services:
       - DB_PASSWORD=password
 ```
 ## Run 
+
 ```sh
 docker-compose up -d
 ```
 ## Backup to S3
+
 Simple S3 backup usage
+
+```sh
+bkup --operation backup --destination s3 -database mydatabase 
+```
 ```yaml
   mysql-bkup:
     image: jkaninda/mysql-bkup:latest
@@ -119,7 +144,9 @@ Simple S3 backup usage
 
 ```
 
-## Run on Kubernetes
+## Kubernetes CronJob
+
+Simple Kubernetes CronJob usage:
 
 ```yaml
 apiVersion: batch/v1
