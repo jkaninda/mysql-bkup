@@ -139,8 +139,6 @@ bkup --operation backup --destination s3 -database mydatabase
       - /bin/sh
       - -c
       - mysql_bkup --operation restore --source s3 -f database_20231217_115621.sql.gz
-    volumes:
-      - ./backup:/backup
     environment:
       - DB_PORT=3306
       - DB_HOST=mysql
