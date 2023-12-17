@@ -82,6 +82,11 @@ flags()
             [ $# = 0 ] && error "No database name specified"
             export DB_DATABASE="$1"
             shift;;
+        (-p|--port)
+            shift
+            [ $# = 0 ] && error "No database name specified"
+            export DB_PORT="$1"
+            shift;;
         (-t|--timeout)
             shift
             [ $# = 0 ] && error "No timeout specified"
