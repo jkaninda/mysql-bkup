@@ -20,9 +20,9 @@ MySQL Backup tool, backup database to S3 or Object Storage
 | Options       | Shorts | Usage                              |
 |---------------|--------|------------------------------------|
 | mysql_bkup    | bkup   | Command utility                    |
-| --operation   | -o     | Set operation, backup or restore (default: backup)    |
-| --destination | -d     | Set destination, local or s3 (default: local)   |
-| --source      | -s     | Set source, local or s3 (default: local)        |
+| --operation   | -o     | Set operation. backup or restore (default: backup)    |
+| --destination | -d     | Set destination. local or s3 (default: local)   |
+| --source      | -s     | Set source. local or s3 (default: local)        |
 | --file        | -f     | Set file name for restoration      |
 | --database        | -db     | Set database name      |
 | --port        | -p     | Set database port (default: 3306)      |
@@ -82,7 +82,7 @@ bkup --operation restore --file database_20231217_115621.sql
 ```
 
 ```sh
-bkup --o restore --f database_20231217_115621.sql 
+bkup -o restore -f database_20231217_115621.sql 
 ```
 ### S3
 
