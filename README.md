@@ -1,5 +1,8 @@
 # MySQL Backup
-MySQL Backup docker container image
+MySQL Backup tool, backup database to S3 or Object Storage
+
+- Docker
+- Kubernetes
 
 [![Build](https://github.com/jkaninda/mysql-bkup/actions/workflows/build.yml/badge.svg)](https://github.com/jkaninda/mysql-bkup/actions/workflows/build.yml)
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/jkaninda/mysql-bkup?style=flat-square)
@@ -21,7 +24,6 @@ MySQL Backup docker container image
 | --destination | -d     | Set destination, local or s3 (default: local)   |
 | --source      | -s     | Set source, local or s3 (default: local)        |
 | --file        | -f     | Set file name for restoration      |
-| --source      | -s     | Set source (default: local)        |
 | --database        | -db     | Set database name      |
 | --port        | -p     | Set database port (default: 3306)      |
 | --timeout     | -t     | Set timeout (default: 60s)        |
