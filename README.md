@@ -19,7 +19,7 @@ MySQL Backup tool, backup database to S3 or Object Storage
 
 | Options       | Shorts | Usage                              |
 |---------------|--------|------------------------------------|
-| mysql_bkup    | bkup   | Command utility                    |
+| mysql_bkup    | bkup   | CLI utility                    |
 | --operation   | -o     | Set operation. backup or restore (default: backup)    |
 | --destination | -d     | Set destination. local or s3 (default: local)   |
 | --source      | -s     | Set source. local or s3 (default: local)        |
