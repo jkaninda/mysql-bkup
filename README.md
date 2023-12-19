@@ -21,9 +21,9 @@ MySQL Backup tool, backup database to S3 or Object Storage
 |---------------|--------|------------------------------------|
 | mysql_bkup    | bkup   | CLI utility                    |
 | --operation   | -o     | Set operation. backup or restore (default: backup)    |
-| --destination | -d     | Set destination. local or s3 (default: local)   |
-| --source      | -s     | Set source. local or s3 (default: local)        |
+| --storage      | -s     | Set storage. local or s3 (default: local)        |
 | --file        | -f     | Set file name for restoration      |
+| --path        |      | Set s3 path. eg: /custom_path      |
 | --database        | -db     | Set database name      |
 | --port        | -p     | Set database port (default: 3306)      |
 | --timeout     | -t     | Set timeout (default: 60s)        |
@@ -43,7 +43,7 @@ bkup -o backup
 ### S3
 
 ```sh
-bkup --operation backup --destination s3
+bkup --operation backup --storage s3
 ```
 ## Docker run:
 
@@ -93,7 +93,7 @@ bkup -o restore -f database_20231217_115621.sql
 ### S3
 
 ```sh
-bkup --operation restore --source s3 --file database_20231217_115621.sql 
+bkup --operation restore --storage s3 --file database_20231217_115621.sql 
 ```
 
 ## Docker run:
@@ -139,10 +139,14 @@ docker-compose up -d
 ```
 ## Backup to S3
 
+```sh
+docker run --rm --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=db_hostname" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" -e "ACCESS_KEY=your_access_key" -e "SECRET_KEY=your_secret_key" -e "BUCKETNAME=your_bucket_name" -e "S3_ENDPOINT=https://eu2.contabostorage.com" jkaninda/mysql-bkup:latest  bkup -o backup -s s3 -db invoice
+```
+> To change s3 backup path add this flag : --path myPath . default path is /mysql_bkup
 Simple S3 backup usage
 
 ```sh
-bkup --operation backup --destination s3 -database mydatabase 
+bkup --operation backup --storage s3 -database mydatabase 
 ```
 ```yaml
   mysql-bkup:

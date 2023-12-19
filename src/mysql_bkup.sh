@@ -6,8 +6,10 @@ arg0=$(basename "$0" .sh)
 blnk=$(echo "$arg0" | sed 's/./ /g')
 export OPERATION=backup
 export DESTINATION=local
-export DESTINATION_DIR=/backup
+export STORAGE=local
+export STORAGE_PATH=/backup
 export SOURCE=local
+export S3_PATH=/mysql-bkup
 export TIMEOUT=60
 export FILE_COMPRESION=true
 usage_info()
@@ -15,7 +17,7 @@ usage_info()
     echo "Usage: \\"
     echo "     $blnk Backup: mysql_bkup -o backup -d s3 \\"
     echo "     $blnk Restore: mysql_bkup -o restore -s s3 -f my_db.sql \\"
-    echo "     $blnk [-o|--operation] [{-d|--destination} ] [{-f|--file} ] [{-s|--source} ] [{-h|--help} ] \\"
+    echo "     $blnk [-o|--operation] [{-f|--file} ] [{-s|--storage} ] [{-h|--help} ] \\"
 
 }
 version_info()
@@ -40,14 +42,14 @@ help()
 {
     echo
     echo "  -o |--operation         -- Set operation (default: backup)"
-    echo "  -d |--destination       -- Set destination (default: local)"
-    echo "  -s |--source            -- Set source (default: local)"
-    echo "  -s |--file              -- Set file name "
+    echo "  -s |--storage           -- Set storage (default: local)"
+    echo "  -f |--file              -- Set file name "
+    echo "     |--path              -- Set s3 path, whiout file name"
     echo "  -db|--database          -- Set database name "
     echo "  -p |--port              -- Set database port (default: 3306)"
     echo "  -t |--timeout           -- Set timeout (default: 120s)"
     echo "  -h |--help              -- Print this help message and exit"
-    echo "  -v |--version           -- Print version information and exit"
+    echo "  -V |--version           -- Print version information and exit"
     exit 0
 }
 
@@ -66,17 +68,24 @@ flags()
             [ $# = 0 ] && error "No destination specified - local or s3 | default local"
             export DESTINATION="$1"
             export SOURCE="$1"
+            export STORAGE="$1"
             shift;;
-        (-s|--source)
+        (-s|--storage)
             shift
-            [ $# = 0 ] && error "No source specified - local or s3 | default local"
+            [ $# = 0 ] && error "No storage specified - local or s3 | default local"
             export SOURCE="$1"
             export DESTINATION="$1"
+            export STORAGE="$1"
             shift;;
         (-f|--file)
             shift
             [ $# = 0 ] && error "No file specified - file to restore"
             export FILE_NAME="$1"
+            shift;;
+        (--path)
+            shift
+            [ $# = 0 ] && error "No s3 path specified - s3 path without file name"
+            export S3_PATH="$1"
             shift;;
         (-db|--database)
             shift
@@ -109,11 +118,14 @@ backup()
  if [ -z "${DB_HOST}"] ||  [ -z "${DB_DATABASE}"] ||  [ -z "${DB_USERNAME}"] ||  [ -z "${DB_PASSWORD}"]; then
    echo "Please make sure all required options are set "
 else
+      ## Test database connection
+      mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE} -e"quit"
+      
       ## Backup database
-      mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE} | gzip > ${DESTINATION_DIR}/${DB_DATABASE}_${TIME}.sql.gz
+      mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE} | gzip > ${STORAGE_PATH}/${DB_DATABASE}_${TIME}.sql.gz
       echo "Database has been saved"
 fi
-exit
+exit 0
 }
 
 restore()
@@ -122,15 +134,15 @@ if [ -z "${DB_HOST}" ] ||  [ -z "${DB_DATABASE}" ] ||  [ -z "${DB_USERNAME}" ] |
    echo "Please make sure all required options are set "
 else
     ## Restore database
-     if [ -f "${DESTINATION_DIR}/$FILE_NAME" ]; then
-         if gzip -t ${DESTINATION_DIR}/$FILE_NAME; then
-            zcat ${DESTINATION_DIR}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE}
+     if [ -f "${STORAGE_PATH}/$FILE_NAME" ]; then
+         if gzip -t ${STORAGE_PATH}/$FILE_NAME; then
+            zcat ${STORAGE_PATH}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE}
          else 
-             cat ${DESTINATION_DIR}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE}
+             cat ${STORAGE_PATH}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE}
            fi
         echo "Database has been restored"
       else
-        echo "Error, file not found in /backup folder"
+        echo "Error, file not found in ${STORAGE_PATH}/${FILE_NAME}"
       fi 
 fi
 exit
@@ -162,18 +174,20 @@ else
     echo "Mounting Object storage in /s3mnt .... "
     if [ -z "$(ls -A /s3mnt)" ]; then
        s3fs $BUCKETNAME /s3mnt -o passwd_file=/etc/passwd-s3fs -o use_cache=/tmp/s3cache -o allow_other -o url=$S3_ENDPOINT -o use_path_request_style
-       ls /s3mnt | wc -l
+       if [ ! -d "/s3mnt$S3_PATH" ]; then
+           mkdir -p /s3mnt$S3_PATH
+        fi 
     else
      echo "Object storage already mounted in /s3mnt"
     fi
-export DESTINATION_DIR=/s3mnt
+export STORAGE_PATH=/s3mnt$S3_PATH
 fi
 }
 flags "$@"
 # ?
   if [  $OPERATION != 'backup' ]
   then
-     if [ $DESTINATION != 's3' ]
+     if [ $STORAGE != 's3' ]
      then
           echo "Restore from local"
           restore
@@ -182,12 +196,12 @@ flags "$@"
         s3_restore
       fi
   else
-      if [ $DESTINATION != 's3' ]
+      if [ $STORAGE != 's3' ]
       then
           echo "Backup to local destination"
           backup
       else
-         echo "Restore from s3"
+         echo "Backup to s3 storage"
          s3_backup
       fi
    fi
