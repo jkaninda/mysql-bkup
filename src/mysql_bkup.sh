@@ -150,14 +150,12 @@ exit
 
 s3_backup()
 {
- echo "S3 Backup"
  mount_s3
  backup
 }
 
 s3_restore()
 {
-  echo "S3 Restore"
    mount_s3
    restore
 
