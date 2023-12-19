@@ -146,7 +146,7 @@ docker run --rm --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=db
 Simple S3 backup usage
 
 ```sh
-bkup --operation backup --storage s3 -database mydatabase 
+bkup --operation backup --storage s3 --database mydatabase 
 ```
 ```yaml
   mysql-bkup:
