@@ -48,7 +48,14 @@ bkup --operation backup --destination s3
 ## Docker run:
 
 ```sh
-docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup:latest  bkup -o backup -db database_name
+docker run --rm --network your_network_name \
+--name mysql-bkup \
+-v $PWD/backup:/backup/ \
+-e "DB_HOST=database_host_name" \ 
+-e "DB_USERNAME=username" \
+-e "DB_PASSWORD=password" \
+jkaninda/mysql-bkup:latest  \
+bkup -o backup -db database_name
 ```
 
 ## Docker compose file:
@@ -99,7 +106,15 @@ bkup --operation restore --source s3 --file database_20231217_115621.sql
 ## Docker run:
 
 ```sh
-docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup:latest  bkup -o backup -db database_name -f napata_20231219_022941.sql.gz
+docker run --rm --network \
+your_network_name \
+--name mysql-bkup \
+-v $PWD/backup:/backup/ \
+-e "DB_HOST=database_host_name" \
+-e "DB_USERNAME=username" \
+-e "DB_PASSWORD=password" \
+jkaninda/mysql-bkup:latest  \
+bkup -o backup -db database_name -f napata_20231219_022941.sql.gz
 ```
 
 ## Docker compose file:
