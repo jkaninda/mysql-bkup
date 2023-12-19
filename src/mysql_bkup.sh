@@ -44,7 +44,7 @@ help()
     echo "  -o |--operation         -- Set operation (default: backup)"
     echo "  -s |--storage           -- Set storage (default: local)"
     echo "  -f |--file              -- Set file name "
-    echo "     |--path              -- Set s3 path, whiout file name"
+    echo "     |--path              -- Set s3 path, without file name"
     echo "  -db|--database          -- Set database name "
     echo "  -p |--port              -- Set database port (default: 3306)"
     echo "  -t |--timeout           -- Set timeout (default: 120s)"

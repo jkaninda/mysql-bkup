@@ -23,7 +23,7 @@ MySQL Backup tool, backup database to S3 or Object Storage
 | --operation   | -o     | Set operation. backup or restore (default: backup)    |
 | --storage      | -s     | Set storage. local or s3 (default: local)        |
 | --file        | -f     | Set file name for restoration      |
-| --path        |      | Set s3 path. eg: /custom_path      |
+| --path        |      | Set s3 path without file name. eg: /custom_path      |
 | --database        | -db     | Set database name      |
 | --port        | -p     | Set database port (default: 3306)      |
 | --timeout     | -t     | Set timeout (default: 60s)        |
