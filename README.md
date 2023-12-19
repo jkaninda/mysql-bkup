@@ -45,7 +45,13 @@ bkup -o backup
 ```sh
 bkup --operation backup --destination s3
 ```
+## Docker run:
 
+```sh
+docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup:latest  bkup -o backup -db database_name
+```
+
+## Docker compose file:
 ```yaml
 version: '3'
 services:
@@ -89,6 +95,15 @@ bkup -o restore -f database_20231217_115621.sql
 ```sh
 bkup --operation restore --source s3 --file database_20231217_115621.sql 
 ```
+
+## Docker run:
+
+```sh
+docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup:latest  bkup -o backup -db database_name -f napata_20231219_022941.sql.gz
+```
+
+## Docker compose file:
+
 ```yaml
 version: '3'
 services:
@@ -152,6 +167,32 @@ bkup --operation backup --destination s3 -database mydatabase
       - BUCKETNAME=${BUCKETNAME}
       - S3_ENDPOINT=${S3_ENDPOINT}
 
+```
+## Run "docker run" from crontab
+
+Make an automated backup (every night at 1).
+
+> backup_script.sh
+
+```sh
+#!/bin/sh
+DB_USERNAME='db_username'
+DB_PASSWORD='password'
+DB_HOST='db_hostname'
+DB_NAME='db_name'
+BACKUP_DIR='/some/path/backup/'
+
+docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" -e "DB_USERNAME=$DB_USERNAME" -e "DB_PASSWORD=$DB_PASSWORD" jkaninda/mysql-bkup:latest  bkup -o backup -db $DB_NAME
+```
+
+```sh
+chmod +x backup_script.sh
+```
+
+Your crontab looks like this:
+
+```conf
+0 1 * * * /path/to/backup_script.sh
 ```
 
 ## Kubernetes CronJob
