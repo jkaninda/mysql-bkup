@@ -35,15 +35,15 @@ MySQL Backup tool, backup database to S3 or Object Storage
 Simple backup usage
 
 ```sh
-bkup --operation backup --dbname databas_name
+bkup --operation backup --dbname database_name
 ```
 ```sh
-bkup -o backup -d databas_name
+bkup -o backup -d database_name
 ```
 ### S3
 
 ```sh
-bkup --operation backup --storage s3 --dbname databas_name
+bkup --operation backup --storage s3 --dbname database_name
 ```
 ## Docker run:
 
@@ -83,7 +83,7 @@ services:
 Simple database restore operation usage
 
 ```sh
-bkup --operation restore --file database_20231217_115621.sql --dbname database_name
+bkup --operation restore --dbname database_name --file database_20231217_115621.sql
 ```
 
 ```sh
