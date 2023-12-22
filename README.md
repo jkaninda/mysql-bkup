@@ -69,7 +69,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - bkup --operation backup -d databas_name
+      - bkup --operation backup -d database_name
     volumes:
       - ./backup:/backup
     environment:
@@ -83,7 +83,7 @@ services:
 Simple database restore operation usage
 
 ```sh
-bkup --operation restore --file database_20231217_115621.sql --dbname databas_name
+bkup --operation restore --file database_20231217_115621.sql --dbname database_name
 ```
 
 ```sh
@@ -98,7 +98,7 @@ bkup --operation restore --storage s3 --file database_20231217_115621.sql
 ## Docker run:
 
 ```sh
-docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup  bkup -o backup -d database_name -f napata_20231219_022941.sql.gz
+docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup  bkup -o backup -d database_name -f mydb_20231219_022941.sql.gz
 ```
 
 ## Docker compose file:
@@ -120,7 +120,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - bkup --operation restore --file database_20231217_115621.sql --dbname databas_name
+      - bkup --operation restore --file database_20231217_115621.sql --dbname database_name
     volumes:
       - ./backup:/backup
     environment:
@@ -139,7 +139,7 @@ docker-compose up -d
 ## Backup to S3
 
 ```sh
-docker run --rm --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=db_hostname" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" -e "ACCESS_KEY=your_access_key" -e "SECRET_KEY=your_secret_key" -e "BUCKETNAME=your_bucket_name" -e "S3_ENDPOINT=https://eu2.contabostorage.com" jkaninda/mysql-bkup:latest  bkup -o backup -s s3 -d invoice
+docker run --rm --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=db_hostname" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" -e "ACCESS_KEY=your_access_key" -e "SECRET_KEY=your_secret_key" -e "BUCKETNAME=your_bucket_name" -e "S3_ENDPOINT=https://eu2.contabostorage.com" jkaninda/mysql-bkup  bkup -o backup -s s3 -d database_name
 ```
 > To change s3 backup path add this flag : --path myPath . default path is /mysql_bkup
 
@@ -159,7 +159,7 @@ bkup --operation backup --storage s3 --dbname mydatabase
     command:
       - /bin/sh
       - -c
-      - mysql_bkup --operation restore --source s3 -f database_20231217_115621.sql.gz
+      - mysql_bkup --operation restore --storage s3 -f database_20231217_115621.sql.gz
     environment:
       - DB_PORT=3306
       - DB_HOST=mysql
@@ -209,30 +209,40 @@ kind: CronJob
 metadata:
   name: mysql-bkup-job
 spec:
-  schedule: "0 0 * * *"
+  schedule: "0 1 * * *"
   jobTemplate:
     spec:
       template:
         spec:
-          backoffLimit: 4
+          backoffLimit: 2
           containers:
           - name: mysql-bkup
-            image: jkaninda/mysql-bkup:latest
+            image: jkaninda/mysql-bkup
+            securityContext:
+              privileged: true
             command:
             - /bin/sh
             - -c
-            - bkup --operation backup 
+            - bkup -o backup -s s3 --path /custom_path
             env:
               - name: DB_PORT
-                value: "3306"
+                value: "3306" 
               - name: DB_HOST
-                value: "mysql-svc"
+                value: ""
               - name: DB_NAME
-                value: "mariadb"
+                value: ""
               - name: DB_USERNAME
-                value: "mariadb"
-              # Please use secret instead!
+                value: ""
+              # Please use secret!
               - name: DB_PASSWORD
                 value: "password"
+              - name: ACCESS_KEY
+                value: ""
+              - name: SECRET_KEY
+                value: ""
+              - name: BUCKETNAME
+                value: ""
+              - name: S3_ENDPOINT
+                value: "https://s3.amazonaws.com"
           restartPolicy: Never
 ```
