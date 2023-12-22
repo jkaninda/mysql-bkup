@@ -1,15 +1,22 @@
 # MySQL Backup
 MySQL Backup tool, backup database to S3 or Object Storage
-> Run on:
-- Docker
-- Kubernetes
 
 [![Build](https://github.com/jkaninda/mysql-bkup/actions/workflows/build.yml/badge.svg)](https://github.com/jkaninda/mysql-bkup/actions/workflows/build.yml)
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/jkaninda/mysql-bkup?style=flat-square)
 ![Docker Pulls](https://img.shields.io/docker/pulls/jkaninda/mysql-bkup?style=flat-square)
 
+> Run on:
+- Docker
+- Kubernetes
+
+> Links:
 - [Docker Hub](https://hub.docker.com/r/jkaninda/mysql-bkup)
 - [Github](https://github.com/jkaninda/mysql-bkup)
+
+> Postgres solution :
+- [Postgress](https://github.com/jkaninda/pg-bkup)
+
+
 
 ## Storage:
 - local
