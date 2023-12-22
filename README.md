@@ -24,7 +24,7 @@ MySQL Backup tool, backup database to S3 or Object Storage
 | --storage      | -s     | Set storage. local or s3 (default: local)        |
 | --file        | -f     | Set file name for restoration      |
 | --path        |      | Set s3 path without file name. eg: /custom_path      |
-| --database        | -db     | Set database name      |
+| --dbname        | -d     | Set database name      |
 | --port        | -p     | Set database port (default: 3306)      |
 | --timeout     | -t     | Set timeout (default: 60s)        |
 | --help        | -h     | Print this help message and exit   |
@@ -35,20 +35,20 @@ MySQL Backup tool, backup database to S3 or Object Storage
 Simple backup usage
 
 ```sh
-bkup --operation backup
+bkup --operation backup --dbname databas_name
 ```
 ```sh
-bkup -o backup
+bkup -o backup -d databas_name
 ```
 ### S3
 
 ```sh
-bkup --operation backup --storage s3
+bkup --operation backup --storage s3 --dbname databas_name
 ```
 ## Docker run:
 
 ```sh
-docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup:latest  bkup -o backup -db database_name
+docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup:latest  bkup -o backup -d database_name
 ```
 
 ## Docker compose file:
@@ -57,25 +57,24 @@ version: '3'
 services:
   mariadb:
     container_name: mariadb
-    image: mariadb:latest
+    image: mariadb
     environment:
       MYSQL_DATABASE: mariadb
       MYSQL_USER: mariadb
       MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: password
   mysql-bkup:
-    image: jkaninda/mysql-bkup:latest
+    image: jkaninda/mysql-bkup
     container_name: mysql-bkup
     command:
       - /bin/sh
       - -c
-      - bkup --operation backup -db mariadb
+      - bkup --operation backup -d databas_name
     volumes:
       - ./backup:/backup
     environment:
       - DB_PORT=3306
       - DB_HOST=mariadb
-      - DB_DATABASE=mariadb
       - DB_USERNAME=mariadb
       - DB_PASSWORD=password
 ```
@@ -84,7 +83,7 @@ services:
 Simple database restore operation usage
 
 ```sh
-bkup --operation restore --file database_20231217_115621.sql 
+bkup --operation restore --file database_20231217_115621.sql --dbname databas_name
 ```
 
 ```sh
@@ -99,7 +98,7 @@ bkup --operation restore --storage s3 --file database_20231217_115621.sql
 ## Docker run:
 
 ```sh
-docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup:latest  bkup -o backup -db database_name -f napata_20231219_022941.sql.gz
+docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup  bkup -o backup -d database_name -f napata_20231219_022941.sql.gz
 ```
 
 ## Docker compose file:
@@ -116,19 +115,19 @@ services:
       MYSQL_PASSWORD: password
       MYSQL_ROOT_PASSWORD: password
   mysql-bkup:
-    image: jkaninda/mysql-bkup:latest
+    image: jkaninda/mysql-bkup
     container_name: mysql-bkup
     command:
       - /bin/sh
       - -c
-      - bkup --operation restore --file database_20231217_115621.sql
+      - bkup --operation restore --file database_20231217_115621.sql --dbname databas_name
     volumes:
       - ./backup:/backup
     environment:
       #- FILE_NAME=mariadb_20231217_040238.sql # Optional if file name is set from command
       - DB_PORT=3306
       - DB_HOST=mariadb
-      - DB_DATABASE=mariadb
+      - DB_NAME=mariadb
       - DB_USERNAME=mariadb
       - DB_PASSWORD=password
 ```
@@ -140,17 +139,18 @@ docker-compose up -d
 ## Backup to S3
 
 ```sh
-docker run --rm --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=db_hostname" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" -e "ACCESS_KEY=your_access_key" -e "SECRET_KEY=your_secret_key" -e "BUCKETNAME=your_bucket_name" -e "S3_ENDPOINT=https://eu2.contabostorage.com" jkaninda/mysql-bkup:latest  bkup -o backup -s s3 -db invoice
+docker run --rm --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=db_hostname" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" -e "ACCESS_KEY=your_access_key" -e "SECRET_KEY=your_secret_key" -e "BUCKETNAME=your_bucket_name" -e "S3_ENDPOINT=https://eu2.contabostorage.com" jkaninda/mysql-bkup:latest  bkup -o backup -s s3 -d invoice
 ```
 > To change s3 backup path add this flag : --path myPath . default path is /mysql_bkup
+
 Simple S3 backup usage
 
 ```sh
-bkup --operation backup --storage s3 --database mydatabase 
+bkup --operation backup --storage s3 --dbname mydatabase 
 ```
 ```yaml
   mysql-bkup:
-    image: jkaninda/mysql-bkup:latest
+    image: jkaninda/mysql-bkup
     container_name: mysql-bkup
     tty: true
     privileged: true
@@ -163,7 +163,7 @@ bkup --operation backup --storage s3 --database mydatabase
     environment:
       - DB_PORT=3306
       - DB_HOST=mysql
-      - DB_DATABASE=mariadb
+      - DB_NAME=mariadb
       - DB_USERNAME=mariadb
       - DB_PASSWORD=password
       - ACCESS_KEY=${ACCESS_KEY}
@@ -186,7 +186,7 @@ DB_HOST='db_hostname'
 DB_NAME='db_name'
 BACKUP_DIR='/some/path/backup/'
 
-docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" -e "DB_USERNAME=$DB_USERNAME" -e "DB_PASSWORD=$DB_PASSWORD" jkaninda/mysql-bkup:latest  bkup -o backup -db $DB_NAME
+docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" -e "DB_USERNAME=$DB_USERNAME" -e "DB_PASSWORD=$DB_PASSWORD" jkaninda/mysql-bkup:latest  bkup -o backup -d $DB_NAME
 ```
 
 ```sh
@@ -227,7 +227,7 @@ spec:
                 value: "3306"
               - name: DB_HOST
                 value: "mysql-svc"
-              - name: DB_DATABASE
+              - name: DB_NAME
                 value: "mariadb"
               - name: DB_USERNAME
                 value: "mariadb"

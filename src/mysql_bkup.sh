@@ -5,10 +5,8 @@ MY_SQL_DUMP=/usr/bin/mysqldump
 arg0=$(basename "$0" .sh)
 blnk=$(echo "$arg0" | sed 's/./ /g')
 export OPERATION=backup
-export DESTINATION=local
 export STORAGE=local
 export STORAGE_PATH=/backup
-export SOURCE=local
 export S3_PATH=/mysql-bkup
 export TIMEOUT=60
 export FILE_COMPRESION=true
@@ -45,7 +43,7 @@ help()
     echo "  -s |--storage           -- Set storage (default: local)"
     echo "  -f |--file              -- Set file name "
     echo "     |--path              -- Set s3 path, without file name"
-    echo "  -db|--database          -- Set database name "
+    echo "  -d |--dbname            -- Set database name "
     echo "  -p |--port              -- Set database port (default: 3306)"
     echo "  -t |--timeout           -- Set timeout (default: 120s)"
     echo "  -h |--help              -- Print this help message and exit"
@@ -63,18 +61,14 @@ flags()
             [ $# = 0 ] && error "No operation specified - restore or backup"
             export OPERATION="$1"
             shift;;
-        (-d|--destination)
+        (-d|--dbname)
             shift
-            [ $# = 0 ] && error "No destination specified - local or s3 | default local"
-            export DESTINATION="$1"
-            export SOURCE="$1"
-            export STORAGE="$1"
+            [ $# = 0 ] && error "No database name specified"
+            export DB_NAME="$1"
             shift;;
         (-s|--storage)
             shift
             [ $# = 0 ] && error "No storage specified - local or s3 | default local"
-            export SOURCE="$1"
-            export DESTINATION="$1"
             export STORAGE="$1"
             shift;;
         (-f|--file)
@@ -90,7 +84,7 @@ flags()
         (-db|--database)
             shift
             [ $# = 0 ] && error "No database name specified"
-            export DB_DATABASE="$1"
+            export DB_NAME="$1"
             shift;;
         (-p|--port)
             shift
@@ -115,14 +109,14 @@ flags()
 
 backup()
 {
- if [ -z "${DB_HOST}"] ||  [ -z "${DB_DATABASE}"] ||  [ -z "${DB_USERNAME}"] ||  [ -z "${DB_PASSWORD}"]; then
+ if [ -z "${DB_HOST}"] ||  [ -z "${DB_NAME}"] ||  [ -z "${DB_USERNAME}"] ||  [ -z "${DB_PASSWORD}"]; then
    echo "Please make sure all required options are set "
 else
       ## Test database connection
-      mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE} -e"quit"
+      mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} -e"quit"
       
       ## Backup database
-      mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE} | gzip > ${STORAGE_PATH}/${DB_DATABASE}_${TIME}.sql.gz
+      mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} | gzip > ${STORAGE_PATH}/${DB_NAME}_${TIME}.sql.gz
       echo "Database has been saved"
 fi
 exit 0
@@ -130,15 +124,15 @@ exit 0
 
 restore()
 {
-if [ -z "${DB_HOST}" ] ||  [ -z "${DB_DATABASE}" ] ||  [ -z "${DB_USERNAME}" ] || [ -z "${DB_PASSWORD}" ]; then
+if [ -z "${DB_HOST}" ] ||  [ -z "${DB_NAME}" ] ||  [ -z "${DB_USERNAME}" ] || [ -z "${DB_PASSWORD}" ]; then
    echo "Please make sure all required options are set "
 else
     ## Restore database
      if [ -f "${STORAGE_PATH}/$FILE_NAME" ]; then
          if gzip -t ${STORAGE_PATH}/$FILE_NAME; then
-            zcat ${STORAGE_PATH}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE}
+            zcat ${STORAGE_PATH}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME}
          else 
-             cat ${STORAGE_PATH}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_DATABASE}
+             cat ${STORAGE_PATH}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME}
            fi
         echo "Database has been restored"
       else
