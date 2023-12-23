@@ -1,4 +1,5 @@
-#!/bin/sh 
+#!/usr/bin/env bash 
+
 set -e
 TIME=$(date +%Y%m%d_%H%M%S)
 MY_SQL_DUMP=/usr/bin/mysqldump
@@ -109,14 +110,15 @@ flags()
 
 backup()
 {
- if [ -z "${DB_HOST}"] ||  [ -z "${DB_NAME}"] ||  [ -z "${DB_USERNAME}"] ||  [ -z "${DB_PASSWORD}"]; then
-   echo "Please make sure all required options are set "
+ if [[ -z $DB_HOST ]] ||  [[ -z $DB_NAME ]] ||  [[ -z $DB_USERNAME ]] ||  [[ -z $DB_PASSWORD ]]; then
+   echo "Please make sure all required environment variables are set "
 else
       ## Test database connection
       mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} -e"quit"
       
       ## Backup database
       mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} | gzip > ${STORAGE_PATH}/${DB_NAME}_${TIME}.sql.gz
+      echo "$TIME: ${DB_NAME}_${TIME}.sql.gz" | tee -a "${STORAGE_PATH}/history.txt"
       echo "Database has been saved"
 fi
 exit 0
@@ -124,8 +126,8 @@ exit 0
 
 restore()
 {
-if [ -z "${DB_HOST}" ] ||  [ -z "${DB_NAME}" ] ||  [ -z "${DB_USERNAME}" ] || [ -z "${DB_PASSWORD}" ]; then
-   echo "Please make sure all required options are set "
+if [[ -z $DB_HOST ]] ||  [[ -z $DB_NAME ]] ||  [[ -z $DB_USERNAME ]] || [[ -z $DB_PASSWORD ]]; then
+   echo "Please make sure all required environment variables are set "
 else
     ## Restore database
      if [ -f "${STORAGE_PATH}/$FILE_NAME" ]; then
@@ -157,7 +159,7 @@ s3_restore()
 
 mount_s3()
 {
-if [ -z "${ACCESS_KEY}"] ||  [ -z "${SECRET_KEY}"]; then
+if [[ -z $ACCESS_KEY ]] ||  [[ -z $SECRET_KEY ]]; then
 echo "Please make sure all environment variables are set "
 echo "BUCKETNAME=$BUCKETNAME \nACCESS_KEY=$nACCESS_KEY \nSECRET_KEY=$SECRET_KEY"
 else
