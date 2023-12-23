@@ -8,4 +8,4 @@ fi
 
 docker build -f src/docker/Dockerfile  -t jkaninda/mysql-bkup:$tag .
 
-docker-compose up -d
+docker compose up -d

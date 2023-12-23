@@ -5,7 +5,7 @@ MySQL Backup tool, backup database to S3 or Object Storage
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/jkaninda/mysql-bkup?style=flat-square)
 ![Docker Pulls](https://img.shields.io/docker/pulls/jkaninda/mysql-bkup?style=flat-square)
 
-> Run on:
+> Runs on:
 - Docker
 - Kubernetes
 
