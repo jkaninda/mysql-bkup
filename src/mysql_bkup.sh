@@ -10,7 +10,7 @@ export STORAGE_PATH=/backup
 export S3_PATH=/mysql-bkup
 export TIMEOUT=60
 export EXECUTION_MODE="default"
-export SCHEDULE_PERIOD="*/30 * * * *"
+export SCHEDULE_PERIOD="0 1 * * *"
 export FILE_COMPRESION=true
 usage_info()
 {
@@ -48,7 +48,7 @@ help()
     echo "  -d |--dbname            -- Set database name "
     echo "  -p |--port              -- Set database port (default: 3306)"
     echo "  -m |--mode              -- Set execution mode (default: default)"
-    echo "     |--period            -- Set schedule period time (default: '*/30 * * *')"
+    echo "     |--period            -- Set schedule period time (default: '0 1 * * *')"
     echo "  -t |--timeout           -- Set timeout (default: 120s)"
     echo "  -h |--help              -- Print this help message and exit"
     echo "  -V |--version           -- Print version information and exit"

@@ -34,7 +34,7 @@ MySQL Backup tool, backup database to S3 or Object Storage
 | --dbname        | -d     | Set database name      |
 | --port        | -p     | Set database port (default: 3306)      |
 | --mode     | -m     | Set execution mode. default or scheduled (default: default)        |
-| --period     |      | Set crontab period for scheduled mode only. (default: "*/30 * * * *")        |
+| --period     |      | Set crontab period for scheduled mode only. (default: "0 1 * * *")        |
 | --timeout     | -t     | Set timeout (default: 60s)        |
 | --help        | -h     | Print this help message and exit   |
 | --version     | -V     | Print version information and exit |
@@ -185,7 +185,7 @@ services:
 ## Run in Scheduled mode
 
 This tool can be run as CronJob in Kubernetes for a regular backup which makes deployment on Kubernetes easy as Kubernetes has CronJob resources.
-For Docker, you need to run it in scheduled mode by adding `--mode scheduled` flag and specify the periodical backup time by adding `--period "*/30 * * * *"` flag.
+For Docker, you need to run it in scheduled mode by adding `--mode scheduled` flag and specify the periodical backup time by adding `--period "0 1 * * *"` flag.
 
 Make an automated backup on Docker
 
@@ -215,12 +215,28 @@ Easy to remember format:
 ------------- Minute (0 - 59)
 ```
 
+> At every 30th minute
+
+```conf
+*/30 * * * *
+```
+> “At minute 0.” every hour
+```conf
+0 * * * *
+```
+
+> “At 01:00.” every day
+
+```conf
+0 1 * * *
+```
+
 ## Example of scheduled mode
 
 > Docker run :
 
 ```sh
-docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" -e "DB_USERNAME=$DB_USERNAME" -e "DB_PASSWORD=$DB_PASSWORD" jkaninda/mysql-bkup:latest  bkup --operation backup --dbname $DB_NAME --mode scheduled --period "*/30 * * * *"
+docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" -e "DB_USERNAME=$DB_USERNAME" -e "DB_PASSWORD=$DB_PASSWORD" jkaninda/mysql-bkup:latest  bkup --operation backup --dbname $DB_NAME --mode scheduled --period "0 1 * * *"
 ```
 
 > With Docker compose
