@@ -215,7 +215,7 @@ ln -s /usr/local/bin/backup_cron.sh /usr/local/bin/backup_cron
 CRON_JOB=/etc/cron.d/backup_cron
 touch $CRON_JOB
 cat > "$CRON_JOB" <<EOF
-$SCHEDULE_PERIOD root exec /bin/bash -c ". /run/supervisord.env; /usr/local/bin/backup_cron.sh >> /var/log/backup_cron.log"
+$SCHEDULE_PERIOD root exec /bin/bash -c ". /run/supervisord.env; /usr/local/bin/backup_cron.sh >> /var/log/mysql-bkup.log"
 EOF
 chmod 0644 /etc/cron.d/*
 crontab /etc/cron.d/backup_cron
@@ -230,6 +230,7 @@ scheduled_mode()
      echo "     Starting MySQL Bkup...       "
      echo "***********************************"
      echo "Running in Scheduled mode"
+     echo "Log file in /var/log/mysql-bkup.log"
      echo "Execution period $SCHEDULE_PERIOD"
     supervisord -c /etc/supervisor/supervisord.conf
   else
