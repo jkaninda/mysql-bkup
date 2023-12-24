@@ -202,7 +202,10 @@ The syntax is:
 
 Easy to remember format:
 
+```conf
 * * * * * command to be executed
+```
+
 ```conf
 - - - - -
 | | | | |
