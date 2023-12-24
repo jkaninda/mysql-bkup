@@ -16,7 +16,8 @@ ENV VERSION="1.0"
 
 RUN apt-get update -qq
 RUN apt-get install build-essential libcurl4-openssl-dev libxml2-dev mime-support -y
-RUN apt install s3fs mysql-client -y
+RUN apt install s3fs mysql-client supervisor cron -y
+
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -27,6 +28,8 @@ RUN chmod 777 /tmp/s3cache
 
 COPY src/mysql_bkup.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/mysql_bkup.sh
+
+ADD src/supervisord.conf /etc/supervisor/supervisord.conf
 
 RUN ln -s /usr/local/bin/mysql_bkup.sh /usr/local/bin/mysql_bkup
 RUN ln -s /usr/local/bin/mysql_bkup.sh /usr/local/bin/bkup
