@@ -163,7 +163,6 @@ services:
   mysql-bkup:
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    tty: true
     privileged: true
     devices:
     - "/dev/fuse"
@@ -232,6 +231,9 @@ services:
   mysql-bkup:
     image: jkaninda/mysql-bkup:v0.3
     container_name: mysql-bkup
+    privileged: true
+    devices:
+    - "/dev/fuse"
     command:
       - /bin/sh
       - -c
