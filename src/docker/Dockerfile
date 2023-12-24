@@ -12,7 +12,7 @@ ENV ACCESS_KEY=""
 ENV SECRET_KEY=""
 ENV S3_ENDPOINT=https://s3.amazonaws.com
 ARG DEBIAN_FRONTEND=noninteractive
-ENV VERSION="1.0"
+ENV VERSION="v0.3"
 
 RUN apt-get update -qq
 RUN apt-get install build-essential libcurl4-openssl-dev libxml2-dev mime-support -y
