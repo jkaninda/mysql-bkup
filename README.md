@@ -33,6 +33,8 @@ MySQL Backup tool, backup database to S3 or Object Storage
 | --path        |      | Set s3 path without file name. eg: /custom_path      |
 | --dbname        | -d     | Set database name      |
 | --port        | -p     | Set database port (default: 3306)      |
+| --mode     | -m     | Set timeout execution mode. default or scheduled (default: default)        |
+| --period     |      | Set crontab period for scheduled mode only. (default: "*/30 * * * *")        |
 | --timeout     | -t     | Set timeout (default: 60s)        |
 | --help        | -h     | Print this help message and exit   |
 | --version     | -V     | Print version information and exit |
@@ -156,6 +158,8 @@ Simple S3 backup usage
 bkup --operation backup --storage s3 --dbname mydatabase 
 ```
 ```yaml
+version: '3'
+services:
   mysql-bkup:
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
@@ -179,10 +183,64 @@ bkup --operation backup --storage s3 --dbname mydatabase
       - S3_ENDPOINT=${S3_ENDPOINT}
 
 ```
-## Run "docker run" from crontab
+## Run in Scheduled mode
 
-Make an automated backup (every night at 1).
+This tool can be run as CronJob in Kubernetes for a regular backup which makes deployment on Kubernetes easy as Kubernetes has CronJob resources.
+For Docker, you need to run it in scheduled mode by adding `--mode scheduled` flag and specify the periodical backup time by adding `--period "*/30 * * * *" flag.
 
+Make an automated backup on Docker
+
+## Syntax of crontab (field description)
+
+The syntax is:
+
+- 1: Minute (0-59)
+- 2: Hours (0-23)
+- 3: Day (0-31)
+- 4: Month (0-12 [12 == December])
+- 5: Day of the week(0-7 [7 or 0 == sunday])
+
+Easy to remember format:
+
+* * * * * command to be executed
+- - - - -
+| | | | |
+| | | | ----- Day of week (0 - 7) (Sunday=0 or 7)
+| | | ------- Month (1 - 12)
+| | --------- Day of month (1 - 31)
+| ----------- Hour (0 - 23)
+------------- Minute (0 - 59)
+
+## Example of scheduling mode
+
+> Docker run :
+
+```sh
+docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" -e "DB_USERNAME=$DB_USERNAME" -e "DB_PASSWORD=$DB_PASSWORD" jkaninda/mysql-bkup:latest  bkup --operation backup --dbname $DB_NAME --mode scheduled --period "*/30 * * * *"
+```
+
+> With Docker compose
+
+```yaml
+version: '3'
+services:
+  mysql-bkup:
+    image: jkaninda/mysql-bkup
+    container_name: mysql-bkup
+    command:
+      - /bin/sh
+      - -c
+      - bkup --operation backup --dbname database_name --mode scheduled --period "*/30 * * * *"
+    volumes:
+      - ./backup:/backup
+    environment:
+      - DB_PORT=3306
+      - DB_HOST=mariadb
+      - DB_USERNAME=mariadb
+      - DB_PASSWORD=password
+```
+
+## Manual
 > backup_script.sh
 
 ```sh
@@ -207,6 +265,7 @@ Your crontab looks like this:
 ```
 
 ## Kubernetes CronJob
+For Kubernetes you don't need to run it in scheduled mode.
 
 Simple Kubernetes CronJob usage:
 
