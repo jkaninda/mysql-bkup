@@ -227,22 +227,24 @@ docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" 
 > With Docker compose
 
 ```yaml
-version: '3'
+version: "3"
 services:
   mysql-bkup:
-    image: jkaninda/mysql-bkup
+    image: jkaninda/mysql-bkup:v0.3
     container_name: mysql-bkup
     command:
       - /bin/sh
       - -c
-      - bkup --operation backup --dbname database_name --mode scheduled --period "*/30 * * * *"
-    volumes:
-      - ./backup:/backup
+      - bkup --operation backup --storage s3 --path /mys3_custome_path --dbname database_name --mode scheduled --period "*/30 * * * *"
     environment:
       - DB_PORT=3306
-      - DB_HOST=mariadb
-      - DB_USERNAME=mariadb
-      - DB_PASSWORD=password
+      - DB_HOST=mysqlhost
+      - DB_USERNAME=userName
+      - DB_PASSWORD=${DB_PASSWORD}
+      - ACCESS_KEY=${ACCESS_KEY}
+      - SECRET_KEY=${SECRET_KEY}
+      - BUCKETNAME=${BUCKETNAME}
+      - S3_ENDPOINT=${S3_ENDPOINT}
 ```
 
 
