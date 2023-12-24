@@ -216,7 +216,7 @@ Easy to remember format:
 ------------- Minute (0 - 59)
 ```
 
-## Example of scheduling mode
+## Example of scheduled mode
 
 > Docker run :
 
