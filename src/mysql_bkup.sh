@@ -47,6 +47,8 @@ help()
     echo "     |--path              -- Set s3 path, without file name"
     echo "  -d |--dbname            -- Set database name "
     echo "  -p |--port              -- Set database port (default: 3306)"
+    echo "  -m |--mode              -- Set execution mode (default: default)"
+    echo "     |--period            -- Set schedule period time (default: '*/30 * * *')"
     echo "  -t |--timeout           -- Set timeout (default: 120s)"
     echo "  -h |--help              -- Print this help message and exit"
     echo "  -V |--version           -- Print version information and exit"
@@ -95,12 +97,12 @@ flags()
             shift;;
         (-m|--mode)
             shift
-            [ $# = 0 ] && error "No Scheduled mode specified"
+            [ $# = 0 ] && error "No execution mode specified"
             export EXECUTION_MODE="$1"
             shift;;
         (--period)
             shift
-            [ $# = 0 ] && error "No Scheduled period entered"
+            [ $# = 0 ] && error "No schedule period entered"
             export SCHEDULE_PERIOD="$1"
             shift;;
         (-t|--timeout)
