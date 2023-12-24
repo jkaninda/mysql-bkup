@@ -33,7 +33,7 @@ MySQL Backup tool, backup database to S3 or Object Storage
 | --path        |      | Set s3 path without file name. eg: /custom_path      |
 | --dbname        | -d     | Set database name      |
 | --port        | -p     | Set database port (default: 3306)      |
-| --mode     | -m     | Set timeout execution mode. default or scheduled (default: default)        |
+| --mode     | -m     | Set execution mode. default or scheduled (default: default)        |
 | --period     |      | Set crontab period for scheduled mode only. (default: "*/30 * * * *")        |
 | --timeout     | -t     | Set timeout (default: 60s)        |
 | --help        | -h     | Print this help message and exit   |
