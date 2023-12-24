@@ -186,7 +186,7 @@ services:
 ## Run in Scheduled mode
 
 This tool can be run as CronJob in Kubernetes for a regular backup which makes deployment on Kubernetes easy as Kubernetes has CronJob resources.
-For Docker, you need to run it in scheduled mode by adding `--mode scheduled` flag and specify the periodical backup time by adding `--period "*/30 * * * *" flag.
+For Docker, you need to run it in scheduled mode by adding `--mode scheduled` flag and specify the periodical backup time by adding `--period "*/30 * * * *"` flag.
 
 Make an automated backup on Docker
 
@@ -203,6 +203,7 @@ The syntax is:
 Easy to remember format:
 
 * * * * * command to be executed
+```conf
 - - - - -
 | | | | |
 | | | | ----- Day of week (0 - 7) (Sunday=0 or 7)
@@ -210,6 +211,7 @@ Easy to remember format:
 | | --------- Day of month (1 - 31)
 | ----------- Hour (0 - 23)
 ------------- Minute (0 - 59)
+```
 
 ## Example of scheduling mode
 
