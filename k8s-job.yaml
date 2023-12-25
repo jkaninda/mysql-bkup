@@ -8,7 +8,6 @@ spec:
     spec:
       template:
         spec:
-          backoffLimit: 2
           containers:
           - name: mysql-bkup
             image: jkaninda/mysql-bkup
