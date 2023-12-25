@@ -13,9 +13,9 @@ MySQL Backup tool, backup database to S3 or Object Storage
 - [Docker Hub](https://hub.docker.com/r/jkaninda/mysql-bkup)
 - [Github](https://github.com/jkaninda/mysql-bkup)
 
-## Postgres solution :
+## PostgreSQL solution :
 
-- [Postgress](https://github.com/jkaninda/pg-bkup)
+- [PostgreSQL](https://github.com/jkaninda/pg-bkup)
 
 
 
@@ -237,7 +237,7 @@ Easy to remember format:
 > Docker run :
 
 ```sh
-docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" -e "DB_USERNAME=$DB_USERNAME" -e "DB_PASSWORD=$DB_PASSWORD" jkaninda/mysql-bkup:latest  bkup --operation backup --dbname $DB_NAME --mode scheduled --period "0 1 * * *"
+docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" -e "DB_USERNAME=$DB_USERNAME" -e "DB_PASSWORD=$DB_PASSWORD" jkaninda/mysql-bkup  bkup --operation backup --dbname $DB_NAME --mode scheduled --period "0 1 * * *"
 ```
 
 > With Docker compose
@@ -246,7 +246,7 @@ docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" 
 version: "3"
 services:
   mysql-bkup:
-    image: jkaninda/mysql-bkup:v0.3
+    image: jkaninda/mysql-bkup
     container_name: mysql-bkup
     privileged: true
     devices:
@@ -283,7 +283,6 @@ spec:
     spec:
       template:
         spec:
-          backoffLimit: 2
           containers:
           - name: mysql-bkup
             image: jkaninda/mysql-bkup
