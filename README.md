@@ -149,7 +149,7 @@ docker-compose up -d
 ## Backup to S3
 
 ```sh
-docker run --rm --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=db_hostname" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" -e "ACCESS_KEY=your_access_key" -e "SECRET_KEY=your_secret_key" -e "BUCKETNAME=your_bucket_name" -e "S3_ENDPOINT=https://eu2.contabostorage.com" jkaninda/mysql-bkup  bkup -o backup -s s3 -d database_name
+docker run --rm --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=db_hostname" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" -e "ACCESS_KEY=your_access_key" -e "SECRET_KEY=your_secret_key" -e "BUCKETNAME=your_bucket_name" -e "S3_ENDPOINT=https://s3.us-west-2.amazonaws.com" jkaninda/mysql-bkup  bkup -o backup -s s3 -d database_name
 ```
 > To change s3 backup path add this flag : --path /myPath . default path is /mysql_bkup
 
@@ -311,6 +311,6 @@ spec:
               - name: BUCKETNAME
                 value: ""
               - name: S3_ENDPOINT
-                value: "https://s3.amazonaws.com"
+                value: "https://s3.us-west-2.amazonaws.com"
           restartPolicy: Never
 ```
