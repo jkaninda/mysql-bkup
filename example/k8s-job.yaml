@@ -16,7 +16,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - bkup -o backup -s s3 --path /custom_path
+            - bkup --operation backup --storage s3 --path /custom_path
             env:
               - name: DB_PORT
                 value: "3306" 
