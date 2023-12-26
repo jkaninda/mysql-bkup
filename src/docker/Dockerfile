@@ -34,3 +34,4 @@ RUN ln -s /usr/local/bin/mysql_bkup.sh /usr/local/bin/bkup
 
 RUN mkdir /backup
 WORKDIR /backup
+VOLUME /backup

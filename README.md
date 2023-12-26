@@ -5,6 +5,12 @@ MySQL Backup tool, backup database to S3 or Object Storage
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/jkaninda/mysql-bkup?style=flat-square)
 ![Docker Pulls](https://img.shields.io/docker/pulls/jkaninda/mysql-bkup?style=flat-square)
 
+<p align="center">
+  <a href="https://github.com/jkaninda/mysql-bkup">
+    <img src="https://www.mysql.com/common/logos/logo-mysql-170x115.png" alt="Logo">
+  </a>
+  </p>
+
 > Runs on:
 - Docker
 - Kubernetes
@@ -23,6 +29,12 @@ MySQL Backup tool, backup database to S3 or Object Storage
 - local
 - s3
 - Object storage
+
+## Volumes:
+
+- /s3mnt => S3 mounting path 
+- /backup => local storage mounting path
+
 ## Usage
 
 | Options       | Shorts | Usage                              |
@@ -314,3 +326,21 @@ spec:
                 value: "https://s3.us-west-2.amazonaws.com"
           restartPolicy: Never
 ```
+
+## Contributing
+
+Contributions are welcome! If you encounter any issues or have suggestions for improvements, please create an issue or submit a pull request. 
+Make sure to follow the existing coding style and provide tests for your changes.
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+## Authors
+
+**Jonas Kaninda**
+- <https://github.com/jkaninda>
+
+## Copyright
+
+Copyright (c) [2023] [Jonas Kaninda]

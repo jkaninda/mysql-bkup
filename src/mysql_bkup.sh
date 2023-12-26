@@ -1,4 +1,11 @@
-#!/usr/bin/env bash 
+#!/usr/bin/env bash
+
+# MySQL Backup & Restore 
+
+# @author    Jonas Kaninda
+# @license   MIT License <https://opensource.org/licenses/MIT>
+# @link      https://github.com/jkaninda/mysql-bkup
+#
 set -e
 TIME=$(date +%Y%m%d_%H%M%S)
 MY_SQL_DUMP=/usr/bin/mysqldump
