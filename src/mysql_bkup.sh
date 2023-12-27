@@ -153,7 +153,7 @@ else
       
       ## Backup database
       mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} | gzip > ${STORAGE_PATH}/${DB_NAME}_${TIME}.sql.gz
-      info "$TIME: ${DB_NAME}_${TIME}.sql.gz" | tee -a "${STORAGE_PATH}/history.txt"
+      echo "$TIME: ${DB_NAME}_${TIME}.sql.gz" | tee -a "${STORAGE_PATH}/history.txt"
       info "Database has been saved"
 fi
 exit 0
