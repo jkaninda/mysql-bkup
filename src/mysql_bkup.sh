@@ -44,6 +44,20 @@ error()
     echo "$arg0: $*" >&2
     exit 0
 }
+info() {
+    { set +x; } 2> /dev/null
+    echo 'mysql-bkup:' '[INFO] ' "$@"
+    #set -x
+}
+warning() {
+    { set +x; } 2> /dev/null
+    echo 'mysql-bkup:' '[WARNING] ' "$@"
+}
+fatal() {
+    { set +x; } 2> /dev/null
+    echo 'mysql-bkup:' '[ERROR] ' "$@" >&2
+    exit 1
+}
 
 help()
 {
@@ -131,15 +145,16 @@ flags()
 backup()
 {
  if [[ -z $DB_HOST ]] ||  [[ -z $DB_NAME ]] ||  [[ -z $DB_USERNAME ]] ||  [[ -z $DB_PASSWORD ]]; then
-   echo "Please make sure all required environment variables are set "
+   fatal "Please make sure all required environment variables are set "
 else
       ## Test database connection
-      mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} -e"quit"
+      test_database_connection
+      ##mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} -e"quit"
       
       ## Backup database
       mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} | gzip > ${STORAGE_PATH}/${DB_NAME}_${TIME}.sql.gz
-      echo "$TIME: ${DB_NAME}_${TIME}.sql.gz" | tee -a "${STORAGE_PATH}/history.txt"
-      echo "Database has been saved"
+      info "$TIME: ${DB_NAME}_${TIME}.sql.gz" | tee -a "${STORAGE_PATH}/history.txt"
+      info "Database has been saved"
 fi
 exit 0
 }
@@ -147,7 +162,7 @@ exit 0
 restore()
 {
 if [[ -z $DB_HOST ]] ||  [[ -z $DB_NAME ]] ||  [[ -z $DB_USERNAME ]] || [[ -z $DB_PASSWORD ]]; then
-   echo "Please make sure all required environment variables are set "
+   fatal "Please make sure all required environment variables are set "
 else
     ## Restore database
      if [ -f "${STORAGE_PATH}/$FILE_NAME" ]; then
@@ -156,9 +171,9 @@ else
          else 
              cat ${STORAGE_PATH}/${FILE_NAME} | mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME}
            fi
-        echo "Database has been restored"
+        info "Database has been restored"
       else
-        echo "Error, file not found in ${STORAGE_PATH}/${FILE_NAME}"
+        fatal "file not found in ${STORAGE_PATH}/${FILE_NAME}"
       fi 
 fi
 exit
@@ -180,22 +195,32 @@ s3_restore()
 mount_s3()
 {
 if [[ -z $ACCESS_KEY ]] ||  [[ -z $SECRET_KEY ]]; then
-echo "Please make sure all environment variables are set "
-echo "BUCKETNAME=$BUCKETNAME \nACCESS_KEY=$nACCESS_KEY \nSECRET_KEY=$SECRET_KEY"
+info "Please make sure all environment variables are set "
 else
     echo "$ACCESS_KEY:$SECRET_KEY" | tee /etc/passwd-s3fs
     chmod 600 /etc/passwd-s3fs
-    echo "Mounting Object storage in /s3mnt .... "
+    info "Mounting Object storage in /s3mnt .... "
     if [ -z "$(ls -A /s3mnt)" ]; then
        s3fs $BUCKETNAME /s3mnt -o passwd_file=/etc/passwd-s3fs -o use_cache=/tmp/s3cache -o allow_other -o url=$S3_ENDPOINT -o use_path_request_style
        if [ ! -d "/s3mnt$S3_PATH" ]; then
            mkdir -p /s3mnt$S3_PATH
         fi 
     else
-     echo "Object storage already mounted in /s3mnt"
+     info "Object storage already mounted in /s3mnt"
     fi
 export STORAGE_PATH=/s3mnt$S3_PATH
 fi
+}
+umount_s3()
+{
+ info "Umount /s3mnt..."
+ umount /s3mnt
+}
+test_database_connection()
+{
+ info "Testing database connection..."
+ ## Test database connection
+ mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} -e"quit"
 }
 create_crontab_script()
 {
@@ -236,13 +261,13 @@ scheduled_mode()
      echo "**********************************"
      echo "     Starting MySQL Bkup...       "
      echo "***********************************"
-     echo "Running in Scheduled mode"
-     echo "Log file in /var/log/mysql-bkup.log"
-     echo "Execution period $SCHEDULE_PERIOD"
+     info "Running in Scheduled mode"
+     info "Log file in /var/log/mysql-bkup.log"
+     info "Execution period $SCHEDULE_PERIOD"
+     test_database_connection
     supervisord -c /etc/supervisor/supervisord.conf
   else
-    echo "Scheduled mode supports only backup operation"
-    exit 1
+    fatal "Scheduled mode supports only backup operation"
   fi
 }
 
@@ -254,19 +279,19 @@ then
   then
      if [ $STORAGE != 's3' ]
      then
-          echo "Restore from local"
+          info "Restore from local"
           restore
       else
-        echo "Restore from s3"
+        info "Restore from s3"
         s3_restore
       fi
   else
       if [ $STORAGE != 's3' ]
       then
-          echo "Backup to local destination"
+          info "Backup to local storage"
           backup
       else
-         echo "Backup to s3 storage"
+         info "Backup to s3 storage"
          s3_backup
       fi
    fi
@@ -274,6 +299,5 @@ elif [  $EXECUTION_MODE == 'scheduled' ]
 then
   scheduled_mode
 else
-echo "Error, unknow execution mode!"
-exit 1
+fatal "Error, unknow execution mode!"
 fi
