@@ -13,7 +13,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV VERSION="v0.3"
 
 RUN apt-get update -qq
-RUN apt-get install build-essential libcurl4-openssl-dev libxml2-dev mime-support -y
+#RUN apt-get install build-essential libcurl4-openssl-dev libxml2-dev mime-support -y
 RUN apt install s3fs mysql-client supervisor cron -y
 
 # Clear cache
@@ -34,4 +34,3 @@ RUN ln -s /usr/local/bin/mysql_bkup.sh /usr/local/bin/bkup
 
 RUN mkdir /backup
 WORKDIR /backup
-#VOLUME /backup

@@ -18,7 +18,7 @@ export S3_PATH=/mysql-bkup
 export TIMEOUT=60
 export EXECUTION_MODE="default"
 export SCHEDULE_PERIOD="0 1 * * *"
-export FILE_COMPRESION=true
+export DISABLE_COMPRESION=false
 usage_info()
 {
     echo "Usage: \\"
@@ -131,6 +131,11 @@ flags()
             [ $# = 0 ] && error "No timeout specified"
             export TIMEOUT="$1"
             shift;;   
+        (--disable-compression)
+            shift
+            [ $# = 0 ] && error "No disable-compression specified"
+            export DISABLE_COMPRESION="$1"
+            shift;;   
         (-h|--help)
             help;;
         (-V|--version)
@@ -148,13 +153,16 @@ backup()
    fatal "Please make sure all required environment variables are set "
 else
       ## Test database connection
-      test_database_connection
-      ##mysql -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} -e"quit"
-      
+      test_database_connection 
       ## Backup database
-      mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} | gzip > ${STORAGE_PATH}/${DB_NAME}_${TIME}.sql.gz
-      echo "$TIME: ${DB_NAME}_${TIME}.sql.gz" | tee -a "${STORAGE_PATH}/history.txt"
-      info "Database has been saved"
+      export BK_FILE_NAME="${DB_NAME}_${TIME}.sql.gz"
+      mysqldump -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USERNAME} --password=${DB_PASSWORD} ${DB_NAME} | gzip > ${STORAGE_PATH}/$BK_FILE_NAME
+      if [[ $? -eq 0 ]];then
+        echo $BK_FILE_NAME | tee -a "${STORAGE_PATH}/history.txt"
+        info "Database has been backed up"
+      else
+        fatal "An error occurred during the backup"
+      fi
 fi
 exit 0
 }
