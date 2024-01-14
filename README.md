@@ -52,6 +52,28 @@ MySQL Backup tool, backup database to S3 or Object Storage
 | --help        | -h     | Print this help message and exit   |
 | --version     | -V     | Print version information and exit |
 
+## Note:
+
+Creating a user for backup tasks who has read-only access is recommended!
+
+> create read-only user
+
+```sh
+mysql -u root -p
+```
+
+```sql
+CREATE USER read_only_user IDENTIFIED BY 'your_strong_password';
+
+```
+```sql
+GRANT SELECT, SHOW VIEW ON *.* TO read_only_user;
+```
+```sql
+FLUSH PRIVILEGES;
+
+```
+
 ## Backup database :
 
 Simple backup usage
