@@ -47,6 +47,7 @@ MySQL Backup tool, backup database to S3 or Object Storage
 | --dbname        | -d     | Set database name      |
 | --port        | -p     | Set database port (default: 3306)      |
 | --mode     | -m     | Set execution mode. default or scheduled (default: default)        |
+| --disable-compression     |      | Disable database backup compression       |
 | --period     |      | Set crontab period for scheduled mode only. (default: "0 1 * * *")        |
 | --timeout     | -t     | Set timeout (default: 60s)        |
 | --help        | -h     | Print this help message and exit   |
