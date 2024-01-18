@@ -7,7 +7,7 @@ COPY . .
 RUN go mod download
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /mysql-bkup
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/mysql-bkup
 
 FROM ubuntu:24.04
 ENV DB_HOST=""
