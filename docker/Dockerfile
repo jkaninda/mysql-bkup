@@ -1,3 +1,14 @@
+FROM golang:1.21.0 AS build
+WORKDIR /app
+
+# Copy the source code.
+COPY . .
+# Installs Go dependencies
+RUN go mod download
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux go build -o /mysql-bkup
+
 FROM ubuntu:24.04
 ENV DB_HOST=""
 ENV DB_NAME=""
@@ -10,7 +21,8 @@ ENV ACCESS_KEY=""
 ENV SECRET_KEY=""
 ENV S3_ENDPOINT=https://s3.amazonaws.com
 ARG DEBIAN_FRONTEND=noninteractive
-ENV VERSION="v0.3"
+ENV VERSION="v0.4"
+LABEL authors="Jonas Kaninda"
 
 RUN apt-get update -qq
 #RUN apt-get install build-essential libcurl4-openssl-dev libxml2-dev mime-support -y
@@ -24,13 +36,13 @@ RUN mkdir /tmp/s3cache
 RUN chmod 777 /s3mnt
 RUN chmod 777 /tmp/s3cache
 
-COPY src/mysql_bkup.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/mysql_bkup.sh
+COPY --from=build /app/mysql-bkup /usr/local/bin/mysql-bkup
+RUN chmod +x /usr/local/bin/mysql-bkup
 
-ADD src/supervisord.conf /etc/supervisor/supervisord.conf
+RUN ln -s /usr/local/bin/mysql-bkup /usr/local/bin/bkup
 
-RUN ln -s /usr/local/bin/mysql_bkup.sh /usr/local/bin/mysql_bkup
-RUN ln -s /usr/local/bin/mysql_bkup.sh /usr/local/bin/bkup
+ADD docker/supervisord.conf /etc/supervisor/supervisord.conf
+
 
 RUN mkdir /backup
 WORKDIR /backup
