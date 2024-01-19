@@ -129,12 +129,6 @@ func init() {
 			return
 		}
 	}
-	//dbHost = os.Getenv("DB_HOST")
-	//dbPassword = os.Getenv("DB_PASSWORD")
-	//dbUserName = os.Getenv("DB_USERNAME")
-	//dbName = os.Getenv("DB_NAME")
-	//dbPort = os.Getenv("DB_PORT")
-	//period = os.Getenv("SCHEDULE_PERIOD")
 	storage = os.Getenv("STORAGE")
 	err := os.Setenv("STORAGE_PATH", storagePath)
 	if err != nil {
