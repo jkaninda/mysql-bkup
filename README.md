@@ -1,5 +1,5 @@
 # MySQL Backup
-MySQL Backup tool, backup database to S3 or Object Storage
+MySQL Backup and Restoration tool. Backup database to AWS S3 storage or any S3 Alternatives for Object Storage.
 
 [![Build](https://github.com/jkaninda/mysql-bkup/actions/workflows/build.yml/badge.svg)](https://github.com/jkaninda/mysql-bkup/actions/workflows/build.yml)
 [![Go Report](https://goreportcard.com/badge/github.com/jkaninda/mysql-bkup)](https://goreportcard.com/report/github.com/jkaninda/mysql-bkup)
