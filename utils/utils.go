@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 )
 
 func Info(v ...any) {
@@ -69,4 +70,17 @@ func IsDirEmpty(name string) (bool, error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+// TestDatabaseConnection  tests the database connection
+func TestDatabaseConnection() {
+	Info("Testing database connection...")
+	// Test database connection
+	cmd := exec.Command("mysql", "-h", os.Getenv("DB_HOST"), "-P", os.Getenv("DB_PORT"), "-u", os.Getenv("DB_USERNAME"), "--password="+os.Getenv("DB_PASSWORD"), os.Getenv("DB_NAME"), "-e", "quit")
+	err := cmd.Run()
+	if err != nil {
+		Fatal("Error testing database connection:", err)
+
+	}
+
 }
