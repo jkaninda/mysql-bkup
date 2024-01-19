@@ -37,10 +37,14 @@ func BackupDatabase(disableCompression bool) {
 		utils.TestDatabaseConnection()
 		// Backup Database database
 		utils.Info("Backing up database...")
+		//Generate file name
 		bkFileName := fmt.Sprintf("%s_%s.sql.gz", dbName, time.Now().Format("20060102_150405"))
 
+		// Verify is compression is disabled
 		if disableCompression {
+			//Generate file name
 			bkFileName = fmt.Sprintf("%s_%s.sql", dbName, time.Now().Format("20060102_150405"))
+			// Execute mysqldump
 			cmd := exec.Command("mysqldump",
 				"-h", dbHost,
 				"-P", dbPort,
@@ -53,6 +57,7 @@ func BackupDatabase(disableCompression bool) {
 				log.Fatal(err)
 			}
 
+			// save output
 			file, err := os.Create(fmt.Sprintf("%s/%s", storagePath, bkFileName))
 			if err != nil {
 				log.Fatal(err)
@@ -66,6 +71,7 @@ func BackupDatabase(disableCompression bool) {
 			utils.Done("Database has been backed up")
 
 		} else {
+			// Execute mysqldump
 			cmd := exec.Command("mysqldump", "-h", dbHost, "-P", dbPort, "-u", dbUserName, "--password="+dbPassword, dbName)
 			stdout, err := cmd.StdoutPipe()
 			if err != nil {

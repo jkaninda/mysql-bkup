@@ -155,6 +155,7 @@ func start() {
 				utils.Info("Restore database from local")
 				pkg.RestoreDatabase(file)
 			} else {
+				//Restore from S3
 				utils.Info("Restore database from s3")
 				s3Restore()
 			}
@@ -163,6 +164,7 @@ func start() {
 				utils.Info("Backup database to local storage")
 				pkg.BackupDatabase(disableCompression)
 			} else {
+				//Backup to S3
 				utils.Info("Backup database to s3 storage")
 				s3Backup()
 			}
