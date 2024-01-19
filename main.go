@@ -72,10 +72,10 @@ func init() {
 	disableCompression = *disableCompressionFlag
 
 	flag.Usage = func() {
-		fmt.Print("MySQL Backup and Restoration tool. Backup database to AWS S3 storage or any S3 Alternatives for Object Storage.\n\n")
+		fmt.Print("MySQL BackupDatabase and Restoration tool. BackupDatabase database to AWS S3 storage or any S3 Alternatives for Object Storage.\n\n")
 		fmt.Print("Usage: bkup --operation backup -storage s3 --dbname databasename --path /my_path ...\n")
 		fmt.Print("       bkup -o backup -d databasename --disable-compression ...\n")
-		fmt.Print("       Restore: bkup -o restore -d databasename -f db_20231217_051339.sql.gz ...\n\n")
+		fmt.Print("       RestoreDatabase: bkup -o restore -d databasename -f db_20231217_051339.sql.gz ...\n\n")
 		flag.PrintDefaults()
 	}
 
@@ -159,18 +159,18 @@ func start() {
 	if executionMode == "default" {
 		if operation != "backup" {
 			if storage != "s3" {
-				utils.Info("Restore from local")
-				pkg.Restore(file)
+				utils.Info("RestoreDatabase from local")
+				pkg.RestoreDatabase(file)
 			} else {
-				utils.Info("Restore from s3")
+				utils.Info("RestoreDatabase from s3")
 				s3Restore()
 			}
 		} else {
 			if storage != "s3" {
-				utils.Info("Backup to local storage")
-				pkg.Backup(disableCompression)
+				utils.Info("BackupDatabase to local storage")
+				pkg.BackupDatabase(disableCompression)
 			} else {
-				utils.Info("Backup to s3 storage")
+				utils.Info("BackupDatabase to s3 storage")
 				s3Backup()
 			}
 		}
@@ -182,9 +182,9 @@ func start() {
 }
 
 func s3Backup() {
-	// Backup to S3 storage
+	// Backup Database to S3 storage
 	pkg.MountS3Storage(s3Path)
-	pkg.Backup(disableCompression)
+	pkg.BackupDatabase(disableCompression)
 }
 
 // Run in scheduled mode
@@ -218,5 +218,5 @@ func scheduledMode() {
 func s3Restore() {
 	// Restore database from S3
 	pkg.MountS3Storage(s3Path)
-	pkg.Restore(file)
+	pkg.RestoreDatabase(file)
 }
