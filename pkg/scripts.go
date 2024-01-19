@@ -11,14 +11,14 @@ import (
 	"os/exec"
 )
 
-func init() {
+const cronLogFile = "/var/log/mysql-bkup.log"
+const backupCronFile = "/usr/local/bin/backup_cron.sh"
 
-}
 func CreateCrontabScript(disableCompression bool, storage string) {
-	task := "/usr/local/bin/backup_cron.sh"
-	touchCmd := exec.Command("touch", task)
+	//task := "/usr/local/bin/backup_cron.sh"
+	touchCmd := exec.Command("touch", backupCronFile)
 	if err := touchCmd.Run(); err != nil {
-		utils.Fatalf("Error creating file %s: %v\n", task, err)
+		utils.Fatalf("Error creating file %s: %v\n", backupCronFile, err)
 	}
 	var disableC = ""
 	if disableCompression {
@@ -39,13 +39,13 @@ bkup --operation backup --dbname %s --port %s %v
 `, os.Getenv("DB_NAME"), os.Getenv("DB_PORT"), disableC)
 	}
 
-	if err := utils.WriteToFile(task, scriptContent); err != nil {
-		utils.Fatalf("Error writing to %s: %v\n", task, err)
+	if err := utils.WriteToFile(backupCronFile, scriptContent); err != nil {
+		utils.Fatalf("Error writing to %s: %v\n", backupCronFile, err)
 	}
 
 	chmodCmd := exec.Command("chmod", "+x", "/usr/local/bin/backup_cron.sh")
 	if err := chmodCmd.Run(); err != nil {
-		utils.Fatalf("Error changing permissions of %s: %v\n", task, err)
+		utils.Fatalf("Error changing permissions of %s: %v\n", backupCronFile, err)
 	}
 
 	lnCmd := exec.Command("ln", "-s", "/usr/local/bin/backup_cron.sh", "/usr/local/bin/backup_cron")
@@ -60,8 +60,8 @@ bkup --operation backup --dbname %s --port %s %v
 		utils.Fatalf("Error creating file %s: %v\n", cronJob, err)
 	}
 
-	cronContent := fmt.Sprintf(`%s root exec /bin/bash -c ". /run/supervisord.env; /usr/local/bin/backup_cron.sh >> /var/log/mysql-bkup.log"
-`, os.Getenv("SCHEDULE_PERIOD"))
+	cronContent := fmt.Sprintf(`%s root exec /bin/bash -c ". /run/supervisord.env; /usr/local/bin/backup_cron.sh >> %s"
+`, os.Getenv("SCHEDULE_PERIOD"), cronLogFile)
 
 	if err := utils.WriteToFile(cronJob, cronContent); err != nil {
 		utils.Fatalf("Error writing to %s: %v\n", cronJob, err)
