@@ -16,6 +16,7 @@ var VersionCmd = &cobra.Command{
 	},
 }
 
+// Version display application version
 func Version() {
 	fmt.Printf("Version: %s \n", appVersion)
 	fmt.Print()
