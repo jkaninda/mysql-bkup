@@ -33,7 +33,7 @@ func RestoreDatabase(file string) {
 					utils.Fatal("Error, in restoring the database")
 				}
 
-				utils.Info("Database has been restored")
+				utils.Done("Database has been restored")
 
 			} else if extension == ".sql" {
 				//SQL file
@@ -43,7 +43,7 @@ func RestoreDatabase(file string) {
 					utils.Fatal("Error, in restoring the database", err)
 				}
 
-				utils.Info("Database has been restored")
+				utils.Done("Database has been restored")
 			} else {
 				utils.Fatal("Unknown file extension ", extension)
 			}

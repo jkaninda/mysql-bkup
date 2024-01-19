@@ -14,23 +14,21 @@ import (
 )
 
 func Info(v ...any) {
-	fmt.Println("[INFO] ", fmt.Sprint(v...))
+	fmt.Println("⒤ ", fmt.Sprint(v...))
 }
-func Infof(msg string, v ...any) {
-	fmt.Printf("[INFO] "+msg, v...)
+func Done(v ...any) {
+	fmt.Println("✔ ", fmt.Sprint(v...))
 }
-func Warning(message string) {
-	fmt.Println("[WARNING]", message)
+func Warning(v ...any) {
+	fmt.Println("[Warning: ] ", fmt.Sprint(v...))
 }
-func Warningf(msg string, v ...any) {
-	fmt.Printf("[WARNING] "+msg, v...)
-}
+
 func Fatal(v ...any) {
-	fmt.Println("[ERROR] ", fmt.Sprint(v...))
+	fmt.Println("✘ ", fmt.Sprint(v...))
 	os.Exit(1)
 }
 func Fatalf(msg string, v ...any) {
-	fmt.Printf("[ERROR] "+msg, v...)
+	fmt.Printf("✘ "+msg, v...)
 	os.Exit(1)
 }
 

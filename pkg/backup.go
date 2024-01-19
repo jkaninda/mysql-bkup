@@ -63,14 +63,12 @@ func BackupDatabase(disableCompression bool) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			utils.Info("Database has been backed up")
+			utils.Done("Database has been backed up")
 
 		} else {
 			cmd := exec.Command("mysqldump", "-h", dbHost, "-P", dbPort, "-u", dbUserName, "--password="+dbPassword, dbName)
 			stdout, err := cmd.StdoutPipe()
 			if err != nil {
-				utils.Info("Mysql")
-
 				log.Fatal(err)
 			}
 			gzipCmd := exec.Command("gzip")
@@ -86,7 +84,7 @@ func BackupDatabase(disableCompression bool) {
 			if err := gzipCmd.Wait(); err != nil {
 				log.Fatal(err)
 			}
-			utils.Info("Database has been backed up")
+			utils.Done("Database has been backed up")
 
 		}
 
