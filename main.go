@@ -1,21 +1,20 @@
 package main
 
 /*****
-*   MySQL Backup & Restore
+*  MySQL Backup & Restore
 * @author    Jonas Kaninda
 * @license   MIT License <https://opensource.org/licenses/MIT>
 * @link      https://github.com/jkaninda/mysql-bkup
 **/
 import (
 	"fmt"
+	"github.com/jkaninda/mysql-bkup/cmd"
 	"github.com/jkaninda/mysql-bkup/pkg"
 	"github.com/jkaninda/mysql-bkup/utils"
 	flag "github.com/spf13/pflag"
 	"os"
 	"os/exec"
 )
-
-var appVersion string = os.Getenv("VERSION")
 
 const s3MountPath string = "/s3mnt"
 
@@ -72,10 +71,10 @@ func init() {
 	disableCompression = *disableCompressionFlag
 
 	flag.Usage = func() {
-		fmt.Print("MySQL BackupDatabase and Restoration tool. BackupDatabase database to AWS S3 storage or any S3 Alternatives for Object Storage.\n\n")
+		fmt.Print("MySQL  Database backup and restoration tool. Backup database to AWS S3 storage or any S3 Alternatives for Object Storage.\n\n")
 		fmt.Print("Usage: bkup --operation backup -storage s3 --dbname databasename --path /my_path ...\n")
 		fmt.Print("       bkup -o backup -d databasename --disable-compression ...\n")
-		fmt.Print("       RestoreDatabase: bkup -o restore -d databasename -f db_20231217_051339.sql.gz ...\n\n")
+		fmt.Print("       Restore: bkup -o restore -d databasename -f db_20231217_051339.sql.gz ...\n\n")
 		flag.PrintDefaults()
 	}
 
@@ -86,7 +85,7 @@ func init() {
 	}
 	if *versionFlag {
 		startBackup = false
-		version()
+		cmd.Version()
 		os.Exit(0)
 	}
 	if *dbnameFlag != "" {
@@ -137,13 +136,7 @@ func init() {
 
 }
 
-func version() {
-	fmt.Printf("Version: %s \n", appVersion)
-	fmt.Print()
-}
 func main() {
-	//cmd.Execute()
-
 	err := os.Setenv("STORAGE_PATH", storagePath)
 	if err != nil {
 		return
@@ -159,18 +152,18 @@ func start() {
 	if executionMode == "default" {
 		if operation != "backup" {
 			if storage != "s3" {
-				utils.Info("RestoreDatabase from local")
+				utils.Info("Restore database from local")
 				pkg.RestoreDatabase(file)
 			} else {
-				utils.Info("RestoreDatabase from s3")
+				utils.Info("Restore database from s3")
 				s3Restore()
 			}
 		} else {
 			if storage != "s3" {
-				utils.Info("BackupDatabase to local storage")
+				utils.Info("Backup database to local storage")
 				pkg.BackupDatabase(disableCompression)
 			} else {
-				utils.Info("BackupDatabase to s3 storage")
+				utils.Info("Backup database to s3 storage")
 				s3Backup()
 			}
 		}
@@ -206,6 +199,7 @@ func scheduledMode() {
 		utils.Info("Creating backup job...")
 		pkg.CreateCrontabScript(disableCompression, storage)
 
+		//Start Supervisor
 		supervisordCmd := exec.Command("supervisord", "-c", "/etc/supervisor/supervisord.conf")
 		if err := supervisordCmd.Run(); err != nil {
 			utils.Fatalf("Error starting supervisord: %v\n", err)

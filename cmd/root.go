@@ -14,7 +14,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "mysql-bkup",
 	Short: "MySQL Backup tool, backup database to S3 or Object Storage",
-	Long:  `MySQL Backup and Restoration tool. Backup database to AWS S3 storage or any S3 Alternatives for Object Storage.`,
+	Long:  `MySQL Database backup and restoration tool. Backup database to AWS S3 storage or any S3 Alternatives for Object Storage.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -50,5 +50,5 @@ func init() {
 	rootCmd.PersistentFlags().IntP("port", "p", 3306, "Set database port")
 	rootCmd.PersistentFlags().BoolP("help", "h", false, "Print this help message")
 	rootCmd.PersistentFlags().BoolP("version", "v", false, "shows version information")
-
+	rootCmd.AddCommand(VersionCmd)
 }
