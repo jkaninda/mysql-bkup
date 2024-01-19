@@ -19,10 +19,6 @@ func Info(v ...any) {
 func Done(v ...any) {
 	fmt.Println("✔ ", fmt.Sprint(v...))
 }
-func Warning(v ...any) {
-	fmt.Println("[Warning: ] ", fmt.Sprint(v...))
-}
-
 func Fatal(v ...any) {
 	fmt.Println("✘ ", fmt.Sprint(v...))
 	os.Exit(1)

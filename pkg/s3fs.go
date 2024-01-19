@@ -44,6 +44,8 @@ func MountS3Storage(s3Path string) {
 		}
 		//Change file permission
 		utils.ChangePermission(s3fsPasswdFile, 0600)
+
+		//Mount object storage
 		utils.Info("Mounting Object storage in", s3MountPath)
 		if isEmpty, _ := utils.IsDirEmpty(s3MountPath); isEmpty {
 			cmd := exec.Command("s3fs", bucketName, s3MountPath,
