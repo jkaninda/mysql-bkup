@@ -43,7 +43,7 @@ MySQL Backup and Restoration tool. Backup database to AWS S3 storage or any S3 A
 | mysql-bkup            | bkup   | CLI utility                                                        |
 | backup                |    | Backup database operation                                          |
 | restore               |    | Restore database operation                                         |
-| --operation           | -o     | Set operation. backup or restore (default: backup)                 |
+| history               |    | Show the history of backup                                      |
 | --storage             | -s     | Set storage. local or s3 (default: local)                          |
 | --file                | -f     | Set file name for restoration                                      |
 | --path                |      | Set s3 path without file name. eg: /custom_path                    |
