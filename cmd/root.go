@@ -5,20 +5,32 @@ Copyright © 2024 Jonas Kaninda  <jonaskaninda@gmail.com>
 package cmd
 
 import (
-	"os"
-
+	"fmt"
+	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "mysql-bkup",
-	Short: "MySQL Backup tool, backup database to S3 or Object Storage",
-	Long:  `MySQL Database backup and restoration tool. Backup database to AWS S3 storage or any S3 Alternatives for Object Storage.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Use:     "mysql-bkup [Command]",
+	Short:   "MySQL Backup tool, backup database to S3 or Object Storage",
+	Long:    `MySQL Database backup and restoration tool. Backup database to AWS S3 storage or any S3 Alternatives for Object Storage.`,
+	Example: utils.MainExample,
+	Version: appVersion,
+	//TODO: To remove
+	//For old user || To remove
+	Run: func(cmd *cobra.Command, args []string) {
+		if operation != "" {
+			if operation == "backup" || operation == "restore" {
+				fmt.Println(utils.Notice)
+				utils.Fatal("New config required, please check --help")
+			}
+		}
+	},
 }
+var operation = ""
+var s3Path = "/mysql-bkup"
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -30,22 +42,16 @@ func Execute() {
 }
 
 func init() {
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mysql-bkup.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.PersistentFlags().StringP("operation", "o", "backup", "Set operation")
 	rootCmd.PersistentFlags().StringP("storage", "s", "local", "Set storage. local or s3")
-	rootCmd.PersistentFlags().StringP("file", "f", "", "Set file name")
-	rootCmd.PersistentFlags().StringP("path", "P", "/mysql-bkup", "Set s3 path, without file name")
+	rootCmd.PersistentFlags().StringP("path", "P", s3Path, "Set s3 path, without file name. for S3 storage only")
 	rootCmd.PersistentFlags().StringP("dbname", "d", "", "Set database name")
-	rootCmd.PersistentFlags().StringP("mode", "m", "default", "Set execution mode. default or scheduled")
-	rootCmd.PersistentFlags().StringP("period", "", "0 1 * * *", "Set schedule period time")
 	rootCmd.PersistentFlags().IntP("timeout", "t", 30, "Set timeout")
-	rootCmd.PersistentFlags().BoolP("disable-compression", "", false, "Disable backup compression")
 	rootCmd.PersistentFlags().IntP("port", "p", 3306, "Set database port")
-	rootCmd.PersistentFlags().BoolP("help", "h", false, "Print this help message")
-	rootCmd.PersistentFlags().BoolP("version", "v", false, "shows version information")
+	rootCmd.PersistentFlags().StringVarP(&operation, "operation", "o", "", "Set operation, for old version only")
+
 	rootCmd.AddCommand(VersionCmd)
+	rootCmd.AddCommand(BackupCmd)
+	rootCmd.AddCommand(RestoreCmd)
+	rootCmd.AddCommand(S3MountCmd)
+	rootCmd.AddCommand(HistoryCmd)
 }

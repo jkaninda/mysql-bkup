@@ -38,21 +38,23 @@ MySQL Backup and Restoration tool. Backup database to AWS S3 storage or any S3 A
 
 ## Usage
 
-| Options               | Shorts | Usage                              |
-|-----------------------|--------|------------------------------------|
-| mysql-bkup            | bkup   | CLI utility                    |
-| --operation           | -o     | Set operation. backup or restore (default: backup)    |
-| --storage             | -s     | Set storage. local or s3 (default: local)        |
-| --file                | -f     | Set file name for restoration      |
-| --path                |      | Set s3 path without file name. eg: /custom_path      |
-| --dbname              | -d     | Set database name      |
-| --port                | -p     | Set database port (default: 3306)      |
+| Options               | Shorts | Usage                                                              |
+|-----------------------|--------|--------------------------------------------------------------------|
+| mysql-bkup            | bkup   | CLI utility                                                        |
+| backup                |    | Backup database operation                                          |
+| restore               |    | Restore database operation                                         |
+| --operation           | -o     | Set operation. backup or restore (default: backup)                 |
+| --storage             | -s     | Set storage. local or s3 (default: local)                          |
+| --file                | -f     | Set file name for restoration                                      |
+| --path                |      | Set s3 path without file name. eg: /custom_path                    |
+| --dbname              | -d     | Set database name                                                  |
+| --port                | -p     | Set database port (default: 3306)                                  |
 | --mode                | -m     | Set execution mode. default or scheduled (default: default)        |
-| --disable-compression |      | Disable database backup compression       |
-| --period              |      | Set crontab period for scheduled mode only. (default: "0 1 * * *")        |
-| --timeout             | -t     | Set timeout (default: 60s)        |
-| --help                | -h     | Print this help message and exit   |
-| --version             | -V     | Print version information and exit |
+| --disable-compression |      | Disable database backup compression                                |
+| --period              |      | Set crontab period for scheduled mode only. (default: "0 1 * * *") |
+| --timeout             | -t     | Set timeout (default: 60s)                                         |
+| --help                | -h     | Print this help message and exit                                   |
+| --version             | -V     | Print version information and exit                                 |
 
 ## Note:
 
@@ -81,20 +83,20 @@ FLUSH PRIVILEGES;
 Simple backup usage
 
 ```sh
-bkup --operation backup --dbname database_name
+bkup backup --dbname database_name
 ```
 ```sh
-bkup -o backup -d database_name
+bkup backup -d database_name
 ```
 ### S3
 
 ```sh
-bkup --operation backup --storage s3 --dbname database_name
+bkup backup --storage s3 --dbname database_name
 ```
 ## Docker run:
 
 ```sh
-docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup:latest  bkup -o backup -d database_name
+docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup:latest  bkup backup -d database_name
 ```
 
 ## Docker compose file:
@@ -115,7 +117,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - bkup --operation backup -d database_name
+      - bkup backup -d database_name
     volumes:
       - ./backup:/backup
     environment:
@@ -129,22 +131,22 @@ services:
 Simple database restore operation usage
 
 ```sh
-bkup --operation restore --dbname database_name --file database_20231217_115621.sql
+bkup restore --dbname database_name --file database_20231217_115621.sql
 ```
 
 ```sh
-bkup -o restore -f database_20231217_115621.sql 
+bkup restore -f database_20231217_115621.sql 
 ```
 ### S3
 
 ```sh
-bkup --operation restore --storage s3 --file database_20231217_115621.sql 
+bkup restore --storage s3 --file database_20231217_115621.sql 
 ```
 
 ## Docker run:
 
 ```sh
-docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup  bkup -o backup -d database_name -f mydb_20231219_022941.sql.gz
+docker run --rm --network your_network_name --name mysql-bkup -v $PWD/backup:/backup/ -e "DB_HOST=database_host_name" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" jkaninda/mysql-bkup  bkup backup -d database_name -f db_20231219_022941.sql.gz
 ```
 
 ## Docker compose file:
@@ -166,7 +168,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - bkup --operation restore --file database_20231217_115621.sql --dbname database_name
+      - bkup restore --file database_20231217_115621.sql --dbname database_name
     volumes:
       - ./backup:/backup
     environment:
@@ -185,14 +187,14 @@ docker-compose up -d
 ## Backup to S3
 
 ```sh
-docker run --rm --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=db_hostname" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" -e "ACCESS_KEY=your_access_key" -e "SECRET_KEY=your_secret_key" -e "BUCKETNAME=your_bucket_name" -e "S3_ENDPOINT=https://s3.us-west-2.amazonaws.com" jkaninda/mysql-bkup  bkup -o backup -s s3 -d database_name
+docker run --rm --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=db_hostname" -e "DB_USERNAME=username" -e "DB_PASSWORD=password" -e "ACCESS_KEY=your_access_key" -e "SECRET_KEY=your_secret_key" -e "BUCKETNAME=your_bucket_name" -e "S3_ENDPOINT=https://s3.us-west-2.amazonaws.com" jkaninda/mysql-bkup  bkup backup -s s3 -d database_name
 ```
 > To change s3 backup path add this flag : --path /myPath . default path is /mysql_bkup
 
 Simple S3 backup usage
 
 ```sh
-bkup --operation backup --storage s3 --dbname mydatabase 
+bkup backup --storage s3 --dbname mydatabase 
 ```
 ```yaml
 version: '3'
@@ -206,7 +208,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - mysql-bkup --operation restore --storage s3 -f database_20231217_115621.sql.gz
+      - mysql-bkup restore --storage s3 -f database_20231217_115621.sql.gz
     environment:
       - DB_PORT=3306
       - DB_HOST=mysql
@@ -273,7 +275,7 @@ Easy to remember format:
 > Docker run :
 
 ```sh
-docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" -e "DB_USERNAME=$DB_USERNAME" -e "DB_PASSWORD=$DB_PASSWORD" jkaninda/mysql-bkup  bkup --operation backup --dbname $DB_NAME --mode scheduled --period "0 1 * * *"
+docker run --rm --name mysql-bkup -v $BACKUP_DIR:/backup/ -e "DB_HOST=$DB_HOST" -e "DB_USERNAME=$DB_USERNAME" -e "DB_PASSWORD=$DB_PASSWORD" jkaninda/mysql-bkup  bkup backup --dbname $DB_NAME --mode scheduled --period "0 1 * * *"
 ```
 
 > With Docker compose
@@ -290,7 +292,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - bkup --operation backup --storage s3 --path /mys3_custome_path --dbname database_name --mode scheduled --period "*/30 * * * *"
+      - bkup backup --storage s3 --path /mys3_custome_path --dbname database_name --mode scheduled --period "*/30 * * * *"
     environment:
       - DB_PORT=3306
       - DB_HOST=mysqlhost
@@ -327,7 +329,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - bkup -o backup -s s3 --path /custom_path
+            - bkup backup -s s3 --path /custom_path
             env:
               - name: DB_PORT
                 value: "3306" 
