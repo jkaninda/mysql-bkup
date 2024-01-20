@@ -52,6 +52,7 @@ func init() {
 	rootCmd.PersistentFlags().StringP("mode", "m", "default", "Set execution mode. default or scheduled")
 	rootCmd.PersistentFlags().StringP("period", "", "0 1 * * *", "Set schedule period time")
 	rootCmd.PersistentFlags().BoolP("disable-compression", "", false, "Disable backup compression")
+	rootCmd.PersistentFlags().StringP("file", "f", "", "File name of database")
 
 	rootCmd.AddCommand(VersionCmd)
 	rootCmd.AddCommand(BackupCmd)
