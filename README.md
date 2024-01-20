@@ -38,21 +38,21 @@ MySQL Backup and Restoration tool. Backup database to AWS S3 storage or any S3 A
 
 ## Usage
 
-| Options       | Shorts | Usage                              |
-|---------------|--------|------------------------------------|
-| mysql_bkup    | bkup   | CLI utility                    |
-| --operation   | -o     | Set operation. backup or restore (default: backup)    |
-| --storage      | -s     | Set storage. local or s3 (default: local)        |
-| --file        | -f     | Set file name for restoration      |
-| --path        |      | Set s3 path without file name. eg: /custom_path      |
-| --dbname        | -d     | Set database name      |
-| --port        | -p     | Set database port (default: 3306)      |
-| --mode     | -m     | Set execution mode. default or scheduled (default: default)        |
-| --disable-compression     |      | Disable database backup compression       |
-| --period     |      | Set crontab period for scheduled mode only. (default: "0 1 * * *")        |
-| --timeout     | -t     | Set timeout (default: 60s)        |
-| --help        | -h     | Print this help message and exit   |
-| --version     | -V     | Print version information and exit |
+| Options               | Shorts | Usage                              |
+|-----------------------|--------|------------------------------------|
+| mysql-bkup            | bkup   | CLI utility                    |
+| --operation           | -o     | Set operation. backup or restore (default: backup)    |
+| --storage             | -s     | Set storage. local or s3 (default: local)        |
+| --file                | -f     | Set file name for restoration      |
+| --path                |      | Set s3 path without file name. eg: /custom_path      |
+| --dbname              | -d     | Set database name      |
+| --port                | -p     | Set database port (default: 3306)      |
+| --mode                | -m     | Set execution mode. default or scheduled (default: default)        |
+| --disable-compression |      | Disable database backup compression       |
+| --period              |      | Set crontab period for scheduled mode only. (default: "0 1 * * *")        |
+| --timeout             | -t     | Set timeout (default: 60s)        |
+| --help                | -h     | Print this help message and exit   |
+| --version             | -V     | Print version information and exit |
 
 ## Note:
 
@@ -206,7 +206,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - mysql_bkup --operation restore --storage s3 -f database_20231217_115621.sql.gz
+      - mysql-bkup --operation restore --storage s3 -f database_20231217_115621.sql.gz
     environment:
       - DB_PORT=3306
       - DB_HOST=mysql

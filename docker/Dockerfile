@@ -40,6 +40,8 @@ COPY --from=build /app/mysql-bkup /usr/local/bin/mysql-bkup
 RUN chmod +x /usr/local/bin/mysql-bkup
 
 RUN ln -s /usr/local/bin/mysql-bkup /usr/local/bin/bkup
+RUN ln -s /usr/local/bin/mysql-bkup /usr/local/bin/mysql_bkup
+
 
 ADD docker/supervisord.conf /etc/supervisor/supervisord.conf
 
