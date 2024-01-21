@@ -41,20 +41,36 @@ MySQL Backup and Restoration tool. Backup database to AWS S3 storage or any S3 A
 | Options               | Shorts | Usage                                                              |
 |-----------------------|--------|--------------------------------------------------------------------|
 | mysql-bkup            | bkup   | CLI utility                                                        |
-| backup                |    | Backup database operation                                          |
-| restore               |    | Restore database operation                                         |
-| history               |    | Show the history of backup                                      |
+| backup                |        | Backup database operation                                          |
+| restore               |        | Restore database operation                                         |
+| history               |        | Show the history of backup                                         |
 | --storage             | -s     | Set storage. local or s3 (default: local)                          |
 | --file                | -f     | Set file name for restoration                                      |
-| --path                |      | Set s3 path without file name. eg: /custom_path                    |
+| --path                |        | Set s3 path without file name. eg: /custom_path                    |
 | --dbname              | -d     | Set database name                                                  |
 | --port                | -p     | Set database port (default: 3306)                                  |
 | --mode                | -m     | Set execution mode. default or scheduled (default: default)        |
-| --disable-compression |      | Disable database backup compression                                |
-| --period              |      | Set crontab period for scheduled mode only. (default: "0 1 * * *") |
+| --disable-compression |        | Disable database backup compression                                |
+| --period              |        | Set crontab period for scheduled mode only. (default: "0 1 * * *") |
 | --timeout             | -t     | Set timeout (default: 60s)                                         |
 | --help                | -h     | Print this help message and exit                                   |
 | --version             | -V     | Print version information and exit                                 |
+
+
+## Environment variables
+
+| Name        | Requirement                                      | Description          |
+|-------------|--------------------------------------------------|----------------------|
+| DB_PORT     | Optional, default 3306                           | Database port number |
+| DB_HOST     | Required                                         | Database host        |
+| DB_NAME     | Optional if it was provided from the -d flag     | Database name        |
+| DB_USERNAME | Required                                         | Database user name   |
+| DB_PASSWORD | Required                                         | Database password    |
+| ACCESS_KEY  | Optional, required for S3 storage                | AWS S3 Access Key    |
+| SECRET_KEY  | Optional, required for S3 storage                | AWS S3 Secret Key    |
+| BUCKET_NAME | Optional, required for S3 storage                | AWS S3 Bucket Name   |
+| S3_ENDPOINT | Optional, required for S3 storage                | AWS S3 Endpoint      |
+| FILE_NAME   | Optional if it was provided from the --file flag | File to restore      |
 
 ## Note:
 
@@ -217,7 +233,7 @@ services:
       - DB_PASSWORD=password
       - ACCESS_KEY=${ACCESS_KEY}
       - SECRET_KEY=${SECRET_KEY}
-      - BUCKETNAME=${BUCKETNAME}
+      - BUCKET_NAME=${BUCKET_NAME}
       - S3_ENDPOINT=${S3_ENDPOINT}
 
 ```
@@ -300,7 +316,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - ACCESS_KEY=${ACCESS_KEY}
       - SECRET_KEY=${SECRET_KEY}
-      - BUCKETNAME=${BUCKETNAME}
+      - BUCKET_NAME=${BUCKET_NAME}
       - S3_ENDPOINT=${S3_ENDPOINT}
 ```
 
@@ -346,7 +362,7 @@ spec:
                 value: ""
               - name: SECRET_KEY
                 value: ""
-              - name: BUCKETNAME
+              - name: BUCKET_NAME
                 value: ""
               - name: S3_ENDPOINT
                 value: "https://s3.us-west-2.amazonaws.com"
