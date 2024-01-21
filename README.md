@@ -66,10 +66,10 @@ MySQL Backup and Restoration tool. Backup database to AWS S3 storage or any S3 A
 | DB_NAME     | Optional if it was provided from the -d flag     | Database name        |
 | DB_USERNAME | Required                                         | Database user name   |
 | DB_PASSWORD | Required                                         | Database password    |
-| ACCESS_KEY  | Optional                                         | AWS S3 Access Key    |
-| SECRET_KEY  | Optional                                         | AWS S3 Secret Key    |
-| BUCKET_NAME | Optional                                         | AWS S3 Bucket Name   |
-| S3_ENDPOINT | Optional                                         | AWS S3 Endpoint      |
+| ACCESS_KEY  | Optional, required for S3 storage                | AWS S3 Access Key    |
+| SECRET_KEY  | Optional, required for S3 storage                | AWS S3 Secret Key    |
+| BUCKET_NAME | Optional, required for S3 storage                | AWS S3 Bucket Name   |
+| S3_ENDPOINT | Optional, required for S3 storage                | AWS S3 Endpoint      |
 | FILE_NAME   | Optional if it was provided from the --file flag | File to restore      |
 
 ## Note:
