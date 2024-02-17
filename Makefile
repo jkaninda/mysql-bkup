@@ -17,11 +17,11 @@ docker-build:
 	docker build -f docker/Dockerfile  -t jkaninda/mysql-bkup:latest .
 
 docker-run: docker-build
-	docker run --rm --network internal --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=${DB_HOST}" -e "DB_NAME=${DB_NAME}" -e "DB_USERNAME=${DB_USERNAME}" -e "DB_PASSWORD=${DB_PASSWORD}" jkaninda/mysql-bkup  bkup backup
+	docker run --rm --network internal --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=${DB_HOST}" -e "DB_NAME=${DB_NAME}" -e "DB_USERNAME=${DB_USERNAME}" -e "DB_PASSWORD=${DB_PASSWORD}" jkaninda/mysql-bkup  bkup backup --prune --keep-last 2
 
 
 docker-run-scheduled: docker-build
-	docker run --rm --network internal --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=${DB_HOST}" -e "DB_NAME=${DB_NAME}" -e "DB_USERNAME=${DB_USERNAME}" -e "DB_PASSWORD=${DB_PASSWORD}" jkaninda/mysql-bkup  bkup backup --mode scheduled --period "* * * * *"
+	docker run --rm --network internal --privileged --device /dev/fuse --name mysql-bkup -e "DB_HOST=${DB_HOST}" -e "DB_NAME=${DB_NAME}" -e "DB_USERNAME=${DB_USERNAME}" -e "DB_PASSWORD=${DB_PASSWORD}" -v "./backup:/backup"  jkaninda/mysql-bkup  bkup backup --prune --keep-last=2 --mode scheduled --period "* * * * *"
 
 
 docker-run-scheduled-s3: docker-build

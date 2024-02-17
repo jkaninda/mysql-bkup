@@ -11,12 +11,11 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 )
 
 func StartBackup(cmd *cobra.Command) {
-	_, _ = cmd.Flags().GetString("operation")
-
 	//Set env
 	utils.SetEnv("STORAGE_PATH", storagePath)
 	utils.GetEnv(cmd, "dbname", "DB_NAME")
@@ -28,15 +27,17 @@ func StartBackup(cmd *cobra.Command) {
 	storage = utils.GetEnv(cmd, "storage", "STORAGE")
 	file = utils.GetEnv(cmd, "file", "FILE_NAME")
 	disableCompression, _ = cmd.Flags().GetBool("disable-compression")
+	keepLast, _ := cmd.Flags().GetInt("keep-last")
+	prune, _ := cmd.Flags().GetBool("prune")
 	executionMode, _ = cmd.Flags().GetString("mode")
 
 	if executionMode == "default" {
 		if storage == "s3" {
 			utils.Info("Backup database to s3 storage")
-			s3Backup(disableCompression, s3Path)
+			s3Backup(disableCompression, s3Path, prune, keepLast)
 		} else {
 			utils.Info("Backup database to local storage")
-			BackupDatabase(disableCompression)
+			BackupDatabase(disableCompression, prune, keepLast)
 
 		}
 	} else if executionMode == "scheduled" {
@@ -72,7 +73,7 @@ func scheduledMode() {
 }
 
 // BackupDatabase backup database
-func BackupDatabase(disableCompression bool) {
+func BackupDatabase(disableCompression bool, prune bool, keepLast int) {
 	dbHost = os.Getenv("DB_HOST")
 	dbPassword := os.Getenv("DB_PASSWORD")
 	dbUserName := os.Getenv("DB_USERNAME")
@@ -141,6 +142,14 @@ func BackupDatabase(disableCompression bool) {
 			}
 			utils.Done("Database has been backed up")
 
+			utils.Info(keepLast)
+			utils.Info(prune)
+
+			//Delete old backup
+			if prune {
+				cleanBackup(keepLast)
+			}
+
 		}
 
 		historyFile, err := os.OpenFile(fmt.Sprintf("%s/history.txt", storagePath), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -155,8 +164,40 @@ func BackupDatabase(disableCompression bool) {
 
 }
 
-func s3Backup(disableCompression bool, s3Path string) {
+func s3Backup(disableCompression bool, s3Path string, prune bool, keepLast int) {
 	// Backup Database to S3 storage
 	MountS3Storage(s3Path)
-	BackupDatabase(disableCompression)
+	BackupDatabase(disableCompression, prune, keepLast)
+}
+
+func cleanBackup(keepLast int) {
+	utils.Info("Deleting old backups...")
+	storagePath = os.Getenv("STORAGE_PATH")
+	// Define the directory path
+	backupDir := storagePath + "/"
+	// Get current time
+	currentTime := time.Now()
+	// Walk through files in the directory
+	err := filepath.Walk(backupDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		// Check if the file is older than defined day days
+		if info.Mode().IsRegular() && info.ModTime().Before(currentTime.AddDate(0, 0, -keepLast)) {
+			//if info.Mode().IsRegular() && info.ModTime().Before(currentTime.Add(+2*time.Minute)) {
+			// Remove the file
+			err := os.Remove(path)
+			if err != nil {
+				utils.Fatal("Error removing file ", path, err)
+			} else {
+				utils.Done("Removed file: ", path)
+			}
+		}
+		return nil
+	})
+
+	if err != nil {
+		utils.Fatal("Error walking through directory: ", err)
+	}
+
 }
