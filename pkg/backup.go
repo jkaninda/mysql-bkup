@@ -141,13 +141,9 @@ func BackupDatabase(disableCompression bool, prune bool, keepLast int) {
 				log.Fatal(err)
 			}
 			utils.Done("Database has been backed up")
-
-			utils.Info(keepLast)
-			utils.Info(prune)
-
 			//Delete old backup
 			if prune {
-				cleanBackup(keepLast)
+				deleteOldBackup(keepLast)
 			}
 
 		}
@@ -170,7 +166,7 @@ func s3Backup(disableCompression bool, s3Path string, prune bool, keepLast int) 
 	BackupDatabase(disableCompression, prune, keepLast)
 }
 
-func cleanBackup(keepLast int) {
+func deleteOldBackup(keepLast int) {
 	utils.Info("Deleting old backups...")
 	storagePath = os.Getenv("STORAGE_PATH")
 	// Define the directory path
@@ -184,7 +180,6 @@ func cleanBackup(keepLast int) {
 		}
 		// Check if the file is older than defined day days
 		if info.Mode().IsRegular() && info.ModTime().Before(currentTime.AddDate(0, 0, -keepLast)) {
-			//if info.Mode().IsRegular() && info.ModTime().Before(currentTime.Add(+2*time.Minute)) {
 			// Remove the file
 			err := os.Remove(path)
 			if err != nil {
