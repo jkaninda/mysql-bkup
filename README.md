@@ -38,25 +38,25 @@ MySQL Backup and Restoration tool. Backup database to AWS S3 storage or any S3 A
 
 ## Usage
 
-| Options               | Shorts | Usage                                                                 |
-|-----------------------|--------|-----------------------------------------------------------------------|
-| mysql-bkup            | bkup   | CLI utility                                                           |
-| backup                |        | Backup database operation                                             |
-| restore               |        | Restore database operation                                            |
-| history               |        | Show the history of backup                                            |
-| --storage             | -s     | Set storage. local or s3 (default: local)                             |
-| --file                | -f     | Set file name for restoration                                         |
-| --path                |        | Set s3 path without file name. eg: /custom_path                       |
-| --dbname              | -d     | Set database name                                                     |
-| --port                | -p     | Set database port (default: 3306)                                     |
-| --mode                | -m     | Set execution mode. default or scheduled (default: default)           |
-| --disable-compression |        | Disable database backup compression                                   |
-| --prune               |        | Delete old backup                                                     |
-| --keep-last           |        | keep all backup and delete within this time interval, default 7 days  |
-| --period              |        | Set crontab period for scheduled mode only. (default: "0 1 * * *")    |
-| --timeout             | -t     | Set timeout (default: 60s)                                            |
-| --help                | -h     | Print this help message and exit                                      |
-| --version             | -V     | Print version information and exit                                    |
+| Options               | Shorts | Usage                                                              |
+|-----------------------|--------|--------------------------------------------------------------------|
+| mysql-bkup            | bkup   | CLI utility                                                        |
+| backup                |        | Backup database operation                                          |
+| restore               |        | Restore database operation                                         |
+| history               |        | Show the history of backup                                         |
+| --storage             | -s     | Set storage. local or s3 (default: local)                          |
+| --file                | -f     | Set file name for restoration                                      |
+| --path                |        | Set s3 path without file name. eg: /custom_path                    |
+| --dbname              | -d     | Set database name                                                  |
+| --port                | -p     | Set database port (default: 3306)                                  |
+| --mode                | -m     | Set execution mode. default or scheduled (default: default)        |
+| --disable-compression |        | Disable database backup compression                                |
+| --prune               |        | Delete old backup, default disabled                                |
+| --keep-last           |        | Delete files created more than specified days ago, default 7 days  |
+| --period              |        | Set crontab period for scheduled mode only. (default: "0 1 * * *") |
+| --timeout             | -t     | Set timeout (default: 60s)                                         |
+| --help                | -h     | Print this help message and exit                                   |
+| --version             | -V     | Print version information and exit                                 |
 
 
 ## Environment variables
