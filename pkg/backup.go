@@ -141,13 +141,12 @@ func BackupDatabase(disableCompression bool, prune bool, keepLast int) {
 				log.Fatal(err)
 			}
 			utils.Done("Database has been backed up")
-			//Delete old backup
-			if prune {
-				deleteOldBackup(keepLast)
-			}
-
 		}
 
+		//Delete old backup
+		if prune {
+			deleteOldBackup(keepLast)
+		}
 		historyFile, err := os.OpenFile(fmt.Sprintf("%s/history.txt", storagePath), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			log.Fatal(err)
@@ -179,7 +178,7 @@ func deleteOldBackup(keepLast int) {
 		if err != nil {
 			utils.Fatal("Error:", err)
 		} else {
-			utils.Done("File", filePath, "deleted successfully")
+			utils.Done("File ", filePath, " deleted successfully")
 		}
 		return err
 	}
