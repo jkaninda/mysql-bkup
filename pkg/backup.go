@@ -6,6 +6,7 @@ package pkg
 
 import (
 	"fmt"
+	"github.com/hpcloud/tail"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 	"log"
@@ -56,7 +57,6 @@ func scheduledMode() {
 	fmt.Println("     Starting MySQL Bkup...       ")
 	fmt.Println("***********************************")
 	utils.Info("Running in Scheduled mode")
-	utils.Info("Log file in /var/log/mysql-bkup.log")
 	utils.Info("Execution period ", os.Getenv("SCHEDULE_PERIOD"))
 
 	//Test database connexion
@@ -65,10 +65,33 @@ func scheduledMode() {
 	utils.Info("Creating backup job...")
 	CreateCrontabScript(disableCompression, storage)
 
-	//Start Supervisor
-	supervisordCmd := exec.Command("supervisord", "-c", "/etc/supervisor/supervisord.conf")
-	if err := supervisordCmd.Run(); err != nil {
-		utils.Fatalf("Error starting supervisord: %v\n", err)
+	supervisorConfig := "/etc/supervisor/supervisord.conf"
+
+	// Start Supervisor
+	cmd := exec.Command("supervisord", "-c", supervisorConfig)
+	err := cmd.Start()
+	if err != nil {
+		utils.Fatal("Failed to start supervisord: %v", err)
+	}
+	utils.Info("Starting backup job...")
+	defer func() {
+		if err := cmd.Process.Kill(); err != nil {
+			utils.Info("Failed to kill supervisord process: %v", err)
+		} else {
+			utils.Info("Supervisor stopped.")
+		}
+	}()
+	if _, err := os.Stat(cronLogFile); os.IsNotExist(err) {
+		utils.Fatal("Log file %s does not exist.", cronLogFile)
+	}
+	t, err := tail.TailFile(cronLogFile, tail.Config{Follow: true})
+	if err != nil {
+		utils.Fatalf("Failed to tail file: %v", err)
+	}
+
+	// Read and print new lines from the log file
+	for line := range t.Lines {
+		fmt.Println(line.Text)
 	}
 }
 
