@@ -11,6 +11,6 @@ services:
       - ./backup:/backup
     environment:
       - DB_PORT=3306
-      - DB_HOST=postgress
+      - DB_HOST=mysql
       - DB_USERNAME=userName
       - DB_PASSWORD=${DB_PASSWORD}

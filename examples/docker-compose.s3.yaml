@@ -12,7 +12,7 @@ services:
       - mysql-bkup backup --storage s3 -d my-database"
     environment:
       - DB_PORT=3306
-      - DB_HOST=postgres
+      - DB_HOST=mysql
       - DB_NAME=database
       - DB_USERNAME=username
       - DB_PASSWORD=password
