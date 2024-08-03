@@ -19,7 +19,6 @@ var rootCmd = &cobra.Command{
 	Version: appVersion,
 }
 var operation = ""
-var s3Path = "/mysql-bkup"
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -31,16 +30,13 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringP("storage", "s", "local", "Set storage. local or s3")
-	rootCmd.PersistentFlags().StringP("path", "P", s3Path, "Set s3 path, without file name. for S3 storage only")
-	rootCmd.PersistentFlags().StringP("dbname", "d", "", "Set database name")
-	rootCmd.PersistentFlags().IntP("timeout", "t", 30, "Set timeout")
-	rootCmd.PersistentFlags().IntP("port", "p", 3306, "Set database port")
+	rootCmd.PersistentFlags().StringP("storage", "s", "local", "Storage. local or s3")
+	rootCmd.PersistentFlags().StringP("path", "P", "", "AWS S3 path without file name. eg: /custom_path or ssh remote path `/home/foo/backup`")
+	rootCmd.PersistentFlags().StringP("dbname", "d", "", "Database name")
+	rootCmd.PersistentFlags().IntP("port", "p", 3306, "Database port")
 	rootCmd.PersistentFlags().StringVarP(&operation, "operation", "o", "", "Set operation, for old version only")
 
 	rootCmd.AddCommand(VersionCmd)
 	rootCmd.AddCommand(BackupCmd)
 	rootCmd.AddCommand(RestoreCmd)
-	rootCmd.AddCommand(S3MountCmd)
-	rootCmd.AddCommand(HistoryCmd)
 }
