@@ -21,7 +21,7 @@ func CopyToRemote(fileName, remotePath string) error {
 
 	err := utils.CheckEnvVars(sshHVars)
 	if err != nil {
-		utils.Error("Error checking environment variables\n: %s", err)
+		utils.Error("Error checking environment variables: %s", err)
 		os.Exit(1)
 	}
 
@@ -31,9 +31,9 @@ func CopyToRemote(fileName, remotePath string) error {
 
 	} else {
 		if sshPassword == "" {
-			return errors.New("SSH_PASSWORD environment variable is required if SSH_IDENTIFY_FILE is empty\n")
+			return errors.New("SSH_PASSWORD environment variable is required if SSH_IDENTIFY_FILE is empty")
 		}
-		utils.Warn("Accessing the remote server using password, password is not recommended\n")
+		utils.Warn("Accessing the remote server using password, password is not recommended")
 		clientConfig, _ = auth.PasswordKey(sshUser, sshPassword, ssh.InsecureIgnoreHostKey())
 
 	}
@@ -43,7 +43,7 @@ func CopyToRemote(fileName, remotePath string) error {
 	// Connect to the remote server
 	err = client.Connect()
 	if err != nil {
-		return errors.New("Couldn't establish a connection to the remote server\n")
+		return errors.New("Couldn't establish a connection to the remote server")
 	}
 
 	// Open a file
@@ -83,7 +83,7 @@ func CopyFromRemote(fileName, remotePath string) error {
 		if sshPassword == "" {
 			return errors.New("SSH_PASSWORD environment variable is required if SSH_IDENTIFY_FILE is empty\n")
 		}
-		utils.Warn("Accessing the remote server using password, password is not recommended\n")
+		utils.Warn("Accessing the remote server using password, password is not recommended")
 		clientConfig, _ = auth.PasswordKey(sshUser, sshPassword, ssh.InsecureIgnoreHostKey())
 
 	}

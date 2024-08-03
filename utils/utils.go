@@ -111,7 +111,7 @@ func TestDatabaseConnection() {
 		cmd.Stderr = &out
 		err := cmd.Run()
 		if err != nil {
-			Error(fmt.Sprintf("Error testing database connection: %v\nOutput: %s\n", err, out.String()))
+			Error("Error testing database connection: %v\nOutput: %s", err, out.String())
 			os.Exit(1)
 
 		}
@@ -157,7 +157,7 @@ func GetEnvVariable(envName, oldEnvName string) string {
 			if err != nil {
 				return value
 			}
-			Warn("%s is deprecated, please use %s instead!\n", oldEnvName, envName)
+			Warn("%s is deprecated, please use %s instead!", oldEnvName, envName)
 
 		}
 	}
