@@ -1,3 +1,20 @@
+---
+title: Restore database from AWS S3
+layout: default
+parent: How Tos
+nav_order: 5
+---
+
+# Restore database from S3 storage
+
+To restore the database, you need to add `restore` subcommand to `mysql-bkup` or `bkup` and specify the file to restore by adding `--file store_20231219_022941.sql.gz`.
+
+{: .note }
+It supports __.sql__ and __.sql.gz__ compressed file.
+
+### Restore
+
+```yml
 services:
   mysql-bkup:
     # In production, it is advised to lock your image tag to a proper
@@ -9,10 +26,12 @@ services:
     command:
       - /bin/sh
       - -c
-      - mysql-bkup backup --storage s3 -d my-database"
+      - mysql-bkup restore --storage s3 -d my-database -f store_20231219_022941.sql.gz --path /my-custom-path
+    volumes:
+      - ./backup:/backup
     environment:
       - DB_PORT=3306
-      - DB_HOST=postgres
+      - DB_HOST=mysql
       - DB_NAME=database
       - DB_USERNAME=username
       - DB_PASSWORD=password
@@ -24,8 +43,9 @@ services:
       - AWS_SECRET_KEY=xxxxx
       ## In case you are using S3 alternative such as Minio and your Minio instance is not secured, you change it to true
       - AWS_DISABLE_SSL="false"
-      # mysql-bkup container must be connected to the same network with your database
+    # mysql-bkup container must be connected to the same network with your database
     networks:
       - web
 networks:
   web:
+```

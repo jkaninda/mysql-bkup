@@ -17,6 +17,7 @@ import (
 )
 
 func StartBackup(cmd *cobra.Command) {
+	_, _ = cmd.Flags().GetString("operation")
 	//Set env
 	utils.SetEnv("STORAGE_PATH", storagePath)
 	utils.GetEnv(cmd, "dbname", "DB_NAME")
@@ -24,23 +25,41 @@ func StartBackup(cmd *cobra.Command) {
 	utils.GetEnv(cmd, "period", "SCHEDULE_PERIOD")
 
 	//Get flag value and set env
-	s3Path = utils.GetEnv(cmd, "path", "S3_PATH")
+	s3Path := utils.GetEnv(cmd, "path", "AWS_S3_PATH")
+	remotePath := utils.GetEnv(cmd, "path", "SSH_REMOTE_PATH")
 	storage = utils.GetEnv(cmd, "storage", "STORAGE")
 	file = utils.GetEnv(cmd, "file", "FILE_NAME")
-	disableCompression, _ = cmd.Flags().GetBool("disable-compression")
-	keepLast, _ := cmd.Flags().GetInt("keep-last")
+	backupRetention, _ := cmd.Flags().GetInt("keep-last")
 	prune, _ := cmd.Flags().GetBool("prune")
+	disableCompression, _ = cmd.Flags().GetBool("disable-compression")
 	executionMode, _ = cmd.Flags().GetString("mode")
+	dbName = os.Getenv("DB_NAME")
+	gpqPassphrase := os.Getenv("GPG_PASSPHRASE")
+	//
+	if gpqPassphrase != "" {
+		encryption = true
+	}
+
+	//Generate file name
+	backupFileName := fmt.Sprintf("%s_%s.sql.gz", dbName, time.Now().Format("20060102_150405"))
+	if disableCompression {
+		backupFileName = fmt.Sprintf("%s_%s.sql", dbName, time.Now().Format("20060102_150405"))
+	}
 
 	if executionMode == "default" {
-		if storage == "s3" {
-			utils.Info("Backup database to s3 storage")
-			s3Backup(disableCompression, s3Path, prune, keepLast)
-		} else {
-			utils.Info("Backup database to local storage")
-			BackupDatabase(disableCompression, prune, keepLast)
-
+		switch storage {
+		case "s3":
+			s3Backup(backupFileName, s3Path, disableCompression, prune, backupRetention, encryption)
+		case "local":
+			localBackup(backupFileName, disableCompression, prune, backupRetention, encryption)
+		case "ssh", "remote":
+			sshBackup(backupFileName, remotePath, disableCompression, prune, backupRetention, encryption)
+		case "ftp":
+			utils.Fatal("Not supported storage type: %s", storage)
+		default:
+			localBackup(backupFileName, disableCompression, prune, backupRetention, encryption)
 		}
+
 	} else if executionMode == "scheduled" {
 		scheduledMode()
 	} else {
@@ -71,9 +90,9 @@ func scheduledMode() {
 	cmd := exec.Command("supervisord", "-c", supervisorConfig)
 	err := cmd.Start()
 	if err != nil {
-		utils.Fatal("Failed to start supervisord: %v", err)
+		utils.Fatal(fmt.Sprintf("Failed to start supervisord: %v", err))
 	}
-	utils.Info("Starting backup job...")
+	utils.Info("Backup job started")
 	defer func() {
 		if err := cmd.Process.Kill(); err != nil {
 			utils.Info("Failed to kill supervisord process: %v", err)
@@ -82,11 +101,11 @@ func scheduledMode() {
 		}
 	}()
 	if _, err := os.Stat(cronLogFile); os.IsNotExist(err) {
-		utils.Fatal("Log file %s does not exist.", cronLogFile)
+		utils.Fatal(fmt.Sprintf("Log file %s does not exist.", cronLogFile))
 	}
 	t, err := tail.TailFile(cronLogFile, tail.Config{Follow: true})
 	if err != nil {
-		utils.Fatalf("Failed to tail file: %v", err)
+		utils.Fatal("Failed to tail file: %v", err)
 	}
 
 	// Read and print new lines from the log file
@@ -96,136 +115,171 @@ func scheduledMode() {
 }
 
 // BackupDatabase backup database
-func BackupDatabase(disableCompression bool, prune bool, keepLast int) {
+func BackupDatabase(backupFileName string, disableCompression bool) {
 	dbHost = os.Getenv("DB_HOST")
-	dbPassword := os.Getenv("DB_PASSWORD")
-	dbUserName := os.Getenv("DB_USERNAME")
+	dbPassword = os.Getenv("DB_PASSWORD")
+	dbUserName = os.Getenv("DB_USERNAME")
 	dbName = os.Getenv("DB_NAME")
 	dbPort = os.Getenv("DB_PORT")
 	storagePath = os.Getenv("STORAGE_PATH")
 
-	if os.Getenv("DB_HOST") == "" || os.Getenv("DB_NAME") == "" || os.Getenv("DB_USERNAME") == "" || os.Getenv("DB_PASSWORD") == "" {
-		utils.Fatal("Please make sure all required environment variables for database are set")
-	} else {
-		utils.TestDatabaseConnection()
-		// Backup Database database
-		utils.Info("Backing up database...")
-		//Generate file name
-		bkFileName := fmt.Sprintf("%s_%s.sql.gz", dbName, time.Now().Format("20060102_150405"))
-
-		// Verify is compression is disabled
-		if disableCompression {
-			//Generate file name
-			bkFileName = fmt.Sprintf("%s_%s.sql", dbName, time.Now().Format("20060102_150405"))
-			// Execute mysqldump
-			cmd := exec.Command("mysqldump",
-				"-h", dbHost,
-				"-P", dbPort,
-				"-u", dbUserName,
-				"--password="+dbPassword,
-				dbName,
-			)
-			output, err := cmd.Output()
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			// save output
-			file, err := os.Create(fmt.Sprintf("%s/%s", storagePath, bkFileName))
-			if err != nil {
-				log.Fatal(err)
-			}
-			defer file.Close()
-
-			_, err = file.Write(output)
-			if err != nil {
-				log.Fatal(err)
-			}
-			utils.Done("Database has been backed up")
-
-		} else {
-			// Execute mysqldump
-			cmd := exec.Command("mysqldump", "-h", dbHost, "-P", dbPort, "-u", dbUserName, "--password="+dbPassword, dbName)
-			stdout, err := cmd.StdoutPipe()
-			if err != nil {
-				log.Fatal(err)
-			}
-			gzipCmd := exec.Command("gzip")
-			gzipCmd.Stdin = stdout
-			gzipCmd.Stdout, err = os.Create(fmt.Sprintf("%s/%s", storagePath, bkFileName))
-			gzipCmd.Start()
-			if err != nil {
-				log.Fatal(err)
-			}
-			if err := cmd.Run(); err != nil {
-				log.Fatal(err)
-			}
-			if err := gzipCmd.Wait(); err != nil {
-				log.Fatal(err)
-			}
-			utils.Done("Database has been backed up")
-		}
-
-		//Delete old backup
-		if prune {
-			deleteOldBackup(keepLast)
-		}
-		historyFile, err := os.OpenFile(fmt.Sprintf("%s/history.txt", storagePath), os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer historyFile.Close()
-		if _, err := historyFile.WriteString(bkFileName + "\n"); err != nil {
-			log.Fatal(err)
-		}
+	// dbHVars Required environment variables for database
+	var dbHVars = []string{
+		"DB_HOST",
+		"DB_PASSWORD",
+		"DB_USERNAME",
+		"DB_NAME",
 	}
-
-}
-
-func s3Backup(disableCompression bool, s3Path string, prune bool, keepLast int) {
-	// Backup Database to S3 storage
-	MountS3Storage(s3Path)
-	BackupDatabase(disableCompression, prune, keepLast)
-}
-
-func deleteOldBackup(keepLast int) {
-	utils.Info("Deleting old backups...")
-	storagePath = os.Getenv("STORAGE_PATH")
-	// Define the directory path
-	backupDir := storagePath + "/"
-	// Get current time
-	currentTime := time.Now()
-	// Delete file
-	deleteFile := func(filePath string) error {
-		err := os.Remove(filePath)
-		if err != nil {
-			utils.Fatal("Error:", err)
-		} else {
-			utils.Done("File ", filePath, " deleted successfully")
-		}
-		return err
-	}
-
-	// Walk through the directory and delete files modified more than specified days ago
-	err := filepath.Walk(backupDir, func(filePath string, fileInfo os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		// Check if it's a regular file and if it was modified more than specified days ago
-		if fileInfo.Mode().IsRegular() {
-			timeDiff := currentTime.Sub(fileInfo.ModTime())
-			if timeDiff.Hours() > 24*float64(keepLast) {
-				err := deleteFile(filePath)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	})
-
+	err := utils.CheckEnvVars(dbHVars)
 	if err != nil {
-		utils.Fatal("Error:", err)
-		return
+		utils.Error("Please make sure all required environment variables for database are set")
+		utils.Fatal("Error checking environment variables: %s", err)
 	}
+
+	utils.Info("Starting database backup...")
+	utils.TestDatabaseConnection()
+
+	// Backup Database database
+	utils.Info("Backing up database...")
+
+	if disableCompression {
+		// Execute mysqldump
+		cmd := exec.Command("mysqldump",
+			"-h", dbHost,
+			"-P", dbPort,
+			"-u", dbUserName,
+			"--password="+dbPassword,
+			dbName,
+		)
+		output, err := cmd.Output()
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// save output
+		file, err := os.Create(fmt.Sprintf("%s/%s", tmpPath, backupFileName))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+
+		_, err = file.Write(output)
+		if err != nil {
+			log.Fatal(err)
+		}
+		utils.Done("Database has been backed up")
+
+	} else {
+		// Execute mysqldump
+		cmd := exec.Command("mysqldump", "-h", dbHost, "-P", dbPort, "-u", dbUserName, "--password="+dbPassword, dbName)
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			log.Fatal(err)
+		}
+		gzipCmd := exec.Command("gzip")
+		gzipCmd.Stdin = stdout
+		gzipCmd.Stdout, err = os.Create(fmt.Sprintf("%s/%s", tmpPath, backupFileName))
+		gzipCmd.Start()
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := cmd.Run(); err != nil {
+			log.Fatal(err)
+		}
+		if err := gzipCmd.Wait(); err != nil {
+			log.Fatal(err)
+		}
+		utils.Done("Database has been backed up")
+
+	}
+
+}
+func localBackup(backupFileName string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
+	utils.Info("Backup database to local storage")
+	BackupDatabase(backupFileName, disableCompression)
+	finalFileName := backupFileName
+	if encrypt {
+		encryptBackup(backupFileName)
+		finalFileName = fmt.Sprintf("%s.%s", backupFileName, gpgExtension)
+	}
+	utils.Info("Backup name is %s", finalFileName)
+	moveToBackup(finalFileName, storagePath)
+	//Delete old backup
+	if prune {
+		deleteOldBackup(backupRetention)
+	}
+}
+
+func s3Backup(backupFileName string, s3Path string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
+	bucket := utils.GetEnvVariable("AWS_S3_BUCKET_NAME", "BUCKET_NAME")
+	utils.Info("Backup database to s3 storage")
+	//Backup database
+	BackupDatabase(backupFileName, disableCompression)
+	finalFileName := backupFileName
+	if encrypt {
+		encryptBackup(backupFileName)
+		finalFileName = fmt.Sprintf("%s.%s", backupFileName, "gpg")
+	}
+	utils.Info("Uploading backup file to S3 storage...")
+	utils.Info("Backup name is %s", finalFileName)
+	err := utils.UploadFileToS3(tmpPath, finalFileName, bucket, s3Path)
+	if err != nil {
+		utils.Fatal("Error uploading file to S3: %s ", err)
+
+	}
+
+	//Delete backup file from tmp folder
+	err = utils.DeleteFile(filepath.Join(tmpPath, backupFileName))
+	if err != nil {
+		fmt.Println("Error deleting file: ", err)
+
+	}
+	// Delete old backup
+	if prune {
+		err := utils.DeleteOldBackup(bucket, s3Path, backupRetention)
+		if err != nil {
+			utils.Fatal("Error deleting old backup from S3: %s ", err)
+		}
+	}
+	utils.Done("Database has been backed up and uploaded to s3 ")
+}
+func sshBackup(backupFileName, remotePath string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
+	utils.Info("Backup database to Remote server")
+	//Backup database
+	BackupDatabase(backupFileName, disableCompression)
+	finalFileName := backupFileName
+	if encrypt {
+		encryptBackup(backupFileName)
+		finalFileName = fmt.Sprintf("%s.%s", backupFileName, "gpg")
+	}
+	utils.Info("Uploading backup file to remote server...")
+	utils.Info("Backup name is %s", finalFileName)
+	err := CopyToRemote(finalFileName, remotePath)
+	if err != nil {
+		utils.Fatal("Error uploading file to the remote server: %s ", err)
+
+	}
+
+	//Delete backup file from tmp folder
+	err = utils.DeleteFile(filepath.Join(tmpPath, finalFileName))
+	if err != nil {
+		fmt.Println("Error deleting file: ", err)
+
+	}
+	if prune {
+		//TODO: Delete old backup from remote server
+		utils.Info("Deleting old backup from a remote server is not implemented yet")
+
+	}
+
+	utils.Done("Database has been backed up and uploaded to remote server ")
+}
+
+func encryptBackup(backupFileName string) {
+	gpgPassphrase := os.Getenv("GPG_PASSPHRASE")
+	err := Encrypt(filepath.Join(tmpPath, backupFileName), gpgPassphrase)
+	if err != nil {
+		utils.Fatal("Error during encrypting backup %s", err)
+	}
+
 }
