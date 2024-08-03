@@ -1,7 +1,6 @@
 package pkg
 
 import (
-	"fmt"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"os"
 	"os/exec"
@@ -16,7 +15,6 @@ func Decrypt(inputFile string, passphrase string) error {
 
 	err := cmd.Run()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return err
 	}
 
@@ -32,7 +30,6 @@ func Encrypt(inputFile string, passphrase string) error {
 
 	err := cmd.Run()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		return err
 	}
 
