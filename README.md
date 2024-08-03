@@ -23,9 +23,9 @@ It also supports __encrypting__ your backups using GPG.
 - [Docker Hub](https://hub.docker.com/r/jkaninda/mysql-bkup)
 - [Github](https://github.com/jkaninda/mysql-bkup)
 
-## MySQL solution :
+## PostgreSQL solution :
 
-- [MySQL](https://github.com/jkaninda/mysql-bkup)
+- [PostgreSQL](https://github.com/jkaninda/pg-bkup)
 
 ## Storage:
 - Local
