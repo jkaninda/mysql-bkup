@@ -76,7 +76,7 @@ func scheduledMode() {
 	fmt.Println("     Starting MySQL Bkup...       ")
 	fmt.Println("***********************************")
 	utils.Info("Running in Scheduled mode")
-	utils.Info("Execution period ", os.Getenv("SCHEDULE_PERIOD"))
+	utils.Info("Execution period  %s", os.Getenv("SCHEDULE_PERIOD"))
 
 	//Test database connexion
 	utils.TestDatabaseConnection()
@@ -123,13 +123,6 @@ func BackupDatabase(backupFileName string, disableCompression bool) {
 	dbPort = os.Getenv("DB_PORT")
 	storagePath = os.Getenv("STORAGE_PATH")
 
-	// dbHVars Required environment variables for database
-	var dbHVars = []string{
-		"DB_HOST",
-		"DB_PASSWORD",
-		"DB_USERNAME",
-		"DB_NAME",
-	}
 	err := utils.CheckEnvVars(dbHVars)
 	if err != nil {
 		utils.Error("Please make sure all required environment variables for database are set")

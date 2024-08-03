@@ -10,50 +10,11 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/slog"
 	"io"
 	"io/fs"
 	"os"
 	"os/exec"
 )
-
-func Info(msg string, args ...any) {
-	if len(args) == 0 {
-		slog.Info(msg)
-	} else {
-		slog.Info(fmt.Sprintf(msg, args...))
-	}
-}
-func Worn(msg string, args ...any) {
-	if len(args) == 0 {
-		slog.Warn(msg)
-	} else {
-		slog.Warn(fmt.Sprintf(msg, args...))
-	}
-}
-func Error(msg string, args ...any) {
-	if len(args) == 0 {
-		slog.Error(msg)
-	} else {
-		slog.Error(fmt.Sprintf(msg, args...))
-	}
-}
-func Done(msg string, args ...any) {
-	if len(args) == 0 {
-		slog.Info(msg)
-	} else {
-		slog.Info(fmt.Sprintf(msg, args...))
-	}
-}
-func Fatal(msg string, args ...any) {
-	// Fatal logs an error message and exits the program.
-	if len(args) == 0 {
-		slog.Error(msg)
-	} else {
-		slog.Error(fmt.Sprintf(msg, args...))
-	}
-	os.Exit(1)
-}
 
 func FileExists(filename string) bool {
 	info, err := os.Stat(filename)
@@ -150,7 +111,7 @@ func TestDatabaseConnection() {
 		cmd.Stderr = &out
 		err := cmd.Run()
 		if err != nil {
-			slog.Error(fmt.Sprintf("Error testing database connection: %v\nOutput: %s\n", err, out.String()))
+			Error(fmt.Sprintf("Error testing database connection: %v\nOutput: %s\n", err, out.String()))
 			os.Exit(1)
 
 		}
@@ -196,7 +157,7 @@ func GetEnvVariable(envName, oldEnvName string) string {
 			if err != nil {
 				return value
 			}
-			Worn("%s is deprecated, please use %s instead!\n", oldEnvName, envName)
+			Warn("%s is deprecated, please use %s instead!\n", oldEnvName, envName)
 
 		}
 	}

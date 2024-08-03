@@ -68,13 +68,7 @@ func RestoreDatabase(file string) {
 	if file == "" {
 		utils.Fatal("Error, file required")
 	}
-	// dbHVars Required environment variables for database
-	var dbHVars = []string{
-		"DB_HOST",
-		"DB_PASSWORD",
-		"DB_USERNAME",
-		"DB_NAME",
-	}
+
 	err := utils.CheckEnvVars(dbHVars)
 	if err != nil {
 		utils.Error("Please make sure all required environment variables for database are set")
@@ -90,7 +84,7 @@ func RestoreDatabase(file string) {
 			//Decrypt file
 			err := Decrypt(filepath.Join(tmpPath, file), gpgPassphrase)
 			if err != nil {
-				utils.Fatal("Error decrypting file ", file, err)
+				utils.Fatal("Error decrypting file %s %v", file, err)
 			}
 			//Update file name
 			file = RemoveLastExtension(file)
@@ -99,11 +93,6 @@ func RestoreDatabase(file string) {
 	}
 
 	if utils.FileExists(fmt.Sprintf("%s/%s", tmpPath, file)) {
-
-		err := os.Setenv("mysqlPASSWORD", dbPassword)
-		if err != nil {
-			return
-		}
 		utils.TestDatabaseConnection()
 
 		extension := filepath.Ext(fmt.Sprintf("%s/%s", tmpPath, file))
@@ -112,7 +101,7 @@ func RestoreDatabase(file string) {
 			str := "zcat " + fmt.Sprintf("%s/%s", tmpPath, file) + " | mysql -h " + os.Getenv("DB_HOST") + " -P " + os.Getenv("DB_PORT") + " -u " + os.Getenv("DB_USERNAME") + " --password=" + os.Getenv("DB_PASSWORD") + " " + os.Getenv("DB_NAME")
 			_, err := exec.Command("bash", "-c", str).Output()
 			if err != nil {
-				utils.Fatal(fmt.Sprintf("Error, in restoring the database  %s", err))
+				utils.Fatal("Error, in restoring the database  %v", err)
 			}
 			utils.Done("Database has been restored")
 

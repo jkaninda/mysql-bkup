@@ -8,7 +8,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"golang.org/x/exp/slog"
 	"log"
 	"net/http"
 	"os"
@@ -43,7 +42,7 @@ func CreateSession() (*session.Session, error) {
 
 	err = CheckEnvVars(awsVars)
 	if err != nil {
-		slog.Error(fmt.Sprintf("Error checking environment variables\n: %s", err))
+		Error(fmt.Sprintf("Error checking environment variables\n: %s", err))
 		os.Exit(1)
 	}
 	// S3 Config

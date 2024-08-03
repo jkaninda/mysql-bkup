@@ -10,7 +10,6 @@ require (
 	github.com/hpcloud/tail v1.0.0
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/crypto v0.18.0
-	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 )
 
 require (
