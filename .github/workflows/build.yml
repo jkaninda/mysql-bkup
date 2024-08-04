@@ -3,7 +3,7 @@ on:
   push:
     branches: ['develop']
 env:
-  BUILDKIT_IMAGE: jkaninda/pg-bkup
+  BUILDKIT_IMAGE: jkaninda/mysql-bkup
 jobs:
   docker:
     runs-on: ubuntu-latest
