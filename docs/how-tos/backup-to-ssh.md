@@ -32,7 +32,7 @@ services:
     environment:
       - DB_PORT=3306
       - DB_HOST=mysql
-      - DB_NAME=database
+      #- DB_NAME=database
       - DB_USERNAME=username
       - DB_PASSWORD=password
       ## SSH config
@@ -69,7 +69,7 @@ services:
     command:
       - /bin/sh
       - -c
-      - mysql-bkup backup -d database --storage s3 --mode scheduled --period "0 1 * * *"
+      - mysql-bkup backup -d database --storage ssh --mode scheduled --period "0 1 * * *"
     volumes:
       - ./id_ed25519:/tmp/id_ed25519"
     environment:
@@ -117,7 +117,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - mysql-bkup backup -s s3 --path /custom_path
+            - mysql-bkup backup -s ssh
             env:
               - name: DB_PORT
                 value: "3306" 
@@ -141,6 +141,6 @@ spec:
               - name: AWS_ACCESS_KEY
                 value: "xxxx"        
               - name: SSH_IDENTIFY_FILE
-                value: "/home/jkaninda/backups"
-          restartPolicy: OnFailure
+                value: "/tmp/id_ed25519"
+          restartPolicy: Never
 ```
