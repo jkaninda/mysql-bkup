@@ -42,8 +42,7 @@ func CreateSession() (*session.Session, error) {
 
 	err = CheckEnvVars(awsVars)
 	if err != nil {
-		Error(fmt.Sprintf("Error checking environment variables\n: %s", err))
-		os.Exit(1)
+		Fatal("Error checking environment variables\n: %s", err)
 	}
 	// S3 Config
 	s3Config := &aws.Config{

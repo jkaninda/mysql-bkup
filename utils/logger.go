@@ -43,6 +43,7 @@ func Done(msg string, args ...any) {
 	}
 }
 
+// Fatal logs an error message and exits the program
 func Fatal(msg string, args ...any) {
 	// Fatal logs an error message and exits the program.
 	formattedMessage := fmt.Sprintf(msg, args...)
