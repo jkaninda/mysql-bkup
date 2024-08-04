@@ -21,7 +21,7 @@ In the old version, S3 storage was mounted using s3fs, so we decided to migrate 
 
 | Options               | Shorts | Usage                                                                  |
 |-----------------------|--------|------------------------------------------------------------------------|
-| mysql-bkup               | bkup   | CLI utility                                                            |
+| mysql-bkup            | bkup   | CLI utility                                                            |
 | backup                |        | Backup database operation                                              |
 | restore               |        | Restore database operation                                             |
 | history               |        | Show the history of backup                                             |
