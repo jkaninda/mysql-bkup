@@ -52,50 +52,47 @@ networks:
 
 ## Restore on Kubernetes
 
-
-### Simple Kubernetes CronJob usage:
+Simple Kubernetes restore Job:
 
 ```yaml
 apiVersion: batch/v1
-kind: CronJob
+kind: Job
 metadata:
-  name: bkup-job
+  name: restore-db
 spec:
-  schedule: "0 1 * * *"
-  jobTemplate:
+  template:
     spec:
-      template:
-        spec:
-          containers:
-          - name: mysql-bkup
-            image: jkaninda/mysql-bkup
-            command:
+      containers:
+        - name: mysql-bkup
+          image: jkaninda/mysql-bkup
+          command:
             - /bin/sh
             - -c
-            - mysql-bkup restore -s s3 --path /custom_path -f store_20231219_022941.sql.gz
-            env:
-              - name: DB_PORT
-                value: "3306" 
-              - name: DB_HOST
-                value: ""
-              - name: DB_NAME
-                value: ""
-              - name: DB_USERNAME
-                value: ""
-              # Please use secret!
-              - name: DB_PASSWORD
-                value: ""
-              - name: AWS_S3_ENDPOINT
-                value: "https://s3.amazonaws.com"
-              - name: AWS_S3_BUCKET_NAME
-                value: "xxx"
-              - name: AWS_REGION
-                value: "us-west-2"    
-              - name: AWS_ACCESS_KEY
-                value: "xxxx"        
-              - name: AWS_SECRET_KEY
-                value: "xxxx"    
-              - name: AWS_DISABLE_SSL
-                value: "false"
-          restartPolicy: OnFailure
+            - bkup restore -s s3 --path /custom_path -f store_20231219_022941.sql.gz
+          env:
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_HOST
+              value: ""
+            - name: DB_NAME
+              value: ""
+            - name: DB_USERNAME
+              value: ""
+            # Please use secret!
+            - name: DB_PASSWORD
+              value: ""
+            - name: AWS_S3_ENDPOINT
+              value: "https://s3.amazonaws.com"
+            - name: AWS_S3_BUCKET_NAME
+              value: "xxx"
+            - name: AWS_REGION
+              value: "us-west-2"
+            - name: AWS_ACCESS_KEY
+              value: "xxxx"
+            - name: AWS_SECRET_KEY
+              value: "xxxx"
+            - name: AWS_DISABLE_SSL
+              value: "false"
+      restartPolicy: Never
+  backoffLimit: 4
 ```
