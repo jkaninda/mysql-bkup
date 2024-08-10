@@ -62,10 +62,7 @@ services:
     # for a list of available releases.
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    command:
-      - /bin/sh
-      - -c
-      - mysql-bkup backup
+    command: backup
     volumes:
       - ./backup:/backup
     environment:
