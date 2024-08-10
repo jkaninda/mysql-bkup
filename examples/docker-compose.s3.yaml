@@ -6,10 +6,7 @@ services:
     # for a list of available releases.
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    command:
-      - /bin/sh
-      - -c
-      - mysql-bkup backup --storage s3 -d my-database"
+    command: backup --storage s3 -d my-database"
     environment:
       - DB_PORT=3306
       - DB_HOST=mysql

@@ -1,12 +1,11 @@
 version: "3"
 services:
   mysql-bkup:
+    # In production, it is advised to lock your image tag to a proper
+    # release version instead of using `latest`.
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    command:
-      - /bin/sh
-      - -c
-      - mysql-bkup backup --dbname database_name --mode scheduled --period "0 1 * * *"
+    command: backup --dbname database_name --mode scheduled --period "0 1 * * *"
     volumes:
       - ./backup:/backup
     environment:
