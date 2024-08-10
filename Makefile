@@ -1,5 +1,5 @@
 BINARY_NAME=mysql-bkup
-IMAGE_NAME=jkaninda/mysql-bkup:develop-e6c8b0923d2063c97567547d82ce7909a4f553bb
+IMAGE_NAME=jkaninda/mysql-bkup
 
 include .env
 export
