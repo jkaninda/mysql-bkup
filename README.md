@@ -1,5 +1,5 @@
 # MySQL Backup
-mysql-bkup is a Docker container image that can be used to backup and restore Postgres database. It supports local storage, AWS S3 or any S3 Alternatives for Object Storage, and SSH compatible storage.
+MySQL Backup is a Docker container image that can be used to backup and restore MySQL database. It supports local storage, AWS S3 or any S3 Alternatives for Object Storage, and SSH compatible storage.
 It also supports __encrypting__ your backups using GPG.
 
 The [jkaninda/mysql-bkup](https://hub.docker.com/r/jkaninda/mysql-bkup) Docker image can be deployed on Docker, Docker Swarm and Kubernetes.
@@ -13,6 +13,7 @@ It also supports __encrypting__ your backups using GPG.
 ![Docker Pulls](https://img.shields.io/docker/pulls/jkaninda/mysql-bkup?style=flat-square)
 
 - Docker
+- Docker Swarm
 - Kubernetes
 
 ## Documentation is found at <https://jkaninda.github.io/mysql-bkup>
@@ -36,7 +37,7 @@ It also supports __encrypting__ your backups using GPG.
 
 ### Simple backup using Docker CLI
 
-To run a one time backup, bind your local volume to `/backup` in the container and run the `mysql-bkup backup` command:
+To run a one time backup, bind your local volume to `/backup` in the container and run the `backup` command:
 
 ```shell
  docker run --rm --network your_network_name \
@@ -44,7 +45,7 @@ To run a one time backup, bind your local volume to `/backup` in the container a
  -e "DB_HOST=dbhost" \
  -e "DB_USERNAME=username" \
  -e "DB_PASSWORD=password" \
- jkaninda/mysql-bkup  mysql-bkup backup -d database_name
+ jkaninda/mysql-bkup backup -d database_name
 ```
 
 Alternatively, pass a `--env-file` in order to use a full config as described below.
@@ -98,6 +99,10 @@ spec:
         spec:
           containers:
           - name: mysql-bkup
+            # In production, it is advised to lock your image tag to a proper
+            # release version instead of using `latest`.
+            # Check https://github.com/jkaninda/mysql-bkup/releases
+            # for a list of available releases.
             image: jkaninda/mysql-bkup
             command:
             - /bin/sh
@@ -135,8 +140,8 @@ This Docker image is published to both Docker Hub and the GitHub container regis
 Depending on your preferences and needs, you can reference both `jkaninda/mysql-bkup` as well as `ghcr.io/jkaninda/mysql-bkup`:
 
 ```
-docker pull jkaninda/mysql-bkup:v1.2.0
-docker pull ghcr.io/jkaninda/mysql-bkup:v1.2.0
+docker pull jkaninda/mysql-bkup
+docker pull ghcr.io/jkaninda/mysql-bkup
 ```
 
 Documentation references Docker Hub, but all examples will work using ghcr.io just as well.

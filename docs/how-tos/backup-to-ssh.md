@@ -23,10 +23,7 @@ services:
     # for a list of available releases.
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    command:
-      - /bin/sh
-      - -c
-      - mysql-bkup backup --storage remote -d database
+    command: backup --storage remote -d database
     volumes:
       - ./id_ed25519:/tmp/id_ed25519"
     environment:
@@ -66,10 +63,7 @@ services:
     # for a list of available releases.
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    command:
-      - /bin/sh
-      - -c
-      - mysql-bkup backup -d database --storage ssh --mode scheduled --period "0 1 * * *"
+    command: backup -d database --storage ssh --mode scheduled --period "0 1 * * *"
     volumes:
       - ./id_ed25519:/tmp/id_ed25519"
     environment:

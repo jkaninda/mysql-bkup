@@ -65,3 +65,4 @@ RUN ln -s /usr/local/bin/mysql-bkup /usr/local/bin/bkup
 ADD docker/supervisord.conf /etc/supervisor/supervisord.conf
 
 WORKDIR $WORKDIR
+ENTRYPOINT ["/usr/local/bin/mysql-bkup"]

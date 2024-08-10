@@ -3,10 +3,7 @@ services:
   mysql-bkup:
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    command:
-      - /bin/sh
-      - -c
-      - mysql-bkup backup --dbname database_name
+    command: backup --dbname database_name
     volumes:
       - ./backup:/backup
     environment:
