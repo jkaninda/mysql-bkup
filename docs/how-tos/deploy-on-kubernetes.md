@@ -46,7 +46,7 @@ spec:
           - name: DB_NAME
             value: "dbname"
           - name: DB_USERNAME
-            value: "postgres"
+            value: "username"
           # Please use secret!
           - name: DB_PASSWORD
             value: ""
@@ -102,7 +102,7 @@ spec:
         - name: DB_NAME
           value: "dbname"
         - name: DB_USERNAME
-          value: "postgres"
+          value: "username"
         # Please use secret!
         - name: DB_PASSWORD
           value: ""
@@ -115,7 +115,7 @@ spec:
         - name: SSH_PASSWORD
           value: "xxxx"
         - name: SSH_REMOTE_PATH
-          value: "/home/toto/backup"
+          value: "/home/xxxx/backup"
           # Optional, required if your backup was encrypted
         #- name: GPG_PASSPHRASE
         #  value: "xxxx"
@@ -154,20 +154,20 @@ spec:
             - name: DB_HOST
               value: ""
             - name: DB_NAME
-              value: "test"
+              value: "username"
             - name: DB_USERNAME
-              value: "postgres"
+              value: "username"
             # Please use secret!
             - name: DB_PASSWORD
               value: ""
             - name: SSH_HOST_NAME
-              value: "192.168.1.16"
+              value: "xxx"
             - name: SSH_PORT
-              value: "2222"
+              value: "xxx"
             - name: SSH_USER
               value: "jkaninda"
             - name: SSH_REMOTE_PATH
-              value: "/config/backup"
+              value: "/home/jkaninda/backup"
             - name: SSH_PASSWORD
               value: "password"
             # Optional, required if you want to encrypt your backup
@@ -217,20 +217,20 @@ spec:
                 - name: DB_HOST
                   value: ""
                 - name: DB_NAME
-                  value: "test"
+                  value: "xxx"
                 - name: DB_USERNAME
-                  value: "postgres"
+                  value: "xxx"
                 # Please use secret!
                 - name: DB_PASSWORD
                   value: ""
                 - name: SSH_HOST_NAME
-                  value: "192.168.1.16"
+                  value: "xxx"
                 - name: SSH_PORT
-                  value: "2222"
+                  value: "22"
                 - name: SSH_USER
                   value: "jkaninda"
                 - name: SSH_REMOTE_PATH
-                  value: "/config/backup"
+                  value: "/home/jkaninda/backup"
                 - name: SSH_PASSWORD
                   value: "password"
               # Optional, required if you want to encrypt your backup
