@@ -44,7 +44,7 @@ func restoreFromS3(file, bucket, s3Path string) {
 	utils.Info("Restore database from s3")
 	err := utils.DownloadFile(tmpPath, file, bucket, s3Path)
 	if err != nil {
-		utils.Fatal(fmt.Sprintf("Error download file from s3 %s %s", file, err))
+		utils.Fatal("Error download file from s3 %s %v", file, err)
 	}
 	RestoreDatabase(file)
 }
@@ -52,7 +52,7 @@ func restoreFromRemote(file, remotePath string) {
 	utils.Info("Restore database from remote server")
 	err := CopyFromRemote(file, remotePath)
 	if err != nil {
-		utils.Fatal(fmt.Sprintf("Error download file from remote server: ", filepath.Join(remotePath, file), err))
+		utils.Fatal("Error download file from remote server: %s %v  ", filepath.Join(remotePath, file), err)
 	}
 	RestoreDatabase(file)
 }
@@ -94,6 +94,7 @@ func RestoreDatabase(file string) {
 
 	if utils.FileExists(fmt.Sprintf("%s/%s", tmpPath, file)) {
 		utils.TestDatabaseConnection()
+		utils.Info("Restoring database...")
 
 		extension := filepath.Ext(fmt.Sprintf("%s/%s", tmpPath, file))
 		// Restore from compressed file / .sql.gz
@@ -103,7 +104,10 @@ func RestoreDatabase(file string) {
 			if err != nil {
 				utils.Fatal("Error, in restoring the database  %v", err)
 			}
+			utils.Info("Restoring database... done")
 			utils.Done("Database has been restored")
+			//Delete temp
+			deleteTemp()
 
 		} else if extension == ".sql" {
 			//Restore from sql file
@@ -112,7 +116,10 @@ func RestoreDatabase(file string) {
 			if err != nil {
 				utils.Fatal(fmt.Sprintf("Error in restoring the database %s", err))
 			}
+			utils.Info("Restoring database... done")
 			utils.Done("Database has been restored")
+			//Delete temp
+			deleteTemp()
 		} else {
 			utils.Fatal(fmt.Sprintf("Unknown file extension %s", extension))
 		}
