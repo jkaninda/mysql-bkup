@@ -82,4 +82,4 @@ COPY <<EOF /usr/local/bin/restore
 EOF
 RUN chmod +x /usr/local/bin/backup && \
     chmod +x /usr/local/bin/restore
-#ENTRYPOINT ["/usr/local/bin/mysql-bkup"]
+ENTRYPOINT ["/usr/local/bin/mysql-bkup"]
