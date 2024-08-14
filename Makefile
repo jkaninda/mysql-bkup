@@ -18,7 +18,7 @@ compile:
 docker-build:
 	docker build -f docker/Dockerfile  -t jkaninda/mysql-bkup:latest .
 
-docker-run: #docker-build
+docker-run: docker-build
 	docker run --rm --network web --name mysql-bkup -v "./backup:/backup" -e "DB_HOST=${DB_HOST}" -e "DB_NAME=${DB_NAME}" -e "DB_USERNAME=${DB_USERNAME}" -e "DB_PASSWORD=${DB_PASSWORD}" -e "GPG_PASSPHRASE=${GPG_PASSPHRASE}" ${IMAGE_NAME} backup --prune --keep-last 2
 docker-restore: docker-build
 	docker run --rm --network web --name mysql-bkup -v "./backup:/backup" -e "DB_HOST=${DB_HOST}" -e "DB_NAME=${DB_NAME}" -e "DB_USERNAME=${DB_USERNAME}" -e "DB_PASSWORD=${DB_PASSWORD}"  -e "GPG_PASSPHRASE=${GPG_PASSPHRASE}" ${IMAGE_NAME} restore -f ${FILE_NAME}
