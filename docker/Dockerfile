@@ -31,7 +31,9 @@ ENV SSH_HOST_NAME=""
 ENV SSH_IDENTIFY_FILE=""
 ENV SSH_PORT="22"
 ARG DEBIAN_FRONTEND=noninteractive
-ENV VERSION="v1.2.1"
+ENV VERSION="v1.2.2"
+ENV BACKUP_CRON_EXPRESSION=""
+ENV GNUPGHOME="/tmp/gnupg"
 ARG WORKDIR="/app"
 ARG BACKUPDIR="/backup"
 ARG BACKUP_TMP_DIR="/tmp/backup"
@@ -40,7 +42,6 @@ ARG BACKUP_CRON_SCRIPT="/usr/local/bin/backup_cron.sh"
 LABEL author="Jonas Kaninda"
 
 RUN apt-get update -qq
-#RUN apt-get install build-essential libcurl4-openssl-dev libxml2-dev mime-support -y
 RUN apt install mysql-client supervisor cron gnupg -y
 
 # Clear cache
@@ -48,14 +49,16 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir $WORKDIR
 RUN mkdir $BACKUPDIR
-RUN mkdir -p $BACKUP_TMP_DIR
+RUN mkdir -p $BACKUP_TMP_DIR && \
+    mkdir -p $GNUPGHOME
 RUN chmod 777 $WORKDIR
 RUN chmod 777 $BACKUPDIR
 RUN chmod 777 $BACKUP_TMP_DIR
 RUN touch $BACKUP_CRON && \
     touch $BACKUP_CRON_SCRIPT && \
     chmod 777 $BACKUP_CRON && \
-    chmod 777 $BACKUP_CRON_SCRIPT
+    chmod 777 $BACKUP_CRON_SCRIPT && \
+    chmod 777 $GNUPGHOME
 
 COPY --from=build /app/mysql-bkup /usr/local/bin/mysql-bkup
 RUN chmod +x /usr/local/bin/mysql-bkup
@@ -65,4 +68,18 @@ RUN ln -s /usr/local/bin/mysql-bkup /usr/local/bin/bkup
 ADD docker/supervisord.conf /etc/supervisor/supervisord.conf
 
 WORKDIR $WORKDIR
+# Create backup shell script
+COPY <<EOF /usr/local/bin/backup
+#!/bin/sh
+# shellcheck disable=SC2068
+/usr/local/bin/mysql-bkup backup $@
+EOF
+# Create restore shell script
+COPY <<EOF /usr/local/bin/restore
+#!/bin/sh
+# shellcheck disable=SC2068
+/usr/local/bin/mysql-bkup restore $@
+EOF
+RUN chmod +x /usr/local/bin/backup && \
+    chmod +x /usr/local/bin/restore
 ENTRYPOINT ["/usr/local/bin/mysql-bkup"]
