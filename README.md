@@ -12,9 +12,11 @@ It also supports __encrypting__ your backups using GPG.
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/jkaninda/mysql-bkup?style=flat-square)
 ![Docker Pulls](https://img.shields.io/docker/pulls/jkaninda/mysql-bkup?style=flat-square)
 
+Successfully tested on:
 - Docker
-- Docker Swarm
+- Docker in Swarm mode
 - Kubernetes
+- Openshift
 
 ## Documentation is found at <https://jkaninda.github.io/mysql-bkup>
 
