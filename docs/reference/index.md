@@ -34,27 +34,28 @@ Backup and restore targets, schedule and retention are configured using environm
 
 ## Environment variables
 
-| Name              | Requirement                                      | Description                                          |
-|-------------------|--------------------------------------------------|------------------------------------------------------|
-| DB_PORT           | Optional, default 3306                           | Database port number                                 |
-| DB_HOST           | Required                                         | Database host                                        |
-| DB_NAME           | Optional if it was provided from the -d flag     | Database name                                        |
-| DB_USERNAME       | Required                                         | Database user name                                   |
-| DB_PASSWORD       | Required                                         | Database password                                    |
-| AWS_ACCESS_KEY    | Optional, required for S3 storage                | AWS S3 Access Key                                    |
-| AWS_SECRET_KEY    | Optional, required for S3 storage                | AWS S3 Secret Key                                    |
-| AWS_BUCKET_NAME   | Optional, required for S3 storage                | AWS S3 Bucket Name                                   |
-| AWS_BUCKET_NAME   | Optional, required for S3 storage                | AWS S3 Bucket Name                                   |
-| AWS_REGION        | Optional, required for S3 storage                | AWS Region                                           |
-| AWS_DISABLE_SSL   | Optional, required for S3 storage                | Disable SSL                                          |
-| FILE_NAME         | Optional if it was provided from the --file flag | Database file to restore (extensions: .sql, .sql.gz) |
-| Gmysql_PASSPHRASE    | Optional, required to encrypt and restore backup | Gmysql passphrase                                       |
-| SSH_HOST_NAME     | Optional, required for SSH storage               | ssh remote hostname or ip                            |
-| SSH_USER          | Optional, required for SSH storage               | ssh remote user                                      |
-| SSH_PASSWORD      | Optional, required for SSH storage               | ssh remote user's password                           |
-| SSH_IDENTIFY_FILE | Optional, required for SSH storage               | ssh remote user's private key                        |
-| SSH_PORT          | Optional, required for SSH storage               | ssh remote server port                               |
-| SSH_REMOTE_PATH   | Optional, required for SSH storage               | ssh remote path (/home/toto/backup)                  |
+| Name                   | Requirement                                         | Description                                          |
+|------------------------|-----------------------------------------------------|------------------------------------------------------|
+| DB_PORT                | Optional, default 3306                              | Database port number                                 |
+| DB_HOST                | Required                                            | Database host                                        |
+| DB_NAME                | Optional if it was provided from the -d flag        | Database name                                        |
+| DB_USERNAME            | Required                                            | Database user name                                   |
+| DB_PASSWORD            | Required                                            | Database password                                    |
+| AWS_ACCESS_KEY         | Optional, required for S3 storage                   | AWS S3 Access Key                                    |
+| AWS_SECRET_KEY         | Optional, required for S3 storage                   | AWS S3 Secret Key                                    |
+| AWS_BUCKET_NAME        | Optional, required for S3 storage                   | AWS S3 Bucket Name                                   |
+| AWS_BUCKET_NAME        | Optional, required for S3 storage                   | AWS S3 Bucket Name                                   |
+| AWS_REGION             | Optional, required for S3 storage                   | AWS Region                                           |
+| AWS_DISABLE_SSL        | Optional, required for S3 storage                   | Disable SSL                                          |
+| FILE_NAME              | Optional if it was provided from the --file flag    | Database file to restore (extensions: .sql, .sql.gz) |
+| BACKUP_CRON_EXPRESSION | Optional if it was provided from the --period  flag | Cron expression                                      |
+| GPG_PASSPHRASE         | Optional, required to encrypt and restore backup    | GPG passphrase                                       |
+| SSH_HOST_NAME          | Optional, required for SSH storage                  | ssh remote hostname or ip                            |
+| SSH_USER               | Optional, required for SSH storage                  | ssh remote user                                      |
+| SSH_PASSWORD           | Optional, required for SSH storage                  | ssh remote user's password                           |
+| SSH_IDENTIFY_FILE      | Optional, required for SSH storage                  | ssh remote user's private key                        |
+| SSH_PORT               | Optional, required for SSH storage                  | ssh remote server port                               |
+| SSH_REMOTE_PATH        | Optional, required for SSH storage                  | ssh remote path (/home/toto/backup)                  |
 
 ---
 ## Run in Scheduled mode
