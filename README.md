@@ -33,7 +33,7 @@ Successfully tested on:
 ## Storage:
 - Local
 - AWS S3 or any S3 Alternatives for Object Storage
-- SSH
+- SSH remote server
 
 ## Quickstart
 
@@ -74,8 +74,8 @@ services:
     volumes:
       - ./backup:/backup
     environment:
-      - DB_PORT=5432
-      - DB_HOST=postgres
+      - DB_PORT=3306
+      - DB_HOST=mysql
       - DB_NAME=foo
       - DB_USERNAME=bar
       - DB_PASSWORD=password
