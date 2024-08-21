@@ -233,7 +233,7 @@ spec:
 
 This image also supports Kubernetes security context, you can run it in Rootless environment.
 It has been tested on Openshift, it works well.
-Deployment on Openshift is supported, you need to remove `securityContext` section on your yaml file.
+Deployment on OpenShift is supported, you need to remove `securityContext` section on your yaml file.
 
 ```yaml
 apiVersion: batch/v1
