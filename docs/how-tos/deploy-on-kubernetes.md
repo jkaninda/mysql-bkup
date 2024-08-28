@@ -28,6 +28,8 @@ spec:
           # for a list of available releases.
           image: jkaninda/mysql-bkup
           command:
+            - /bin/sh
+            - -c
             - bkup
             - backup
             - --storage
@@ -82,6 +84,8 @@ spec:
         # for a list of available releases.
         image: jkaninda/mysql-bkup
         command:
+        - /bin/sh
+        - -c
         - bkup
         - backup
         - --storage
@@ -138,6 +142,8 @@ spec:
         # for a list of available releases.
         image: jkaninda/mysql-bkup
         command:
+        - /bin/sh
+        - -c
         - bkup
         - restore
         - --storage
@@ -192,6 +198,8 @@ spec:
           - name: mysql-bkup
             image: jkaninda/mysql-bkup
             command:
+            - /bin/sh
+            - -c
             - bkup
             - backup
             - --storage
@@ -258,6 +266,8 @@ spec:
             - name: mysql-bkup
               image: jkaninda/mysql-bkup
               command:
+                - /bin/sh
+                - -c
                 - bkup
                 - backup
                 - --storage
