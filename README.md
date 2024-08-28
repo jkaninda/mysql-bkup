@@ -107,8 +107,12 @@ spec:
           # for a list of available releases.
           image: jkaninda/mysql-bkup
           command:
+            - /bin/sh
+            - -c
             - bkup
             - backup
+            - --storage
+            - s3
           resources:
             limits:
               memory: "128Mi"
@@ -125,6 +129,18 @@ spec:
             # Please use secret!
             - name: DB_PASSWORD
               value: ""
+            - name: AWS_S3_ENDPOINT
+              value: "https://s3.amazonaws.com"
+            - name: AWS_S3_BUCKET_NAME
+              value: "xxx"
+            - name: AWS_REGION
+              value: "us-west-2"
+            - name: AWS_ACCESS_KEY
+              value: "xxxx"
+            - name: AWS_SECRET_KEY
+              value: "xxxx"
+            - name: AWS_DISABLE_SSL
+              value: "false"
       restartPolicy: Never
 ```
 ## Available image registries
