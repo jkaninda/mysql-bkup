@@ -9,3 +9,4 @@ mysql-bkup
 /.DS_Store
 /.idea
 bin
+Makefile
