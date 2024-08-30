@@ -20,8 +20,6 @@ func StartBackup(cmd *cobra.Command) {
 	_, _ = cmd.Flags().GetString("operation")
 	//Set env
 	utils.SetEnv("STORAGE_PATH", storagePath)
-	utils.GetEnv(cmd, "dbname", "DB_NAME")
-	utils.GetEnv(cmd, "port", "DB_PORT")
 	utils.GetEnv(cmd, "period", "BACKUP_CRON_EXPRESSION")
 
 	//Get flag value and set env
