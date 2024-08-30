@@ -78,6 +78,49 @@ services:
 networks:
   web:
 ```
+## Kubernetes
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backup-job
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+        - name: mysql-bkup
+          # In production, it is advised to lock your image tag to a proper
+          # release version instead of using `latest`.
+          # Check https://github.com/jkaninda/mysql-bkup/releases
+          # for a list of available releases.
+          image: jkaninda/mysql-bkup
+          command:
+            - /bin/sh
+            - -c
+            - backup -d dbname
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          env:
+            - name: DB_HOST
+              value: "mysql"
+            - name: DB_USERNAME
+              value: "user"
+            - name: DB_PASSWORD
+              value: "password"
+          volumeMounts:
+            - mountPath: /backup
+              name: backup
+      volumes:
+        - name: backup
+          hostPath:
+            path: /home/toto/backup # directory location on host
+            type: Directory # this field is optional
+      restartPolicy: Never
+```
 
 ## Available image registries
 
