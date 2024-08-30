@@ -1,9 +1,11 @@
 package pkg
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 )
@@ -95,4 +97,25 @@ func deleteTemp() {
 	} else {
 		utils.Info("Deleting %s ... done", tmpPath)
 	}
+}
+
+// TestDatabaseConnection  tests the database connection
+func testDatabaseConnection(db *dbConfig) {
+
+	utils.Info("Connecting to %s database ...", db.dbName)
+
+	cmd := exec.Command("mysql", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, "--password="+db.dbPassword, db.dbName, "-e", "quit")
+
+	// Capture the output
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+	err := cmd.Run()
+	if err != nil {
+		utils.Error("Error testing database connection: %v\nOutput: %s", err, out.String())
+		os.Exit(1)
+
+	}
+	utils.Info("Successfully connected to %s database", db.dbName)
+
 }

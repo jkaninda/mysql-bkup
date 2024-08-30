@@ -32,9 +32,10 @@ func StartBackup(cmd *cobra.Command) {
 	prune, _ := cmd.Flags().GetBool("prune")
 	disableCompression, _ = cmd.Flags().GetBool("disable-compression")
 	executionMode, _ = cmd.Flags().GetString("mode")
-	dbName = os.Getenv("DB_NAME")
 	gpqPassphrase := os.Getenv("GPG_PASSPHRASE")
 	_ = utils.GetEnv(cmd, "path", "AWS_S3_PATH")
+
+	dbConf = getDbConfig(cmd)
 
 	//
 	if gpqPassphrase != "" {
@@ -42,27 +43,27 @@ func StartBackup(cmd *cobra.Command) {
 	}
 
 	//Generate file name
-	backupFileName := fmt.Sprintf("%s_%s.sql.gz", dbName, time.Now().Format("20060102_150405"))
+	backupFileName := fmt.Sprintf("%s_%s.sql.gz", dbConf.dbName, time.Now().Format("20060102_150405"))
 	if disableCompression {
-		backupFileName = fmt.Sprintf("%s_%s.sql", dbName, time.Now().Format("20060102_150405"))
+		backupFileName = fmt.Sprintf("%s_%s.sql", dbConf.dbName, time.Now().Format("20060102_150405"))
 	}
 
 	if executionMode == "default" {
 		switch storage {
 		case "s3":
-			s3Backup(backupFileName, disableCompression, prune, backupRetention, encryption)
+			s3Backup(dbConf, backupFileName, disableCompression, prune, backupRetention, encryption)
 		case "local":
-			localBackup(backupFileName, disableCompression, prune, backupRetention, encryption)
+			localBackup(dbConf, backupFileName, disableCompression, prune, backupRetention, encryption)
 		case "ssh", "remote":
-			sshBackup(backupFileName, remotePath, disableCompression, prune, backupRetention, encryption)
+			sshBackup(dbConf, backupFileName, remotePath, disableCompression, prune, backupRetention, encryption)
 		case "ftp":
 			utils.Fatal("Not supported storage type: %s", storage)
 		default:
-			localBackup(backupFileName, disableCompression, prune, backupRetention, encryption)
+			localBackup(dbConf, backupFileName, disableCompression, prune, backupRetention, encryption)
 		}
 
 	} else if executionMode == "scheduled" {
-		scheduledMode(storage)
+		scheduledMode(dbConf, storage)
 	} else {
 		utils.Fatal("Error, unknown execution mode!")
 	}
@@ -70,7 +71,7 @@ func StartBackup(cmd *cobra.Command) {
 }
 
 // Run in scheduled mode
-func scheduledMode(storage string) {
+func scheduledMode(db *dbConfig, storage string) {
 
 	fmt.Println()
 	fmt.Println("**********************************")
@@ -81,7 +82,7 @@ func scheduledMode(storage string) {
 	utils.Info("Storage type %s ", storage)
 
 	//Test database connexion
-	utils.TestDatabaseConnection()
+	testDatabaseConnection(db)
 
 	utils.Info("Creating backup job...")
 	CreateCrontabScript(disableCompression, storage)
@@ -117,12 +118,7 @@ func scheduledMode(storage string) {
 }
 
 // BackupDatabase backup database
-func BackupDatabase(backupFileName string, disableCompression bool) {
-	dbHost = os.Getenv("DB_HOST")
-	dbPassword = os.Getenv("DB_PASSWORD")
-	dbUserName = os.Getenv("DB_USERNAME")
-	dbName = os.Getenv("DB_NAME")
-	dbPort = os.Getenv("DB_PORT")
+func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool) {
 	storagePath = os.Getenv("STORAGE_PATH")
 
 	err := utils.CheckEnvVars(dbHVars)
@@ -132,7 +128,7 @@ func BackupDatabase(backupFileName string, disableCompression bool) {
 	}
 
 	utils.Info("Starting database backup...")
-	utils.TestDatabaseConnection()
+	testDatabaseConnection(db)
 
 	// Backup Database database
 	utils.Info("Backing up database...")
@@ -140,11 +136,11 @@ func BackupDatabase(backupFileName string, disableCompression bool) {
 	if disableCompression {
 		// Execute mysqldump
 		cmd := exec.Command("mysqldump",
-			"-h", dbHost,
-			"-P", dbPort,
-			"-u", dbUserName,
-			"--password="+dbPassword,
-			dbName,
+			"-h", db.dbHost,
+			"-P", db.dbPort,
+			"-u", db.dbUserName,
+			"--password="+db.dbPassword,
+			db.dbName,
 		)
 		output, err := cmd.Output()
 		if err != nil {
@@ -166,7 +162,7 @@ func BackupDatabase(backupFileName string, disableCompression bool) {
 
 	} else {
 		// Execute mysqldump
-		cmd := exec.Command("mysqldump", "-h", dbHost, "-P", dbPort, "-u", dbUserName, "--password="+dbPassword, dbName)
+		cmd := exec.Command("mysqldump", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, "--password="+db.dbPassword, db.dbName)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Fatal(err)
@@ -189,9 +185,9 @@ func BackupDatabase(backupFileName string, disableCompression bool) {
 	}
 
 }
-func localBackup(backupFileName string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
+func localBackup(db *dbConfig, backupFileName string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
 	utils.Info("Backup database to local storage")
-	BackupDatabase(backupFileName, disableCompression)
+	BackupDatabase(db, backupFileName, disableCompression)
 	finalFileName := backupFileName
 	if encrypt {
 		encryptBackup(backupFileName)
@@ -207,12 +203,12 @@ func localBackup(backupFileName string, disableCompression bool, prune bool, bac
 	deleteTemp()
 }
 
-func s3Backup(backupFileName string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
+func s3Backup(db *dbConfig, backupFileName string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
 	bucket := utils.GetEnvVariable("AWS_S3_BUCKET_NAME", "BUCKET_NAME")
 	s3Path := utils.GetEnvVariable("AWS_S3_PATH", "S3_PATH")
 	utils.Info("Backup database to s3 storage")
 	//Backup database
-	BackupDatabase(backupFileName, disableCompression)
+	BackupDatabase(db, backupFileName, disableCompression)
 	finalFileName := backupFileName
 	if encrypt {
 		encryptBackup(backupFileName)
@@ -243,10 +239,10 @@ func s3Backup(backupFileName string, disableCompression bool, prune bool, backup
 	//Delete temp
 	deleteTemp()
 }
-func sshBackup(backupFileName, remotePath string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
+func sshBackup(db *dbConfig, backupFileName, remotePath string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
 	utils.Info("Backup database to Remote server")
 	//Backup database
-	BackupDatabase(backupFileName, disableCompression)
+	BackupDatabase(db, backupFileName, disableCompression)
 	finalFileName := backupFileName
 	if encrypt {
 		encryptBackup(backupFileName)

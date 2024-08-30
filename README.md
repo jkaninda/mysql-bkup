@@ -95,12 +95,13 @@ For Kubernetes, you don't need to run it in scheduled mode. You can deploy it as
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: backup
+  name: backup-job
 spec:
+  ttlSecondsAfterFinished: 100
   template:
     spec:
       containers:
-        - name: mysql-bkup
+        - name: pg-bkup
           # In production, it is advised to lock your image tag to a proper
           # release version instead of using `latest`.
           # Check https://github.com/jkaninda/mysql-bkup/releases
@@ -109,38 +110,26 @@ spec:
           command:
             - /bin/sh
             - -c
-            - bkup
-            - backup
-            - --storage
-            - s3
+            - backup -d dbname
           resources:
             limits:
               memory: "128Mi"
               cpu: "500m"
           env:
-            - name: DB_PORT
-              value: "3306"
             - name: DB_HOST
-              value: ""
-            - name: DB_NAME
-              value: "dbname"
+              value: "mysql"
             - name: DB_USERNAME
-              value: "username"
-            # Please use secret!
+              value: "user"
             - name: DB_PASSWORD
-              value: ""
-            - name: AWS_S3_ENDPOINT
-              value: "https://s3.amazonaws.com"
-            - name: AWS_S3_BUCKET_NAME
-              value: "xxx"
-            - name: AWS_REGION
-              value: "us-west-2"
-            - name: AWS_ACCESS_KEY
-              value: "xxxx"
-            - name: AWS_SECRET_KEY
-              value: "xxxx"
-            - name: AWS_DISABLE_SSL
-              value: "false"
+              value: "password"
+          volumeMounts:
+            - mountPath: /backup
+              name: backup
+      volumes:
+        - name: backup
+          hostPath:
+            path: /home/toto/backup # directory location on host
+            type: Directory # this field is optional
       restartPolicy: Never
 ```
 ## Available image registries

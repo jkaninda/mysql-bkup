@@ -30,13 +30,12 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringP("storage", "s", "local", "Storage. local or s3")
-	rootCmd.PersistentFlags().StringP("path", "P", "", "AWS S3 path without file name. eg: /custom_path or ssh remote path `/home/foo/backup`")
 	rootCmd.PersistentFlags().StringP("dbname", "d", "", "Database name")
 	rootCmd.PersistentFlags().IntP("port", "p", 3306, "Database port")
 	rootCmd.PersistentFlags().StringVarP(&operation, "operation", "o", "", "Set operation, for old version only")
-
 	rootCmd.AddCommand(VersionCmd)
 	rootCmd.AddCommand(BackupCmd)
 	rootCmd.AddCommand(RestoreCmd)
+	rootCmd.AddCommand(MigrateCmd)
+
 }
