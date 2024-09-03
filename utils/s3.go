@@ -122,7 +122,7 @@ func DownloadFile(destinationPath, key, bucket, prefix string) error {
 		fmt.Println("Failed to download file", err)
 		return err
 	}
-	Info(fmt.Sprintf("Backup downloaded: ", file.Name(), " bytes size ", numBytes))
+	Info("Backup downloaded:  %s bytes size %s ", file.Name(), numBytes)
 
 	return nil
 }

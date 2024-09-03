@@ -95,7 +95,7 @@ func RestoreDatabase(db *dbConfig, file string) {
 		extension := filepath.Ext(fmt.Sprintf("%s/%s", tmpPath, file))
 		// Restore from compressed file / .sql.gz
 		if extension == ".gz" {
-			str := "zcat " + fmt.Sprintf("%s/%s", tmpPath, file) + " | mysql -h " + os.Getenv("DB_HOST") + " -P " + os.Getenv("DB_PORT") + " -u " + os.Getenv("DB_USERNAME") + " --password=" + os.Getenv("DB_PASSWORD") + " " + os.Getenv("DB_NAME")
+			str := "zcat " + fmt.Sprintf("%s/%s", tmpPath, file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " --password=" + db.dbPassword + " " + db.dbName
 			_, err := exec.Command("bash", "-c", str).Output()
 			if err != nil {
 				utils.Fatal("Error, in restoring the database  %v", err)
@@ -107,7 +107,7 @@ func RestoreDatabase(db *dbConfig, file string) {
 
 		} else if extension == ".sql" {
 			//Restore from sql file
-			str := "cat " + fmt.Sprintf("%s/%s", tmpPath, file) + " | mysql -h " + os.Getenv("DB_HOST") + " -P " + os.Getenv("DB_PORT") + " -u " + os.Getenv("DB_USERNAME") + " --password=" + os.Getenv("DB_PASSWORD") + " " + os.Getenv("DB_NAME")
+			str := "cat " + fmt.Sprintf("%s/%s", tmpPath, file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " --password=" + db.dbPassword + " " + db.dbName
 			_, err := exec.Command("bash", "-c", str).Output()
 			if err != nil {
 				utils.Fatal(fmt.Sprintf("Error in restoring the database %s", err))
