@@ -6,7 +6,7 @@ nav_order: 1
 
 # About mysql-bkup
 {:.no_toc}
-MySQL Backup is a Docker container image that can be used to backup and restore MySQL database. It supports local storage, AWS S3 or any S3 Alternatives for Object Storage, and SSH remote storage.
+MySQL Backup is a Docker container image that can be used to backup, restore and migrate MySQL database. It supports local storage, AWS S3 or any S3 Alternatives for Object Storage, and SSH remote storage.
 It also supports __encrypting__ your backups using GPG.
 
 We are open to receiving stars, PRs, and issues!
@@ -19,7 +19,8 @@ We are open to receiving stars, PRs, and issues!
 The [jkaninda/mysql-bkup](https://hub.docker.com/r/jkaninda/mysql-bkup) Docker image can be deployed on Docker, Docker Swarm and Kubernetes. 
 It handles __recurring__ backups of postgres database on Docker and can be deployed as __CronJob on Kubernetes__ using local, AWS S3 or SSH compatible storage.
 
-It also supports __encrypting__ your backups using GPG.
+It also supports database __encryption__ using GPG.
+
 
 {: .note }
 Code and documentation for `v1` version on [this branch][v1-branch].
