@@ -30,10 +30,7 @@ spec:
           command:
             - /bin/sh
             - -c
-            - bkup
-            - backup
-            - --storage
-            - s3
+            - backup --storage s3
           resources:
             limits:
               memory: "128Mi"

@@ -111,7 +111,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - mysql-bkup backup -s ssh
+            - backup -s ssh
             env:
               - name: DB_PORT
                 value: "3306" 

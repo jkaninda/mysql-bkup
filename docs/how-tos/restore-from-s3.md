@@ -65,7 +65,7 @@ spec:
           command:
             - /bin/sh
             - -c
-            - bkup restore -s s3 --path /custom_path -f store_20231219_022941.sql.gz
+            - restore -s s3 --path /custom_path -f store_20231219_022941.sql.gz
           env:
             - name: DB_PORT
               value: "3306"
