@@ -33,7 +33,6 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringP("dbname", "d", "", "Database name")
-	rootCmd.PersistentFlags().StringVarP(&operation, "operation", "o", "", "Set operation, for old version only")
 	rootCmd.AddCommand(VersionCmd)
 	rootCmd.AddCommand(BackupCmd)
 	rootCmd.AddCommand(RestoreCmd)
