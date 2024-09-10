@@ -1,9 +1,11 @@
+// Package pkg /
+/*****
+@author    Jonas Kaninda
+@license   MIT License <https://opensource.org/licenses/MIT>
+@Copyright © 2024 Jonas Kaninda
+**/
 package pkg
 
-// Package pkg /*
-/*
-Copyright © 2024 Jonas Kaninda
-*/
 import (
 	"fmt"
 	"github.com/jkaninda/mysql-bkup/utils"

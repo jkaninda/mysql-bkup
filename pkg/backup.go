@@ -1,7 +1,9 @@
-// Package pkg /*
-/*
-Copyright © 2024 Jonas Kaninda
-*/
+// Package pkg /
+/*****
+@author    Jonas Kaninda
+@license   MIT License <https://opensource.org/licenses/MIT>
+@Copyright © 2024 Jonas Kaninda
+**/
 package pkg
 
 import (
@@ -17,7 +19,7 @@ import (
 )
 
 func StartBackup(cmd *cobra.Command) {
-	_, _ = cmd.Flags().GetString("operation")
+	utils.Welcome()
 	//Set env
 	utils.SetEnv("STORAGE_PATH", storagePath)
 	utils.GetEnv(cmd, "period", "BACKUP_CRON_EXPRESSION")
@@ -193,6 +195,8 @@ func localBackup(db *dbConfig, backupFileName string, disableCompression bool, p
 	}
 	utils.Info("Backup name is %s", finalFileName)
 	moveToBackup(finalFileName, storagePath)
+	//Send notification
+	utils.NotifySuccess(finalFileName)
 	//Delete old backup
 	if prune {
 		deleteOldBackup(backupRetention)
@@ -234,6 +238,8 @@ func s3Backup(db *dbConfig, backupFileName string, disableCompression bool, prun
 		}
 	}
 	utils.Done("Uploading backup archive to remote storage S3 ... done ")
+	//Send notification
+	utils.NotifySuccess(finalFileName)
 	//Delete temp
 	deleteTemp()
 }
@@ -267,6 +273,8 @@ func sshBackup(db *dbConfig, backupFileName, remotePath string, disableCompressi
 	}
 
 	utils.Done("Uploading backup archive to remote storage ... done ")
+	//Send notification
+	utils.NotifySuccess(finalFileName)
 	//Delete temp
 	deleteTemp()
 }
