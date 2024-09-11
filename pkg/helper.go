@@ -118,8 +118,7 @@ func testDatabaseConnection(db *dbConfig) {
 	cmd.Stderr = &out
 	err := cmd.Run()
 	if err != nil {
-		utils.Error("Error testing database connection: %v\nOutput: %s", err, out.String())
-		os.Exit(1)
+		utils.Fatal("Error testing database connection: %v\nOutput: %s", err, out.String())
 
 	}
 	utils.Info("Successfully connected to %s database", db.dbName)
