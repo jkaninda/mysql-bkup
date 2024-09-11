@@ -19,7 +19,7 @@ import (
 )
 
 func StartBackup(cmd *cobra.Command) {
-	utils.Welcome()
+	intro()
 	//Set env
 	utils.SetEnv("STORAGE_PATH", storagePath)
 	utils.GetEnv(cmd, "period", "BACKUP_CRON_EXPRESSION")
@@ -115,6 +115,13 @@ func scheduledMode(db *dbConfig, storage string) {
 	for line := range t.Lines {
 		fmt.Println(line.Text)
 	}
+}
+func intro() {
+	fmt.Println()
+	fmt.Println("**********************************")
+	fmt.Println("            MySQL Backup          ")
+	fmt.Println("     @Copyright © 2024 jkaninda    ")
+	fmt.Println("***********************************")
 }
 
 // BackupDatabase backup database
