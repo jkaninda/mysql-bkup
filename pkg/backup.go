@@ -117,11 +117,8 @@ func scheduledMode(db *dbConfig, storage string) {
 	}
 }
 func intro() {
-	fmt.Println()
-	fmt.Println("**********************************")
-	fmt.Println("            MySQL Backup          ")
-	fmt.Println("     @Copyright © 2024 jkaninda    ")
-	fmt.Println("***********************************")
+	utils.Info("Starting MySQL Backup...")
+	utils.Info("Copyright © 2024 Jonas Kaninda ")
 }
 
 // BackupDatabase backup database
