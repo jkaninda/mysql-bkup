@@ -247,6 +247,8 @@ func s3Backup(db *dbConfig, backupFileName string, disableCompression bool, prun
 	//Delete temp
 	deleteTemp()
 }
+
+// sshBackup backup database to SSH remote server
 func sshBackup(db *dbConfig, backupFileName, remotePath string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
 	utils.Info("Backup database to Remote server")
 	//Backup database
@@ -282,6 +284,8 @@ func sshBackup(db *dbConfig, backupFileName, remotePath string, disableCompressi
 	//Delete temp
 	deleteTemp()
 }
+
+// encryptBackup encrypt backup
 func encryptBackup(backupFileName string) {
 	gpgPassphrase := os.Getenv("GPG_PASSPHRASE")
 	err := Encrypt(filepath.Join(tmpPath, backupFileName), gpgPassphrase)
