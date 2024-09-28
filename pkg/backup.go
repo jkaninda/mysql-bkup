@@ -45,7 +45,7 @@ func scheduledMode(db *dbConfig, config *BackupConfig) {
 	//Test database connexion
 	testDatabaseConnection(db)
 
-	utils.Info("Creating cron instance...")
+	utils.Info("Creating backup job...")
 	// Create a new cron instance
 	c := cron.New()
 
@@ -57,12 +57,12 @@ func scheduledMode(db *dbConfig, config *BackupConfig) {
 	}
 	// Start the cron scheduler
 	c.Start()
-	utils.Info("Creating cron instance...done")
+	utils.Info("Creating backup job...done")
+	utils.Info("Backup job started")
 	defer c.Stop()
 	select {}
 }
 func BackupTask(db *dbConfig, config *BackupConfig) {
-	utils.Info("Starting backup task...")
 	//Generate backup file name
 	backupFileName := fmt.Sprintf("%s_%s.sql.gz", db.dbName, time.Now().Format("20240102_150405"))
 	if config.disableCompression {
