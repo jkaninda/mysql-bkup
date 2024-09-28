@@ -25,11 +25,10 @@ Backup, restore and migrate targets, schedule and retention are configured using
 | --path                |        | AWS S3 path without file name. eg: /custom_path  or ssh remote path `/home/foo/backup` |
 | --dbname              | -d     | Database name                                                                          |
 | --port                | -p     | Database port (default: 3306)                                                          |
-| --mode                | -m     | Execution mode. default or scheduled (default: default)                                |
 | --disable-compression |        | Disable database backup compression                                                    |
 | --prune               |        | Delete old backup, default disabled                                                    |
 | --keep-last           |        | Delete old backup created more than specified days ago, default 7 days                 |
-| --period              |        | Crontab period for scheduled mode only. (default: "0 1 * * *")                         |
+| --cron-expression     |        | Backup cron expression, eg: (* * * * *) or @daily                                      |
 | --help                | -h     | Print this help message and exit                                                       |
 | --version             | -V     | Print version information and exit                                                     |
 
@@ -68,7 +67,7 @@ Backup, restore and migrate targets, schedule and retention are configured using
 ## Run in Scheduled mode
 
 This image can be run as CronJob in Kubernetes for a regular backup which makes deployment on Kubernetes easy as Kubernetes has CronJob resources.
-For Docker, you need to run it in scheduled mode by adding `--mode scheduled` flag and specify the periodical backup time by adding `--period "0 1 * * *"` flag.
+For Docker, you need to run it in scheduled mode by adding `--cron-expression  "* * * * *"` flag or by defining `BACKUP_CRON_EXPRESSION=0 1 * * *` environment variable.
 
 ## Syntax of crontab (field description)
 
@@ -111,3 +110,21 @@ Easy to remember format:
 ```conf
 0 1 * * *
 ```
+## Predefined schedules 
+You may use one of several pre-defined schedules in place of a cron expression.
+
+| Entry                  | Description                                | Equivalent To |
+|------------------------|--------------------------------------------|---------------|
+| @yearly (or @annually) | Run once a year, midnight, Jan. 1st        | 0 0 1 1 *     |
+| @monthly               | Run once a month, midnight, first of month | 0 0 1 * *     |
+| @weekly                | Run once a week, midnight between Sat/Sun  | 0 0 * * 0     |
+| @daily (or @midnight)  | Run once a day, midnight                   | 0 0 * * *     |
+| @hourly                | Run once an hour, beginning of hour        | 0 * * * *     |
+
+### Intervals 
+You may also schedule a job to execute at fixed intervals, starting at the time it's added or cron is run. This is supported by formatting the cron spec like this:
+
+@every <duration>
+where "duration" is a string accepted by time.
+
+For example, "@every 1h30m10s" would indicate a schedule that activates after 1 hour, 30 minutes, 10 seconds, and then every interval after that.
