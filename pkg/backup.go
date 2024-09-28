@@ -34,6 +34,7 @@ func StartBackup(cmd *cobra.Command) {
 	executionMode, _ = cmd.Flags().GetString("mode")
 	gpqPassphrase := os.Getenv("GPG_PASSPHRASE")
 	_ = utils.GetEnv(cmd, "path", "AWS_S3_PATH")
+	cronExpression := os.Getenv("BACKUP_CRON_EXPRESSION")
 
 	dbConf = getDbConfig(cmd)
 
@@ -48,7 +49,7 @@ func StartBackup(cmd *cobra.Command) {
 		backupFileName = fmt.Sprintf("%s_%s.sql", dbConf.dbName, time.Now().Format("20060102_150405"))
 	}
 
-	if executionMode == "default" {
+	if cronExpression == "" {
 		switch storage {
 		case "s3":
 			s3Backup(dbConf, backupFileName, disableCompression, prune, backupRetention, encryption)
@@ -62,10 +63,12 @@ func StartBackup(cmd *cobra.Command) {
 			localBackup(dbConf, backupFileName, disableCompression, prune, backupRetention, encryption)
 		}
 
-	} else if executionMode == "scheduled" {
-		scheduledMode(dbConf, storage)
 	} else {
-		utils.Fatal("Error, unknown execution mode!")
+		if utils.IsValidCronExpression(cronExpression) {
+			scheduledMode(dbConf, storage)
+		} else {
+			utils.Fatal("Cron expression is not valid: %s", cronExpression)
+		}
 	}
 
 }
@@ -87,11 +90,17 @@ func scheduledMode(db *dbConfig, storage string) {
 	utils.Info("Creating backup job...")
 	CreateCrontabScript(disableCompression, storage)
 
+	//Set BACKUP_CRON_EXPRESSION to nil
+	err := os.Setenv("BACKUP_CRON_EXPRESSION", "")
+	if err != nil {
+		return
+	}
+
 	supervisorConfig := "/etc/supervisor/supervisord.conf"
 
 	// Start Supervisor
 	cmd := exec.Command("supervisord", "-c", supervisorConfig)
-	err := cmd.Start()
+	err = cmd.Start()
 	if err != nil {
 		utils.Fatal(fmt.Sprintf("Failed to start supervisord: %v", err))
 	}
