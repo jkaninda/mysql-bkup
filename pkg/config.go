@@ -71,6 +71,7 @@ func initDbConfig(cmd *cobra.Command) *dbConfig {
 }
 func initBackupConfig(cmd *cobra.Command) *BackupConfig {
 	utils.SetEnv("STORAGE_PATH", storagePath)
+	utils.GetEnv(cmd, "cron-expression", "BACKUP_CRON_EXPRESSION")
 	utils.GetEnv(cmd, "period", "BACKUP_CRON_EXPRESSION")
 
 	//Get flag value and set env
