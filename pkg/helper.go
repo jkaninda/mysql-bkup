@@ -110,8 +110,7 @@ func testDatabaseConnection(db *dbConfig) {
 
 	utils.Info("Connecting to %s database ...", db.dbName)
 
-	cmd := exec.Command("mysql", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, "--password="+db.dbPassword, db.dbName, "-e", "quit")
-
+	cmd := exec.Command("mysql", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
 	// Capture the output
 	var out bytes.Buffer
 	cmd.Stdout = &out

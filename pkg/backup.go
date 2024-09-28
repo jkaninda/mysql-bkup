@@ -132,6 +132,10 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool
 	}
 
 	utils.Info("Starting database backup...")
+	err = os.Setenv("MYSQL_PWD", db.dbPassword)
+	if err != nil {
+		return
+	}
 	testDatabaseConnection(db)
 
 	// Backup Database database
@@ -143,7 +147,6 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool
 			"-h", db.dbHost,
 			"-P", db.dbPort,
 			"-u", db.dbUserName,
-			"--password="+db.dbPassword,
 			db.dbName,
 		)
 		output, err := cmd.Output()
@@ -166,7 +169,7 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool
 
 	} else {
 		// Execute mysqldump
-		cmd := exec.Command("mysqldump", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, "--password="+db.dbPassword, db.dbName)
+		cmd := exec.Command("mysqldump", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Fatal(err)
