@@ -38,23 +38,25 @@ func StartBackup(cmd *cobra.Command) {
 // Run in scheduled mode
 func scheduledMode(db *dbConfig, config *BackupConfig) {
 	utils.Info("Running in Scheduled mode")
-	utils.Info("Backup cron expression:  %s", os.Getenv("BACKUP_CRON_EXPRESSION"))
+	utils.Info("Backup cron expression:  %s", config.cronExpression)
 	utils.Info("Storage type %s ", storage)
 
 	//Test database connexion
 	testDatabaseConnection(db)
 
-	utils.Info("Creating a new cron instance...")
+	utils.Info("Creating cron instance...")
 	// Create a new cron instance
 	c := cron.New()
 
-	// Add a cron job that runs every 10 seconds
-	c.AddFunc(config.cronExpression, func() {
+	_, err := c.AddFunc(config.cronExpression, func() {
 		BackupTask(db, config)
 	})
+	if err != nil {
+		return
+	}
 	// Start the cron scheduler
 	c.Start()
-	utils.Info("Creating a new cron instance...done")
+	utils.Info("Creating cron instance...done")
 	defer c.Stop()
 	select {}
 }
