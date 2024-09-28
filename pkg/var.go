@@ -16,7 +16,6 @@ const gpgExtension = "gpg"
 var (
 	storage            = "local"
 	file               = ""
-	executionMode      = "default"
 	storagePath        = "/backup"
 	disableCompression = false
 	encryption         = false
