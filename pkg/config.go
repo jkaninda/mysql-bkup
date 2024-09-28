@@ -7,11 +7,9 @@
 package pkg
 
 import (
-	"fmt"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 	"os"
-	"time"
 )
 
 type Config struct {
@@ -88,15 +86,8 @@ func initBackupConfig(cmd *cobra.Command) *BackupConfig {
 	if gpqPassphrase != "" {
 		encryption = true
 	}
-	//Generate file name
-	backupFileName := fmt.Sprintf("%s_%s.sql.gz", dbConf.dbName, time.Now().Format("20240102_150405"))
-	if disableCompression {
-		backupFileName = fmt.Sprintf("%s_%s.sql", dbConf.dbName, time.Now().Format("20240102_150405"))
-	}
-
 	//Initialize backup configs
 	config := BackupConfig{}
-	config.backupFileName = backupFileName
 	config.backupRetention = backupRetention
 	config.disableCompression = disableCompression
 	config.prune = prune

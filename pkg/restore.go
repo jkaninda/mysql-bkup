@@ -20,7 +20,7 @@ func StartRestore(cmd *cobra.Command) {
 	dbConf = initDbConfig(cmd)
 	restoreConf := initRestoreConfig(cmd)
 
-	switch storage {
+	switch restoreConf.storage {
 	case "s3":
 		restoreFromS3(dbConf, restoreConf.file, restoreConf.bucket, restoreConf.s3Path)
 	case "local":

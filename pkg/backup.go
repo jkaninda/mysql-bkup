@@ -15,6 +15,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 )
 
 func StartBackup(cmd *cobra.Command) {
@@ -39,7 +40,7 @@ func StartBackup(cmd *cobra.Command) {
 func scheduledMode(db *dbConfig, config *BackupConfig) {
 	utils.Info("Running in Scheduled mode")
 	utils.Info("Backup cron expression:  %s", config.cronExpression)
-	utils.Info("Storage type %s ", storage)
+	utils.Info("Storage type %s ", config.storage)
 
 	//Test database connexion
 	testDatabaseConnection(db)
@@ -62,6 +63,12 @@ func scheduledMode(db *dbConfig, config *BackupConfig) {
 }
 func BackupTask(db *dbConfig, config *BackupConfig) {
 	utils.Info("Starting backup task...")
+	//Generate backup file name
+	backupFileName := fmt.Sprintf("%s_%s.sql.gz", db.dbName, time.Now().Format("20240102_150405"))
+	if config.disableCompression {
+		backupFileName = fmt.Sprintf("%s_%s.sql", db.dbName, time.Now().Format("20240102_150405"))
+	}
+	config.backupFileName = backupFileName
 	switch config.storage {
 	case "s3":
 		s3Backup(db, config.backupFileName, config.disableCompression, config.prune, config.backupRetention, config.encryption)

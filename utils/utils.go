@@ -240,7 +240,7 @@ func NotifyError(error string) {
 	//Telegram notification
 	err := CheckEnvVars(vars)
 	if err == nil {
-		message := "[🔴MySQL Backup ]\n" +
+		message := "[🔴 MySQL Backup ]\n" +
 			"An error occurred during database backup \n" +
 			"Error: " + error
 		sendMessage(message)
