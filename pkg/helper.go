@@ -107,16 +107,17 @@ func deleteTemp() {
 
 // TestDatabaseConnection  tests the database connection
 func testDatabaseConnection(db *dbConfig) {
-
+	err := os.Setenv("MYSQL_PWD", db.dbPassword)
+	if err != nil {
+		return
+	}
 	utils.Info("Connecting to %s database ...", db.dbName)
-
-	cmd := exec.Command("mysql", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, "--password="+db.dbPassword, db.dbName, "-e", "quit")
-
+	cmd := exec.Command("mysql", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
 	// Capture the output
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		utils.Fatal("Error testing database connection: %v\nOutput: %s", err, out.String())
 

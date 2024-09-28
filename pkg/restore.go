@@ -95,13 +95,17 @@ func RestoreDatabase(db *dbConfig, file string) {
 	}
 
 	if utils.FileExists(fmt.Sprintf("%s/%s", tmpPath, file)) {
+		err = os.Setenv("MYSQL_PWD", db.dbPassword)
+		if err != nil {
+			return
+		}
 		testDatabaseConnection(db)
 		utils.Info("Restoring database...")
 
 		extension := filepath.Ext(fmt.Sprintf("%s/%s", tmpPath, file))
 		// Restore from compressed file / .sql.gz
 		if extension == ".gz" {
-			str := "zcat " + fmt.Sprintf("%s/%s", tmpPath, file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " --password=" + db.dbPassword + " " + db.dbName
+			str := "zcat " + filepath.Join(tmpPath, file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
 			_, err := exec.Command("bash", "-c", str).Output()
 			if err != nil {
 				utils.Fatal("Error, in restoring the database  %v", err)
@@ -113,20 +117,20 @@ func RestoreDatabase(db *dbConfig, file string) {
 
 		} else if extension == ".sql" {
 			//Restore from sql file
-			str := "cat " + fmt.Sprintf("%s/%s", tmpPath, file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " --password=" + db.dbPassword + " " + db.dbName
+			str := "cat " + filepath.Join(tmpPath, file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
 			_, err := exec.Command("bash", "-c", str).Output()
 			if err != nil {
-				utils.Fatal(fmt.Sprintf("Error in restoring the database %s", err))
+				utils.Fatal("Error in restoring the database %v", err)
 			}
 			utils.Info("Restoring database... done")
 			utils.Done("Database has been restored")
 			//Delete temp
 			deleteTemp()
 		} else {
-			utils.Fatal(fmt.Sprintf("Unknown file extension %s", extension))
+			utils.Fatal("Unknown file extension %s", extension)
 		}
 
 	} else {
-		utils.Fatal(fmt.Sprintf("File not found in %s", fmt.Sprintf("%s/%s", tmpPath, file)))
+		utils.Fatal("File not found in %s", filepath.Join(tmpPath, file))
 	}
 }
