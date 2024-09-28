@@ -10,7 +10,7 @@ const cronLogFile = "/var/log/mysql-bkup.log"
 const tmpPath = "/tmp/backup"
 const backupCronFile = "/usr/local/bin/backup_cron.sh"
 const algorithm = "aes256"
-const gpgHome = "gnupg"
+const gpgHome = "/config/gnupg"
 const gpgExtension = "gpg"
 
 var (

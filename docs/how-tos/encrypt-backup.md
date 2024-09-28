@@ -9,8 +9,11 @@ nav_order: 7
 The image supports encrypting backups using GPG out of the box. In case a `GPG_PASSPHRASE` environment variable is set, the backup archive will be encrypted using the given key and saved as a sql.gpg file instead or sql.gz.gpg.
 
 {: .warning }
-To restore an encrypted backup, you need to provide the same GPG passphrase used during backup process.
+To restore an encrypted backup, you need to provide the same GPG passphrase or key used during backup process.
 
+- GPG home directory `/config/gnupg`
+- Cipher algorithm `aes256`
+- 
 To decrypt manually, you need to install `gnupg`
 
 ### Decrypt backup
