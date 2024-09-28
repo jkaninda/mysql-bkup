@@ -26,8 +26,8 @@ func CreateCrontabScript(disableCompression bool, storage string) {
 
 	scriptContent := fmt.Sprintf(`#!/usr/bin/env bash
 set -e
-/usr/local/bin/mysql-bkup backup --dbname %s --port %s --storage %s %v
-`, os.Getenv("DB_NAME"), os.Getenv("DB_PORT"), storage, disableC)
+/usr/local/bin/mysql-bkup backup --dbname %s --storage %s %v
+`, os.Getenv("DB_NAME"), storage, disableC)
 
 	if err := utils.WriteToFile(backupCronFile, scriptContent); err != nil {
 		utils.Fatal("Error writing to %s: %v\n", backupCronFile, err)
