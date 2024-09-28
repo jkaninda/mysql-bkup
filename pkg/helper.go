@@ -125,3 +125,7 @@ func testDatabaseConnection(db *dbConfig) {
 	utils.Info("Successfully connected to %s database", db.dbName)
 
 }
+func intro() {
+	utils.Info("Starting MySQL Backup...")
+	utils.Info("Copyright © 2024 Jonas Kaninda ")
+}

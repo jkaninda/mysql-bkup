@@ -36,7 +36,7 @@ ENV TARGET_DB_NAME="localhost"
 ENV TARGET_DB_USERNAME=""
 ENV TARGET_DB_PASSWORD=""
 ARG DEBIAN_FRONTEND=noninteractive
-ENV VERSION="v1.2.7"
+ENV VERSION="v1.2.8"
 ENV BACKUP_CRON_EXPRESSION=""
 ENV TG_TOKEN=""
 ENV TG_CHAT_ID=""
@@ -48,7 +48,7 @@ ARG BACKUP_CRON_SCRIPT="/usr/local/bin/backup_cron.sh"
 LABEL author="Jonas Kaninda"
 
 RUN apt-get update -qq
-RUN apt install mysql-client supervisor cron gnupg -y
+RUN apt install mysql-client cron gnupg -y
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -68,8 +68,6 @@ COPY --from=build /app/mysql-bkup /usr/local/bin/mysql-bkup
 RUN chmod +x /usr/local/bin/mysql-bkup
 
 RUN ln -s /usr/local/bin/mysql-bkup /usr/local/bin/bkup
-
-ADD docker/supervisord.conf /etc/supervisor/supervisord.conf
 
 # Create backup script and make it executable
 RUN echo '#!/bin/sh\n/usr/local/bin/mysql-bkup backup "$@"' > /usr/local/bin/backup && \

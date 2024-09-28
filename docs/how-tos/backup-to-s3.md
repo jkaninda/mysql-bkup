@@ -48,7 +48,7 @@ networks:
 ### Recurring backups to S3
 
 As explained above, you need just to add AWS environment variables and specify the storage type `--storage s3`.
-In case you need to use recurring backups, you can use `--mode scheduled` and specify the periodical backup time by adding `--period "0 1 * * *"` flag as described below.
+In case you need to use recurring backups, you can use `--cron-expression "0 1 * * *"` flag or  `BACKUP_CRON_EXPRESSION=0 1 * * *` as described below.
 
 ```yml
 services:
@@ -59,7 +59,7 @@ services:
     # for a list of available releases.
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    command: backup --storage s3 -d my-database --mode scheduled --period "0 1 * * *"
+    command: backup --storage s3 -d my-database --cron-expression "0 1 * * *"
     environment:
       - DB_PORT=3306
       - DB_HOST=mysql
@@ -72,6 +72,7 @@ services:
       - AWS_REGION="us-west-2"
       - AWS_ACCESS_KEY=xxxx
       - AWS_SECRET_KEY=xxxxx
+      # - BACKUP_CRON_EXPRESSION=0 1 * * * # Optional
       ## In case you are using S3 alternative such as Minio and your Minio instance is not secured, you change it to true
       - AWS_DISABLE_SSL="false"
      # mysql-bkup container must be connected to the same network with your database

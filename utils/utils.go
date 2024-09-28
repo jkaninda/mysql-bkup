@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"io"
 	"io/fs"
@@ -224,7 +225,7 @@ func NotifySuccess(fileName string) {
 	//Telegram notification
 	err := CheckEnvVars(vars)
 	if err == nil {
-		message := "MySQL Backup \n" +
+		message := "[✅ MySQL Backup ]\n" +
 			"Database has been backed up \n" +
 			"Backup name is " + fileName
 		sendMessage(message)
@@ -239,7 +240,7 @@ func NotifyError(error string) {
 	//Telegram notification
 	err := CheckEnvVars(vars)
 	if err == nil {
-		message := "MySQL Backup \n" +
+		message := "[🔴 MySQL Backup ]\n" +
 			"An error occurred during database backup \n" +
 			"Error: " + error
 		sendMessage(message)
@@ -249,4 +250,8 @@ func NotifyError(error string) {
 func getTgUrl() string {
 	return fmt.Sprintf("https://api.telegram.org/bot%s", os.Getenv("TG_TOKEN"))
 
+}
+func IsValidCronExpression(cronExpr string) bool {
+	_, err := cron.ParseStandard(cronExpr)
+	return err == nil
 }

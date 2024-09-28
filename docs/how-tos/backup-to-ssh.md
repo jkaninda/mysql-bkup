@@ -52,7 +52,7 @@ networks:
 ### Recurring backups to SSH remote server
 
 As explained above, you need just to add required environment variables and specify the storage type `--storage ssh`.
-You can use `--mode scheduled` and specify the periodical backup time by adding `--period "0 1 * * *"` flag as described below.
+You can use `--cron-expression "* * * * *"` or  `BACKUP_CRON_EXPRESSION=0 1 * * *` as described below.
 
 ```yml
 services:
@@ -63,7 +63,7 @@ services:
     # for a list of available releases.
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    command: backup -d database --storage ssh --mode scheduled --period "0 1 * * *"
+    command: backup -d database --storage ssh --cron-expression "0 1 * * *"
     volumes:
       - ./id_ed25519:/tmp/id_ed25519"
     environment:
@@ -78,6 +78,7 @@ services:
       - SSH_USER=user
       - SSH_REMOTE_PATH=/home/jkaninda/backups
       - SSH_IDENTIFY_FILE=/tmp/id_ed25519
+     # - BACKUP_CRON_EXPRESSION=0 1 * * * # Optional
       ## We advise you to use a private jey instead of password
       #- SSH_PASSWORD=password
      # mysql-bkup container must be connected to the same network with your database
