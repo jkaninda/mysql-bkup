@@ -8,7 +8,6 @@ package pkg
 
 const cronLogFile = "/var/log/mysql-bkup.log"
 const tmpPath = "/tmp/backup"
-const backupCronFile = "/usr/local/bin/backup_cron.sh"
 const algorithm = "aes256"
 const gpgHome = "/config/gnupg"
 const gpgExtension = "gpg"
@@ -42,7 +41,13 @@ var targetDbConf *targetDbConfig
 // sshHVars Required environment variables for SSH remote server storage
 var sshHVars = []string{
 	"SSH_USER",
-	"SSH_REMOTE_PATH",
+	"REMOTE_PATH",
 	"SSH_HOST_NAME",
 	"SSH_PORT",
+}
+var ftpVars = []string{
+	"FTP_HOST_NAME",
+	"FTP_USER",
+	"FTP_PASSWORD",
+	"FTP_PORT",
 }
