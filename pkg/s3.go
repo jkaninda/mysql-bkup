@@ -4,7 +4,7 @@
 @license   MIT License <https://opensource.org/licenses/MIT>
 @Copyright © 2024 Jonas Kaninda
 **/
-package utils
+package pkg
 
 import (
 	"bytes"
@@ -14,6 +14,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/jkaninda/mysql-bkup/utils"
 	"log"
 	"net/http"
 	"os"
@@ -35,20 +36,20 @@ func CreateSession() (*session.Session, error) {
 		"AWS_REGION",
 	}
 
-	endPoint := GetEnvVariable("AWS_S3_ENDPOINT", "S3_ENDPOINT")
-	accessKey := GetEnvVariable("AWS_ACCESS_KEY", "ACCESS_KEY")
-	secretKey := GetEnvVariable("AWS_SECRET_KEY", "SECRET_KEY")
-	_ = GetEnvVariable("AWS_S3_BUCKET_NAME", "BUCKET_NAME")
+	endPoint := utils.GetEnvVariable("AWS_S3_ENDPOINT", "S3_ENDPOINT")
+	accessKey := utils.GetEnvVariable("AWS_ACCESS_KEY", "ACCESS_KEY")
+	secretKey := utils.GetEnvVariable("AWS_SECRET_KEY", "SECRET_KEY")
+	_ = utils.GetEnvVariable("AWS_S3_BUCKET_NAME", "BUCKET_NAME")
 
 	region := os.Getenv("AWS_REGION")
 	awsDisableSsl, err := strconv.ParseBool(os.Getenv("AWS_DISABLE_SSL"))
 	if err != nil {
-		Fatal("Unable to parse AWS_DISABLE_SSL env var: %s", err)
+		utils.Fatal("Unable to parse AWS_DISABLE_SSL env var: %s", err)
 	}
 
-	err = CheckEnvVars(awsVars)
+	err = utils.CheckEnvVars(awsVars)
 	if err != nil {
-		Fatal("Error checking environment variables\n: %s", err)
+		utils.Fatal("Error checking environment variables\n: %s", err)
 	}
 	// S3 Config
 	s3Config := &aws.Config{
@@ -108,7 +109,7 @@ func DownloadFile(destinationPath, key, bucket, prefix string) error {
 	if err != nil {
 		return err
 	}
-	Info("Download backup from S3 storage...")
+	utils.Info("Download backup from S3 storage...")
 	file, err := os.Create(filepath.Join(destinationPath, key))
 	if err != nil {
 		fmt.Println("Failed to create file", err)
@@ -125,10 +126,10 @@ func DownloadFile(destinationPath, key, bucket, prefix string) error {
 			Key:    aws.String(objectKey),
 		})
 	if err != nil {
-		fmt.Println("Failed to download file", err)
+		utils.Error("Failed to download file %s", key)
 		return err
 	}
-	Info("Backup downloaded:  %s bytes size %s ", file.Name(), numBytes)
+	utils.Info("Backup downloaded:  %s bytes size %s ", file.Name(), numBytes)
 
 	return nil
 }
