@@ -44,7 +44,10 @@ func scheduledMode(db *dbConfig, config *BackupConfig) {
 
 	//Test database connexion
 	testDatabaseConnection(db)
-
+	//Test backup
+	utils.Info("Testing backup configurations...")
+	BackupTask(db, config)
+	utils.Info("Testing backup configurations...done")
 	utils.Info("Creating backup job...")
 	// Create a new cron instance
 	c := cron.New()

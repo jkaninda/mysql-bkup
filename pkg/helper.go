@@ -127,5 +127,5 @@ func testDatabaseConnection(db *dbConfig) {
 }
 func intro() {
 	utils.Info("Starting MySQL Backup...")
-	utils.Info("Copyright © 2024 Jonas Kaninda ")
+	utils.Info("Copyright (c) 2024 Jonas Kaninda ")
 }
