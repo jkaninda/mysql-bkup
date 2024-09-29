@@ -162,7 +162,7 @@ func localBackup(db *dbConfig, config *BackupConfig) {
 	BackupDatabase(db, config.backupFileName, disableCompression)
 	finalFileName := config.backupFileName
 	if config.encryption {
-		encryptBackup(config.backupFileName)
+		encryptBackup(config.backupFileName, config.passphrase)
 		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, gpgExtension)
 	}
 	utils.Info("Backup name is %s", finalFileName)
@@ -185,7 +185,7 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 	BackupDatabase(db, config.backupFileName, disableCompression)
 	finalFileName := config.backupFileName
 	if config.encryption {
-		encryptBackup(config.backupFileName)
+		encryptBackup(config.backupFileName, config.passphrase)
 		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, "gpg")
 	}
 	utils.Info("Uploading backup archive to remote storage S3 ... ")
@@ -223,7 +223,7 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 	BackupDatabase(db, config.backupFileName, disableCompression)
 	finalFileName := config.backupFileName
 	if config.encryption {
-		encryptBackup(config.backupFileName)
+		encryptBackup(config.backupFileName, config.passphrase)
 		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, "gpg")
 	}
 	utils.Info("Uploading backup archive to remote storage ... ")
@@ -254,9 +254,8 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 }
 
 // encryptBackup encrypt backup
-func encryptBackup(backupFileName string) {
-	gpgPassphrase := os.Getenv("GPG_PASSPHRASE")
-	err := Encrypt(filepath.Join(tmpPath, backupFileName), gpgPassphrase)
+func encryptBackup(backupFileName, passphrase string) {
+	err := Encrypt(filepath.Join(tmpPath, backupFileName), passphrase)
 	if err != nil {
 		utils.Fatal("Error during encrypting backup %s", err)
 	}
