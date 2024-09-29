@@ -13,4 +13,5 @@ services:
       - DB_HOST=mysql
       - DB_USERNAME=userName
       - DB_PASSWORD=${DB_PASSWORD}
-      - BACKUP_CRON_EXPRESSION=0 1 * * * # Optional
+      # See: https://jkaninda.github.io/mysql-bkup/reference/#predefined-schedules
+      - BACKUP_CRON_EXPRESSION=@daily #@every 5m|@weekly | @monthly |0 1 * * *

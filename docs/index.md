@@ -79,6 +79,18 @@ services:
 networks:
   web:
 ```
+### Docker recurring backup
+
+```shell
+ docker run --rm --network network_name \
+ -v $PWD/backup:/backup/ \
+ -e "DB_HOST=hostname" \
+ -e "DB_USERNAME=user" \
+ -e "DB_PASSWORD=password" \
+ jkaninda/mysql-bkup backup -d dbName --cron-expression "@every 1m"
+```
+See: https://jkaninda.github.io/mysql-bkup/reference/#predefined-schedules
+
 ## Kubernetes
 
 ```yaml
