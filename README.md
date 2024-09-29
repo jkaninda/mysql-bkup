@@ -86,6 +86,19 @@ services:
 networks:
   web:
 ```
+
+### Docker recurring backup
+
+```shell
+ docker run --rm --network network_name \
+ -v $PWD/backup:/backup/ \
+ -e "DB_HOST=hostname" \
+ -e "DB_USERNAME=user" \
+ -e "DB_PASSWORD=password" \
+ jkaninda/mysql-bkup backup -d dbName --cron-expression "@every 1m"
+```
+See: https://jkaninda.github.io/mysql-bkup/reference/#predefined-schedules
+
 ## Deploy on Kubernetes
 
 For Kubernetes, you don't need to run it in scheduled mode. You can deploy it as Job or CronJob.
@@ -102,7 +115,7 @@ spec:
   template:
     spec:
       containers:
-        - name: pg-bkup
+        - name: mysql-bkup
           # In production, it is advised to lock your image tag to a proper
           # release version instead of using `latest`.
           # Check https://github.com/jkaninda/mysql-bkup/releases
