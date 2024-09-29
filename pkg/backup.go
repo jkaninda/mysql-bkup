@@ -73,16 +73,16 @@ func BackupTask(db *dbConfig, config *BackupConfig) {
 	}
 	config.backupFileName = backupFileName
 	switch config.storage {
-	case "s3":
-		s3Backup(db, config.backupFileName, config.disableCompression, config.prune, config.backupRetention, config.encryption)
 	case "local":
-		localBackup(db, config.backupFileName, config.disableCompression, config.prune, config.backupRetention, config.encryption)
+		localBackup(db, config)
+	case "s3":
+		s3Backup(db, config)
 	case "ssh", "remote":
-		sshBackup(db, config.backupFileName, config.remotePath, config.disableCompression, config.prune, config.backupRetention, config.encryption)
+		sshBackup(db, config)
 	case "ftp":
 		utils.Fatal("Not supported storage type: %s", config.storage)
 	default:
-		localBackup(db, config.backupFileName, config.disableCompression, config.prune, config.backupRetention, config.encryption)
+		localBackup(db, config)
 	}
 }
 
@@ -157,36 +157,36 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool
 	}
 
 }
-func localBackup(db *dbConfig, backupFileName string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
+func localBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to local storage")
-	BackupDatabase(db, backupFileName, disableCompression)
-	finalFileName := backupFileName
-	if encrypt {
-		encryptBackup(backupFileName)
-		finalFileName = fmt.Sprintf("%s.%s", backupFileName, gpgExtension)
+	BackupDatabase(db, config.backupFileName, disableCompression)
+	finalFileName := config.backupFileName
+	if config.encryption {
+		encryptBackup(config.backupFileName)
+		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, gpgExtension)
 	}
 	utils.Info("Backup name is %s", finalFileName)
 	moveToBackup(finalFileName, storagePath)
 	//Send notification
 	utils.NotifySuccess(finalFileName)
 	//Delete old backup
-	if prune {
-		deleteOldBackup(backupRetention)
+	if config.prune {
+		deleteOldBackup(config.backupRetention)
 	}
 	//Delete temp
 	deleteTemp()
 }
 
-func s3Backup(db *dbConfig, backupFileName string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
+func s3Backup(db *dbConfig, config *BackupConfig) {
 	bucket := utils.GetEnvVariable("AWS_S3_BUCKET_NAME", "BUCKET_NAME")
 	s3Path := utils.GetEnvVariable("AWS_S3_PATH", "S3_PATH")
 	utils.Info("Backup database to s3 storage")
 	//Backup database
-	BackupDatabase(db, backupFileName, disableCompression)
-	finalFileName := backupFileName
-	if encrypt {
-		encryptBackup(backupFileName)
-		finalFileName = fmt.Sprintf("%s.%s", backupFileName, "gpg")
+	BackupDatabase(db, config.backupFileName, disableCompression)
+	finalFileName := config.backupFileName
+	if config.encryption {
+		encryptBackup(config.backupFileName)
+		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, "gpg")
 	}
 	utils.Info("Uploading backup archive to remote storage S3 ... ")
 	utils.Info("Backup name is %s", finalFileName)
@@ -197,14 +197,14 @@ func s3Backup(db *dbConfig, backupFileName string, disableCompression bool, prun
 	}
 
 	//Delete backup file from tmp folder
-	err = utils.DeleteFile(filepath.Join(tmpPath, backupFileName))
+	err = utils.DeleteFile(filepath.Join(tmpPath, config.backupFileName))
 	if err != nil {
 		fmt.Println("Error deleting file: ", err)
 
 	}
 	// Delete old backup
-	if prune {
-		err := utils.DeleteOldBackup(bucket, s3Path, backupRetention)
+	if config.prune {
+		err := utils.DeleteOldBackup(bucket, s3Path, config.backupRetention)
 		if err != nil {
 			utils.Fatal("Error deleting old backup from S3: %s ", err)
 		}
@@ -217,18 +217,18 @@ func s3Backup(db *dbConfig, backupFileName string, disableCompression bool, prun
 }
 
 // sshBackup backup database to SSH remote server
-func sshBackup(db *dbConfig, backupFileName, remotePath string, disableCompression bool, prune bool, backupRetention int, encrypt bool) {
+func sshBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to Remote server")
 	//Backup database
-	BackupDatabase(db, backupFileName, disableCompression)
-	finalFileName := backupFileName
-	if encrypt {
-		encryptBackup(backupFileName)
-		finalFileName = fmt.Sprintf("%s.%s", backupFileName, "gpg")
+	BackupDatabase(db, config.backupFileName, disableCompression)
+	finalFileName := config.backupFileName
+	if config.encryption {
+		encryptBackup(config.backupFileName)
+		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, "gpg")
 	}
 	utils.Info("Uploading backup archive to remote storage ... ")
 	utils.Info("Backup name is %s", finalFileName)
-	err := CopyToRemote(finalFileName, remotePath)
+	err := CopyToRemote(finalFileName, config.remotePath)
 	if err != nil {
 		utils.Fatal("Error uploading file to the remote server: %s ", err)
 
@@ -240,7 +240,7 @@ func sshBackup(db *dbConfig, backupFileName, remotePath string, disableCompressi
 		fmt.Println("Error deleting file: ", err)
 
 	}
-	if prune {
+	if config.prune {
 		//TODO: Delete old backup from remote server
 		utils.Info("Deleting old backup from a remote server is not implemented yet")
 
