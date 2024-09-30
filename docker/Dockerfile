@@ -48,7 +48,7 @@ ARG BACKUPDIR="/backup"
 ARG BACKUP_TMP_DIR="/tmp/backup"
 LABEL author="Jonas Kaninda"
 
-RUN apk --update add mysql-client gnupg
+RUN apk add --no-cache mysql-client mariadb-connector-c gnupg
 RUN mkdir $WORKDIR
 RUN mkdir $BACKUPDIR
 RUN mkdir -p $BACKUP_TMP_DIR
