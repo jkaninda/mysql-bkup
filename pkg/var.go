@@ -51,3 +51,12 @@ var ftpVars = []string{
 	"FTP_PASSWORD",
 	"FTP_PORT",
 }
+
+// AwsVars Required environment variables for AWS S3 storage
+var awsVars = []string{
+	"AWS_S3_ENDPOINT",
+	"AWS_S3_BUCKET_NAME",
+	"AWS_ACCESS_KEY",
+	"AWS_SECRET_KEY",
+	"AWS_REGION",
+}

@@ -27,6 +27,8 @@ jobs:
           push: true
           file: "./docker/Dockerfile"
           platforms: linux/amd64,linux/arm64,linux/arm/v7
+          build-args: |
+            appVersion=develop-${{ github.sha }}
           tags: |
-            "${{env.BUILDKIT_IMAGE}}:develop-${{ github.sha }}"
+            "${{vars.BUILDKIT_IMAGE}}:develop-${{ github.sha }}"
 
