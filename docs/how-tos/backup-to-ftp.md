@@ -11,7 +11,7 @@ As described for SSH backup section, to change the storage of your backup and us
 You need to add the full remote path by adding `--path /home/jkaninda/backups` flag or using `REMOTE_PATH` environment variable.
 
 {: .note }
-These environment variables are required for SSH backup `FTP_HOST_NAME`, `FTP_USER`, `REMOTE_PATH`, `FTP_PORT` or `FTP_PASSWORD`.
+These environment variables are required for SSH backup `FTP_HOST`, `FTP_USER`, `REMOTE_PATH`, `FTP_PORT` or `FTP_PASSWORD`.
 
 ```yml
 services:
@@ -30,7 +30,7 @@ services:
       - DB_USERNAME=username
       - DB_PASSWORD=password
       ## FTP config
-      - FTP_HOST_NAME="hostname"
+      - FTP_HOST="hostname"
       - FTP_PORT=21
       - FTP_USER=user
       - FTP_PASSWORD=password
