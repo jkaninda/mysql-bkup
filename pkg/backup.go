@@ -75,11 +75,11 @@ func BackupTask(db *dbConfig, config *BackupConfig) {
 	switch config.storage {
 	case "local":
 		localBackup(db, config)
-	case "s3":
+	case "s3", "S3":
 		s3Backup(db, config)
-	case "ssh", "remote":
+	case "ssh", "SSH", "remote":
 		sshBackup(db, config)
-	case "ftp":
+	case "ftp", "FTP":
 		ftpBackup(db, config)
 	default:
 		localBackup(db, config)
