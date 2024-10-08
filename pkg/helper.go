@@ -129,3 +129,45 @@ func intro() {
 	utils.Info("Starting MySQL Backup...")
 	utils.Info("Copyright (c) 2024 Jonas Kaninda ")
 }
+func checkPubKeyFile(pubKey string) (string, error) {
+	// Define possible key file names
+	keyFiles := []string{filepath.Join(gpgHome, "public_key.asc"), filepath.Join(gpgHome, "public_key.gpg"), pubKey}
+
+	// Loop through key file names and check if they exist
+	for _, keyFile := range keyFiles {
+		if _, err := os.Stat(keyFile); err == nil {
+			// File exists
+			return keyFile, nil
+		} else if os.IsNotExist(err) {
+			// File does not exist, continue to the next one
+			continue
+		} else {
+			// An unexpected error occurred
+			return "", err
+		}
+	}
+
+	// Return an error if neither file exists
+	return "", fmt.Errorf("no public key file found")
+}
+func checkPrKeyFile(prKey string) (string, error) {
+	// Define possible key file names
+	keyFiles := []string{filepath.Join(gpgHome, "private_key.asc"), filepath.Join(gpgHome, "private_key.gpg"), prKey}
+
+	// Loop through key file names and check if they exist
+	for _, keyFile := range keyFiles {
+		if _, err := os.Stat(keyFile); err == nil {
+			// File exists
+			return keyFile, nil
+		} else if os.IsNotExist(err) {
+			// File does not exist, continue to the next one
+			continue
+		} else {
+			// An unexpected error occurred
+			return "", err
+		}
+	}
+
+	// Return an error if neither file exists
+	return "", fmt.Errorf("no public key file found")
+}
