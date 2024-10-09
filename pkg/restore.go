@@ -7,7 +7,6 @@
 package pkg
 
 import (
-	"fmt"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 	"os"
@@ -94,7 +93,7 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 
 	}
 
-	if utils.FileExists(fmt.Sprintf("%s/%s", tmpPath, conf.file)) {
+	if utils.FileExists(filepath.Join(tmpPath, conf.file)) {
 		err := os.Setenv("MYSQL_PWD", db.dbPassword)
 		if err != nil {
 			return
