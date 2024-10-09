@@ -14,12 +14,14 @@ const gpgExtension = "gpg"
 const workingDir = "/config"
 
 var (
-	storage            = "local"
-	file               = ""
-	storagePath        = "/backup"
-	disableCompression = false
-	encryption         = false
-	usingKey           = false
+	storage                  = "local"
+	file                     = ""
+	storagePath              = "/backup"
+	disableCompression       = false
+	encryption               = false
+	usingKey                 = false
+	backupSize         int64 = 0
+	startTime          string
 )
 
 // dbHVars Required environment variables for database

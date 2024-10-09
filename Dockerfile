@@ -47,6 +47,7 @@ ENV TZ=UTC
 ARG WORKDIR="/config"
 ARG BACKUPDIR="/backup"
 ARG BACKUP_TMP_DIR="/tmp/backup"
+ARG TEMPLATES_DIR="/config/templates"
 ARG appVersion="v1.2.12"
 ENV VERSION=${appVersion}
 LABEL author="Jonas Kaninda"
@@ -55,6 +56,7 @@ LABEL version=${appVersion}
 RUN apk --update add --no-cache mysql-client mariadb-connector-c tzdata
 RUN mkdir $WORKDIR
 RUN mkdir $BACKUPDIR
+RUN mkdir $TEMPLATES_DIR
 RUN mkdir -p $BACKUP_TMP_DIR
 RUN chmod 777 $WORKDIR
 RUN chmod 777 $BACKUPDIR
@@ -62,6 +64,7 @@ RUN chmod 777 $BACKUP_TMP_DIR
 RUN chmod 777 $WORKDIR
 
 COPY --from=build /app/mysql-bkup /usr/local/bin/mysql-bkup
+COPY ./templates/* $TEMPLATES_DIR/
 RUN chmod +x /usr/local/bin/mysql-bkup
 
 RUN ln -s /usr/local/bin/mysql-bkup /usr/local/bin/bkup
