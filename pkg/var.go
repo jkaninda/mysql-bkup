@@ -11,6 +11,7 @@ const tmpPath = "/tmp/backup"
 const algorithm = "aes256"
 const gpgHome = "/config/gnupg"
 const gpgExtension = "gpg"
+const workingDir = "/config"
 
 var (
 	storage            = "local"
@@ -18,6 +19,7 @@ var (
 	storagePath        = "/backup"
 	disableCompression = false
 	encryption         = false
+	usingKey           = false
 )
 
 // dbHVars Required environment variables for database
