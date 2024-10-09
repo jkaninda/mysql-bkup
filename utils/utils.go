@@ -7,19 +7,15 @@
 package utils
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
 	"io"
 	"io/fs"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"strconv"
 )
 
+// FileExists checks if the file does exist
 func FileExists(filename string) bool {
 	info, err := os.Stat(filename)
 	if os.IsNotExist(err) {
@@ -133,13 +129,10 @@ func GetEnvVariable(envName, oldEnvName string) string {
 			if err != nil {
 				return value
 			}
-			Warn("%s is deprecated, please use %s instead!", oldEnvName, envName)
-
+			Warn("%s is deprecated, please use %s instead! ", oldEnvName, envName)
 		}
 	}
 	return value
-}
-func ShowHistory() {
 }
 
 // CheckEnvVars checks if all the specified environment variables are set
@@ -186,72 +179,4 @@ func GetIntEnv(envName string) int {
 		Error("Error: %v", err)
 	}
 	return ret
-}
-func sendMessage(msg string) {
-
-	Info("Sending notification... ")
-	chatId := os.Getenv("TG_CHAT_ID")
-	body, _ := json.Marshal(map[string]string{
-		"chat_id": chatId,
-		"text":    msg,
-	})
-	url := fmt.Sprintf("%s/sendMessage", getTgUrl())
-	// Create an HTTP post request
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(body))
-	if err != nil {
-		panic(err)
-	}
-	request.Header.Add("Content-Type", "application/json")
-	client := &http.Client{}
-	response, err := client.Do(request)
-	if err != nil {
-		panic(err)
-	}
-	code := response.StatusCode
-	if code == 200 {
-		Info("Notification has been sent")
-	} else {
-		body, _ := ioutil.ReadAll(response.Body)
-		Error("Message not sent, error: %s", string(body))
-	}
-
-}
-func NotifySuccess(fileName string) {
-	var vars = []string{
-		"TG_TOKEN",
-		"TG_CHAT_ID",
-	}
-
-	//Telegram notification
-	err := CheckEnvVars(vars)
-	if err == nil {
-		message := "[✅ MySQL Backup ]\n" +
-			"Database has been backed up \n" +
-			"Backup name is " + fileName
-		sendMessage(message)
-	}
-}
-func NotifyError(error string) {
-	var vars = []string{
-		"TG_TOKEN",
-		"TG_CHAT_ID",
-	}
-
-	//Telegram notification
-	err := CheckEnvVars(vars)
-	if err == nil {
-		message := "[🔴 MySQL Backup ]\n" +
-			"An error occurred during database backup \n" +
-			"Error: " + error
-		sendMessage(message)
-	}
-}
-
-func getTgUrl() string {
-	return fmt.Sprintf("https://api.telegram.org/bot%s", os.Getenv("TG_TOKEN"))
-
-}
-func IsValidCronExpression(cronExpr string) bool {
-	_, err := cron.ParseStandard(cronExpr)
-	return err == nil
 }
