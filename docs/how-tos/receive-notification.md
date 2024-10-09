@@ -69,6 +69,17 @@ Template sources must be mounted inside the container in /config/templates:
 - telegram.template: Telegram notification template
 - error.template: Error notification template
 
+### Data
+
+Here is a list of all data passed to the template:
+- `Database` : Database name
+- `StartTime`: Backup start time process
+- `EndTime`: Backup start time process
+- `Storage`: Backup storage
+- `BackupLocation`: Backup location
+- `BackupSize`: Backup size
+
+
 >  email.template:
 
 
