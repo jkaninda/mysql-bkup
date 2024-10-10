@@ -81,13 +81,9 @@ spec:
         # for a list of available releases.
         image: jkaninda/mysql-bkup
         command:
-        - /bin/sh
-        - -c
-        - bkup
-        - backup
-        - --storage
-        - ssh
-        - --disable-compression
+          - /bin/sh
+          - -c
+          - backup --storage ssh
         resources:
           limits:
             memory: "128Mi"
@@ -116,7 +112,7 @@ spec:
             value: "/home/toto/backup"
           # Optional, required if you want to encrypt your backup
           - name: GPG_PASSPHRASE
-            value: "xxxx"
+            value: "secure-passphrase"
       restartPolicy: Never
 ```
 
@@ -139,13 +135,9 @@ spec:
         # for a list of available releases.
         image: jkaninda/mysql-bkup
         command:
-        - /bin/sh
-        - -c
-        - bkup
-        - restore
-        - --storage
-        - ssh
-        - --file store_20231219_022941.sql.gz
+          - /bin/sh
+          - -c
+          - backup --storage ssh --file store_20231219_022941.sql.gz
         resources:
           limits:
             memory: "128Mi"
@@ -238,7 +230,6 @@ spec:
 
 This image also supports Kubernetes security context, you can run it in Rootless environment.
 It has been tested on Openshift, it works well.
-Deployment on OpenShift is supported, you need to remove `securityContext` section on your yaml file.
 
 ```yaml
 apiVersion: batch/v1
@@ -300,4 +291,56 @@ spec:
               #- name: GPG_PASSPHRASE
               #  value: "xxx"
           restartPolicy: OnFailure
+```
+
+## Migrate database
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: migrate-db
+spec:
+  ttlSecondsAfterFinished: 100
+  template:
+    spec:
+      containers:
+      - name: mysql-bkup
+        # In production, it is advised to lock your image tag to a proper
+        # release version instead of using `latest`.
+        # Check https://github.com/jkaninda/mysql-bkup/releases
+        # for a list of available releases.
+        image: jkaninda/mysql-bkup
+        command:
+        - /bin/sh
+        - -c
+        - migrate
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+        ## Source Database
+          - name: DB_HOST
+            value: "mysql"    
+          - name: DB_PORT
+            value: "3306"  
+          - name: DB_NAME
+            value: "dbname"
+          - name: DB_USERNAME
+            value: "username"
+          - name: DB_PASSWORD
+            value: "password"
+          ## Target Database
+          - name: TARGET_DB_HOST
+            value: "target-mysql"    
+          - name: TARGET_DB_PORT
+            value: "3306"
+          - name: TARGET_DB_NAME
+            value: "dbname"
+          - name: TARGET_DB_USERNAME
+            value: "username"
+          - name: TARGET_DB_PASSWORD
+            value: "password"
+      restartPolicy: Never
 ```
