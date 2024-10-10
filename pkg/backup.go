@@ -218,7 +218,7 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool
 }
 func localBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to local storage")
-	startTime = time.Now().Format("2006-01-02 15:04:05")
+	startTime = time.Now().Format(utils.TimeFormat())
 	BackupDatabase(db, config.backupFileName, disableCompression)
 	finalFileName := config.backupFileName
 	if config.encryption {
@@ -241,7 +241,7 @@ func localBackup(db *dbConfig, config *BackupConfig) {
 		Storage:        config.storage,
 		BackupLocation: filepath.Join(config.remotePath, finalFileName),
 		StartTime:      startTime,
-		EndTime:        time.Now().Format("2006-01-02 15:04:05"),
+		EndTime:        time.Now().Format(utils.TimeFormat()),
 	})
 	//Delete old backup
 	if config.prune {
@@ -256,7 +256,7 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 	bucket := utils.GetEnvVariable("AWS_S3_BUCKET_NAME", "BUCKET_NAME")
 	s3Path := utils.GetEnvVariable("AWS_S3_PATH", "S3_PATH")
 	utils.Info("Backup database to s3 storage")
-	startTime = time.Now().Format("2006-01-02 15:04:05")
+	startTime = time.Now().Format(utils.TimeFormat())
 
 	//Backup database
 	BackupDatabase(db, config.backupFileName, disableCompression)
@@ -301,7 +301,7 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 		Storage:        config.storage,
 		BackupLocation: filepath.Join(config.remotePath, finalFileName),
 		StartTime:      startTime,
-		EndTime:        time.Now().Format("2006-01-02 15:04:05"),
+		EndTime:        time.Now().Format(utils.TimeFormat()),
 	})
 	//Delete temp
 	deleteTemp()
@@ -310,7 +310,7 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 }
 func sshBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to Remote server")
-	startTime = time.Now().Format("2006-01-02 15:04:05")
+	startTime = time.Now().Format(utils.TimeFormat())
 
 	//Backup database
 	BackupDatabase(db, config.backupFileName, disableCompression)
@@ -353,7 +353,7 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 		Storage:        config.storage,
 		BackupLocation: filepath.Join(config.remotePath, finalFileName),
 		StartTime:      startTime,
-		EndTime:        time.Now().Format("2006-01-02 15:04:05"),
+		EndTime:        time.Now().Format(utils.TimeFormat()),
 	})
 	//Delete temp
 	deleteTemp()
@@ -362,7 +362,7 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 }
 func ftpBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to the remote FTP server")
-	startTime = time.Now().Format("2006-01-02 15:04:05")
+	startTime = time.Now().Format(utils.TimeFormat())
 
 	//Backup database
 	BackupDatabase(db, config.backupFileName, disableCompression)
@@ -405,7 +405,7 @@ func ftpBackup(db *dbConfig, config *BackupConfig) {
 		Storage:        config.storage,
 		BackupLocation: filepath.Join(config.remotePath, finalFileName),
 		StartTime:      startTime,
-		EndTime:        time.Now().Format("2006-01-02 15:04:05"),
+		EndTime:        time.Now().Format(utils.TimeFormat()),
 	})
 	//Delete temp
 	deleteTemp()
