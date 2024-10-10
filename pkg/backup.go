@@ -255,6 +255,9 @@ func localBackup(db *dbConfig, config *BackupConfig) {
 func s3Backup(db *dbConfig, config *BackupConfig) {
 	bucket := utils.GetEnvVariable("AWS_S3_BUCKET_NAME", "BUCKET_NAME")
 	s3Path := utils.GetEnvVariable("AWS_S3_PATH", "S3_PATH")
+	if config.remotePath != "" {
+		s3Path = config.remotePath
+	}
 	utils.Info("Backup database to s3 storage")
 	startTime = time.Now().Format(utils.TimeFormat())
 
