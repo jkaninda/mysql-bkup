@@ -53,7 +53,7 @@ ENV VERSION=${appVersion}
 LABEL author="Jonas Kaninda"
 LABEL version=${appVersion}
 
-RUN apk --update add --no-cache mysql-client mariadb-connector-c tzdata
+RUN apk --update add --no-cache mysql-client mariadb-connector-c tzdata ca-certificates
 RUN mkdir $WORKDIR
 RUN mkdir $BACKUPDIR
 RUN mkdir $TEMPLATES_DIR
@@ -70,13 +70,13 @@ RUN chmod +x /usr/local/bin/mysql-bkup
 RUN ln -s /usr/local/bin/mysql-bkup /usr/local/bin/bkup
 
 # Create backup script and make it executable
-RUN echo '#!/bin/sh\n/usr/local/bin/mysql-bkup backup "$@"' > /usr/local/bin/backup && \
+RUN printf '#!/bin/sh\n/usr/local/bin/mysql-bkup backup "$@"' > /usr/local/bin/backup && \
     chmod +x /usr/local/bin/backup
 # Create restore script and make it executable
-RUN echo '#!/bin/sh\n/usr/local/bin/mysql-bkup restore "$@"' > /usr/local/bin/restore && \
+RUN printf '#!/bin/sh\n/usr/local/bin/mysql-bkup restore "$@"' > /usr/local/bin/restore && \
     chmod +x /usr/local/bin/restore
 # Create migrate script and make it executable
-RUN echo '#!/bin/sh\n/usr/local/bin/mysql-bkup migrate "$@"' > /usr/local/bin/migrate && \
+RUN printf '#!/bin/sh\n/usr/local/bin/mysql-bkup migrate "$@"' > /usr/local/bin/migrate && \
     chmod +x /usr/local/bin/migrate
 
 WORKDIR $WORKDIR
