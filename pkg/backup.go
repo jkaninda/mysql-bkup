@@ -302,7 +302,7 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 		BackupSize:     backupSize,
 		Database:       db.dbName,
 		Storage:        config.storage,
-		BackupLocation: filepath.Join(config.remotePath, finalFileName),
+		BackupLocation: filepath.Join(s3Path, finalFileName),
 		StartTime:      startTime,
 		EndTime:        time.Now().Format(utils.TimeFormat()),
 	})
