@@ -18,7 +18,7 @@
 <li>Backup Reference: {{.BackupReference}} </li>
 </ul>
 <p>Best regards,</p>
-<p>©2024 <a href="github.com/jkaninda/mysql-bkup">mysql-bkup</a></p>
+<p>©2024 <a href="https://github.com/jkaninda/mysql-bkup">mysql-bkup</a></p>
 <href>
 </body>
 </html>
