@@ -7,6 +7,9 @@ It handles __recurring__ backups of postgres database on Docker and can be deplo
 
 It also supports database __encryption__ using GPG.
 
+Telegram and Email notifications on successful and failed backups.
+
+
 [![Build](https://github.com/jkaninda/mysql-bkup/actions/workflows/release.yml/badge.svg)](https://github.com/jkaninda/mysql-bkup/actions/workflows/release.yml)
 [![Go Report](https://goreportcard.com/badge/github.com/jkaninda/mysql-bkup)](https://goreportcard.com/report/github.com/jkaninda/mysql-bkup)
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/jkaninda/mysql-bkup?style=flat-square)
