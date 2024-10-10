@@ -32,7 +32,7 @@ services:
       - MAIL_SKIP_TLS=false
       ## Time format for notification 
       - TIME_FORMAT=2006-01-02 at 15:04:05
-      ## Backup reference, in case you want to identifier every backup instance
+      ## Backup reference, in case you want to identify every backup instance
       - BACKUP_REFERENCE=database/Paris cluster
     networks:
       - web
@@ -60,7 +60,7 @@ services:
       - TG_CHAT_ID=
       ## Time format for notification 
       - TIME_FORMAT=2006-01-02 at 15:04:05
-      ## Backup reference, in case you want to identifier every backup instance
+      ## Backup reference, in case you want to identify every backup instance
       - BACKUP_REFERENCE=database/Paris cluster
     networks:
       - web
