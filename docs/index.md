@@ -9,6 +9,9 @@ nav_order: 1
 MySQL Backup is a Docker container image that can be used to backup, restore and migrate MySQL database. It supports local storage, AWS S3 or any S3 Alternatives for Object Storage, FTP and SSH remote storage.
 It also supports __encrypting__ your backups using GPG.
 
+Telegram and Email notifications on successful and failed backups.
+
+
 We are open to receiving stars, PRs, and issues!
 
 
