@@ -3,7 +3,7 @@ MySQL Backup is a Docker container image that can be used to backup, restore and
 It also supports __encrypting__ your backups using GPG.
 
 The [jkaninda/mysql-bkup](https://hub.docker.com/r/jkaninda/mysql-bkup) Docker image can be deployed on Docker, Docker Swarm and Kubernetes.
-It handles __recurring__ backups of postgres database on Docker and can be deployed as __CronJob on Kubernetes__ using local, AWS S3, FTP or SSH compatible storage.
+It handles __recurring__ backups of MySQL or MariaDB database on Docker and can be deployed as __CronJob on Kubernetes__ using local, AWS S3, FTP or SSH compatible storage.
 
 It also supports database __encryption__ using GPG.
 
