@@ -91,7 +91,7 @@ networks:
  -e "DB_HOST=hostname" \
  -e "DB_USERNAME=user" \
  -e "DB_PASSWORD=password" \
- jkaninda/mysql-bkup backup -d dbName --cron-expression "@every 1m"
+ jkaninda/mysql-bkup backup -d dbName --cron-expression "@every 15m" #@midnight
 ```
 See: https://jkaninda.github.io/mysql-bkup/reference/#predefined-schedules
 
