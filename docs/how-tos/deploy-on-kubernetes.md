@@ -59,6 +59,8 @@ spec:
               value: "xxxx"
             - name: AWS_DISABLE_SSL
               value: "false"
+            - name: AWS_FORCE_PATH_STYLE
+              value: "false"
       restartPolicy: Never
 ```
 
