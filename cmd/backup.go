@@ -20,7 +20,7 @@ var BackupCmd = &cobra.Command{
 		if len(args) == 0 {
 			pkg.StartBackup(cmd)
 		} else {
-			utils.Fatal("Error, no argument required")
+			utils.Fatal(`"backup" accepts no argument %q`, args)
 		}
 	},
 }
