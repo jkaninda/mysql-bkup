@@ -79,6 +79,8 @@ services:
       - REMOTE_PATH=/home/jkaninda/backups
       - SSH_IDENTIFY_FILE=/tmp/id_ed25519
      # - BACKUP_CRON_EXPRESSION=0 1 * * * # Optional
+      #Delete old backup created more than specified days ago
+      #- BACKUP_RETENTION_DAYS=7
       ## We advise you to use a private jey instead of password
       #- SSH_PASSWORD=password
      # mysql-bkup container must be connected to the same network with your database
