@@ -22,20 +22,12 @@ LABEL version=${appVersion}
 LABEL github="github.com/jkaninda/mysql-bkup"
 
 RUN apk --update add --no-cache mysql-client mariadb-connector-c tzdata ca-certificates
-RUN mkdir $WORKDIR
-RUN mkdir $BACKUPDIR
-RUN mkdir $TEMPLATES_DIR
-RUN mkdir -p $BACKUP_TMP_DIR
-RUN chmod 777 $WORKDIR
-RUN chmod 777 $BACKUPDIR
-RUN chmod 777 $BACKUP_TMP_DIR
-RUN chmod 777 $WORKDIR
-
+RUN mkdir -p $WORKDIR $BACKUPDIR $TEMPLATES_DIR $BACKUP_TMP_DIR && \
+     chmod a+rw $WORKDIR $BACKUPDIR $BACKUP_TMP_DIR
 COPY --from=build /app/mysql-bkup /usr/local/bin/mysql-bkup
 COPY ./templates/* $TEMPLATES_DIR/
-RUN chmod +x /usr/local/bin/mysql-bkup
-
-RUN ln -s /usr/local/bin/mysql-bkup /usr/local/bin/bkup
+RUN chmod +x /usr/local/bin/mysql-bkup && \
+    ln -s /usr/local/bin/mysql-bkup /usr/local/bin/bkup
 
 # Create backup script and make it executable
 RUN printf '#!/bin/sh\n/usr/local/bin/mysql-bkup backup "$@"' > /usr/local/bin/backup && \
