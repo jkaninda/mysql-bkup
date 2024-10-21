@@ -39,7 +39,7 @@ func moveToBackup(backupFileName string, destinationPath string) {
 		fmt.Println("Error deleting file:", err)
 
 	}
-	utils.Done("Database has been backed up and copied to %s", filepath.Join(destinationPath, backupFileName))
+	utils.Info("Database has been backed up and copied to %s", filepath.Join(destinationPath, backupFileName))
 }
 func deleteOldBackup(retentionDays int) {
 	utils.Info("Deleting old backups...")
@@ -54,7 +54,7 @@ func deleteOldBackup(retentionDays int) {
 		if err != nil {
 			utils.Fatal(fmt.Sprintf("Error: %s", err))
 		} else {
-			utils.Done("File  %s  has been deleted successfully", filePath)
+			utils.Info("File  %s  has been deleted successfully", filePath)
 		}
 		return err
 	}
@@ -81,7 +81,7 @@ func deleteOldBackup(retentionDays int) {
 		utils.Fatal(fmt.Sprintf("Error: %s", err))
 		return
 	}
-	utils.Done("Deleting old backups...done")
+	utils.Info("Deleting old backups...done")
 
 }
 func deleteTemp() {
