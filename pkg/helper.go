@@ -15,75 +15,14 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
-func copyToTmp(sourcePath string, backupFileName string) {
-	//Copy backup from storage to /tmp
-	err := utils.CopyFile(filepath.Join(sourcePath, backupFileName), filepath.Join(tmpPath, backupFileName))
-	if err != nil {
-		utils.Fatal(fmt.Sprintf("Error copying file %s %s", backupFileName, err))
-
-	}
+func intro() {
+	utils.Info("Starting MySQL Backup...")
+	utils.Info("Copyright (c) 2024 Jonas Kaninda ")
 }
-func moveToBackup(backupFileName string, destinationPath string) {
-	//Copy backup from tmp folder to storage destination
-	err := utils.CopyFile(filepath.Join(tmpPath, backupFileName), filepath.Join(destinationPath, backupFileName))
-	if err != nil {
-		utils.Fatal(fmt.Sprintf("Error copying file %s %s", backupFileName, err))
 
-	}
-	//Delete backup file from tmp folder
-	err = utils.DeleteFile(filepath.Join(tmpPath, backupFileName))
-	if err != nil {
-		fmt.Println("Error deleting file:", err)
-
-	}
-	utils.Info("Database has been backed up and copied to %s", filepath.Join(destinationPath, backupFileName))
-}
-func deleteOldBackup(retentionDays int) {
-	utils.Info("Deleting old backups...")
-	storagePath = os.Getenv("STORAGE_PATH")
-	// Define the directory path
-	backupDir := storagePath + "/"
-	// Get current time
-	currentTime := time.Now()
-	// Delete file
-	deleteFile := func(filePath string) error {
-		err := os.Remove(filePath)
-		if err != nil {
-			utils.Fatal(fmt.Sprintf("Error: %s", err))
-		} else {
-			utils.Info("File  %s  has been deleted successfully", filePath)
-		}
-		return err
-	}
-
-	// Walk through the directory and delete files modified more than specified days ago
-	err := filepath.Walk(backupDir, func(filePath string, fileInfo os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		// Check if it's a regular file and if it was modified more than specified days ago
-		if fileInfo.Mode().IsRegular() {
-			timeDiff := currentTime.Sub(fileInfo.ModTime())
-			if timeDiff.Hours() > 24*float64(retentionDays) {
-				err := deleteFile(filePath)
-				if err != nil {
-					return err
-				}
-			}
-		}
-		return nil
-	})
-
-	if err != nil {
-		utils.Fatal(fmt.Sprintf("Error: %s", err))
-		return
-	}
-	utils.Info("Deleting old backups...done")
-
-}
+// copyToTmp copy file to temporary directory
 func deleteTemp() {
 	utils.Info("Deleting %s ...", tmpPath)
 	err := filepath.Walk(tmpPath, func(path string, info os.FileInfo, err error) error {
@@ -127,10 +66,8 @@ func testDatabaseConnection(db *dbConfig) {
 	utils.Info("Successfully connected to %s database", db.dbName)
 
 }
-func intro() {
-	utils.Info("Starting MySQL Backup...")
-	utils.Info("Copyright (c) 2024 Jonas Kaninda ")
-}
+
+// checkPubKeyFile checks gpg public key
 func checkPubKeyFile(pubKey string) (string, error) {
 	// Define possible key file names
 	keyFiles := []string{filepath.Join(gpgHome, "public_key.asc"), filepath.Join(gpgHome, "public_key.gpg"), pubKey}
@@ -152,6 +89,8 @@ func checkPubKeyFile(pubKey string) (string, error) {
 	// Return an error if neither file exists
 	return "", fmt.Errorf("no public key file found")
 }
+
+// checkPrKeyFile checks private key
 func checkPrKeyFile(prKey string) (string, error) {
 	// Define possible key file names
 	keyFiles := []string{filepath.Join(gpgHome, "private_key.asc"), filepath.Join(gpgHome, "private_key.gpg"), prKey}
@@ -173,8 +112,9 @@ func checkPrKeyFile(prKey string) (string, error) {
 	// Return an error if neither file exists
 	return "", fmt.Errorf("no public key file found")
 }
+
+// readConf reads config file and returns Config
 func readConf(configFile string) (*Config, error) {
-	//configFile := filepath.Join("./", filename)
 	if utils.FileExists(configFile) {
 		buf, err := os.ReadFile(configFile)
 		if err != nil {
@@ -191,6 +131,8 @@ func readConf(configFile string) (*Config, error) {
 	}
 	return nil, fmt.Errorf("config file %q not found", configFile)
 }
+
+// checkConfigFile checks config files and returns one config file
 func checkConfigFile(filePath string) (string, error) {
 	// Define possible config file names
 	configFiles := []string{filepath.Join(workingDir, "config.yaml"), filepath.Join(workingDir, "config.yml"), filePath}

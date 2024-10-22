@@ -6,18 +6,17 @@
 **/
 package pkg
 
-const cronLogFile = "/var/log/mysql-bkup.log"
 const tmpPath = "/tmp/backup"
-const algorithm = "aes256"
 const gpgHome = "/config/gnupg"
 const gpgExtension = "gpg"
-const workingDir = "/config"
 const timeFormat = "2006-01-02 at 15:04:05"
 
 var (
-	storage                  = "local"
-	file                     = ""
+	storage = "local"
+	file    = ""
+
 	storagePath              = "/backup"
+	workingDir               = "/config"
 	disableCompression       = false
 	encryption               = false
 	usingKey                 = false
@@ -28,6 +27,7 @@ var (
 // dbHVars Required environment variables for database
 var dbHVars = []string{
 	"DB_HOST",
+	"DB_PORT",
 	"DB_PASSWORD",
 	"DB_USERNAME",
 	"DB_NAME",
@@ -43,12 +43,12 @@ var tdbRVars = []string{
 var dbConf *dbConfig
 var targetDbConf *targetDbConfig
 
-// sshHVars Required environment variables for SSH remote server storage
-var sshHVars = []string{
+// sshVars Required environment variables for SSH remote server storage
+var sshVars = []string{
 	"SSH_USER",
-	"REMOTE_PATH",
 	"SSH_HOST_NAME",
 	"SSH_PORT",
+	"REMOTE_PATH",
 }
 var ftpVars = []string{
 	"FTP_HOST_NAME",

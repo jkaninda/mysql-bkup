@@ -80,6 +80,7 @@ type AWSConfig struct {
 	accessKey      string
 	secretKey      string
 	region         string
+	remotePath     string
 	disableSsl     bool
 	forcePathStyle bool
 }
@@ -129,7 +130,7 @@ func loadSSHConfig() (*SSHConfig, error) {
 		identifyFile: os.Getenv("SSH_IDENTIFY_FILE"),
 	}, nil
 }
-func initFtpConfig() *FTPConfig {
+func loadFtpConfig() *FTPConfig {
 	//Initialize data configs
 	fConfig := FTPConfig{}
 	fConfig.host = utils.GetEnvVariable("FTP_HOST", "FTP_HOST_NAME")
@@ -151,6 +152,8 @@ func initAWSConfig() *AWSConfig {
 	aConfig.accessKey = utils.GetEnvVariable("AWS_ACCESS_KEY", "ACCESS_KEY")
 	aConfig.secretKey = utils.GetEnvVariable("AWS_SECRET_KEY", "SECRET_KEY")
 	aConfig.bucket = utils.GetEnvVariable("AWS_S3_BUCKET_NAME", "BUCKET_NAME")
+	aConfig.remotePath = utils.GetEnvVariable("AWS_S3_PATH", "S3_PATH")
+
 	aConfig.region = os.Getenv("AWS_REGION")
 	disableSsl, err := strconv.ParseBool(os.Getenv("AWS_DISABLE_SSL"))
 	if err != nil {
@@ -255,7 +258,7 @@ func initRestoreConfig(cmd *cobra.Command) *RestoreConfig {
 func initTargetDbConfig() *targetDbConfig {
 	tdbConfig := targetDbConfig{}
 	tdbConfig.targetDbHost = os.Getenv("TARGET_DB_HOST")
-	tdbConfig.targetDbPort = utils.EnvWithDefault("TARGET_DB_PORT", "3306")
+	tdbConfig.targetDbPort = utils.EnvWithDefault("TARGET_DB_PORT", "5432")
 	tdbConfig.targetDbName = os.Getenv("TARGET_DB_NAME")
 	tdbConfig.targetDbUserName = os.Getenv("TARGET_DB_USERNAME")
 	tdbConfig.targetDbPassword = os.Getenv("TARGET_DB_PASSWORD")
