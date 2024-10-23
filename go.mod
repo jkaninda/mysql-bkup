@@ -9,7 +9,7 @@ require (
 	github.com/jkaninda/encryptor v0.0.0-20241013064832-ed4bd6a1b221
 	github.com/jkaninda/go-storage v0.1.1
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/spf13/cobra v1.8.0
+	github.com/spf13/cobra v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
