@@ -106,7 +106,6 @@ func BackupTask(db *dbConfig, config *BackupConfig) {
 		sshBackup(db, config)
 	case "ftp", "FTP":
 		ftpBackup(db, config)
-		//utils.Fatal("Not supported storage type: %s", config.storage)
 	default:
 		localBackup(db, config)
 	}
@@ -239,7 +238,7 @@ func localBackup(db *dbConfig, config *BackupConfig) {
 	}
 	fileInfo, err := os.Stat(filepath.Join(tmpPath, finalFileName))
 	if err != nil {
-		utils.Error("Error:", err)
+		utils.Error("Error: %s", err)
 	}
 	backupSize = fileInfo.Size()
 	utils.Info("Backup name is %s", finalFileName)
@@ -313,7 +312,7 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 	//Get backup info
 	fileInfo, err := os.Stat(filepath.Join(tmpPath, finalFileName))
 	if err != nil {
-		utils.Error("Error:", err)
+		utils.Error("Error: %s", err)
 	}
 	backupSize = fileInfo.Size()
 
@@ -383,7 +382,7 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 	//Get backup info
 	fileInfo, err := os.Stat(filepath.Join(tmpPath, finalFileName))
 	if err != nil {
-		utils.Error("Error:", err)
+		utils.Error("Error: %s", err)
 	}
 	backupSize = fileInfo.Size()
 	utils.Info("Backup saved in %s", filepath.Join(config.remotePath, finalFileName))
@@ -450,7 +449,7 @@ func ftpBackup(db *dbConfig, config *BackupConfig) {
 	//Get backup info
 	fileInfo, err := os.Stat(filepath.Join(tmpPath, finalFileName))
 	if err != nil {
-		utils.Error("Error:", err)
+		utils.Error("Error: %s", err)
 	}
 	backupSize = fileInfo.Size()
 	//Delete backup file from tmp folder
