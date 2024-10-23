@@ -25,6 +25,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jkaninda/encryptor v0.0.0-20241013064832-ed4bd6a1b221 // indirect
+	github.com/jkaninda/go-storage v0.1.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/sys v0.22.0 // indirect

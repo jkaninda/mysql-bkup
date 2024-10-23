@@ -8,10 +8,10 @@ package pkg
 
 import (
 	"github.com/jkaninda/encryptor"
-	"github.com/jkaninda/mysql-bkup/pkg/storage/ftp"
-	"github.com/jkaninda/mysql-bkup/pkg/storage/local"
-	"github.com/jkaninda/mysql-bkup/pkg/storage/s3"
-	"github.com/jkaninda/mysql-bkup/pkg/storage/ssh"
+	"github.com/jkaninda/go-storage/pkg/ftp"
+	"github.com/jkaninda/go-storage/pkg/local"
+	"github.com/jkaninda/go-storage/pkg/s3"
+	"github.com/jkaninda/go-storage/pkg/ssh"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 	"os"
