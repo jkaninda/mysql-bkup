@@ -365,12 +365,13 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 	}
 
 	sshStorage, err := ssh.NewStorage(ssh.Config{
-		Host:       sshConfig.hostName,
-		Port:       sshConfig.port,
-		User:       sshConfig.user,
-		Password:   sshConfig.password,
-		RemotePath: config.remotePath,
-		LocalPath:  tmpPath,
+		Host:         sshConfig.hostName,
+		Port:         sshConfig.port,
+		User:         sshConfig.user,
+		Password:     sshConfig.password,
+		IdentifyFile: sshConfig.identifyFile,
+		RemotePath:   config.remotePath,
+		LocalPath:    tmpPath,
 	})
 	if err != nil {
 		utils.Fatal("Error creating SSH storage: %s", err)
