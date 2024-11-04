@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/jkaninda/mysql-bkup/pkg"
+	"github.com/jkaninda/mysql-bkup/internal"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 )
@@ -12,7 +12,7 @@ var RestoreCmd = &cobra.Command{
 	Example: utils.RestoreExample,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			pkg.StartRestore(cmd)
+			internal.StartRestore(cmd)
 		} else {
 			utils.Fatal(`"restore" accepts no argument %q`, args)
 
