@@ -22,12 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package internal
+package pkg
 
 import (
 	"fmt"
 	"github.com/jkaninda/go-storage/pkg/s3"
-	"github.com/jkaninda/mysql-bkup/pkg/logger"
 	"github.com/jkaninda/mysql-bkup/utils"
 
 	"os"
@@ -37,7 +36,7 @@ import (
 
 func s3Backup(db *dbConfig, config *BackupConfig) {
 
-	logger.Info("Backup database to s3 storage")
+	utils.Info("Backup database to s3 storage")
 	startTime = time.Now().Format(utils.TimeFormat())
 	// Backup database
 	BackupDatabase(db, config.backupFileName, disableCompression)
@@ -46,12 +45,12 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 		encryptBackup(config)
 		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, "gpg")
 	}
-	logger.Info("Uploading backup archive to remote storage S3 ... ")
+	utils.Info("Uploading backup archive to remote storage S3 ... ")
 	awsConfig := initAWSConfig()
 	if config.remotePath == "" {
 		config.remotePath = awsConfig.remotePath
 	}
-	logger.Info("Backup name is %s", finalFileName)
+	utils.Info("Backup name is %s", finalFileName)
 	s3Storage, err := s3.NewStorage(s3.Config{
 		Endpoint:       awsConfig.endpoint,
 		Bucket:         awsConfig.bucket,
@@ -64,16 +63,16 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 		LocalPath:      tmpPath,
 	})
 	if err != nil {
-		logger.Fatal("Error creating s3 storage: %s", err)
+		utils.Fatal("Error creating s3 storage: %s", err)
 	}
 	err = s3Storage.Copy(finalFileName)
 	if err != nil {
-		logger.Fatal("Error copying backup file: %s", err)
+		utils.Fatal("Error copying backup file: %s", err)
 	}
 	// Get backup info
 	fileInfo, err := os.Stat(filepath.Join(tmpPath, finalFileName))
 	if err != nil {
-		logger.Error("Error: %s", err)
+		utils.Error("Error: %s", err)
 	}
 	backupSize = fileInfo.Size()
 
@@ -87,11 +86,11 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 	if config.prune {
 		err := s3Storage.Prune(config.backupRetention)
 		if err != nil {
-			logger.Fatal("Error deleting old backup from %s storage: %s ", config.storage, err)
+			utils.Fatal("Error deleting old backup from %s storage: %s ", config.storage, err)
 		}
 	}
-	logger.Info("Backup saved in %s", filepath.Join(config.remotePath, finalFileName))
-	logger.Info("Uploading backup archive to remote storage S3 ... done ")
+	utils.Info("Backup saved in %s", filepath.Join(config.remotePath, finalFileName))
+	utils.Info("Uploading backup archive to remote storage S3 ... done ")
 	// Send notification
 	utils.NotifySuccess(&utils.NotificationData{
 		File:           finalFileName,
@@ -104,11 +103,11 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 	})
 	// Delete temp
 	deleteTemp()
-	logger.Info("Backup completed successfully")
+	utils.Info("Backup completed successfully")
 
 }
 func s3Restore(db *dbConfig, conf *RestoreConfig) {
-	logger.Info("Restore database from s3")
+	utils.Info("Restore database from s3")
 	awsConfig := initAWSConfig()
 	if conf.remotePath == "" {
 		conf.remotePath = awsConfig.remotePath
@@ -125,11 +124,11 @@ func s3Restore(db *dbConfig, conf *RestoreConfig) {
 		LocalPath:      tmpPath,
 	})
 	if err != nil {
-		logger.Fatal("Error creating s3 storage: %s", err)
+		utils.Fatal("Error creating s3 storage: %s", err)
 	}
 	err = s3Storage.CopyFrom(conf.file)
 	if err != nil {
-		logger.Fatal("Error download file from S3 storage: %s", err)
+		utils.Fatal("Error download file from S3 storage: %s", err)
 	}
 	RestoreDatabase(db, conf)
 }

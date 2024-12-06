@@ -22,11 +22,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-package internal
+package pkg
 
 import (
 	"fmt"
-	"github.com/jkaninda/mysql-bkup/pkg/logger"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 	"os"
@@ -121,8 +120,8 @@ func initDbConfig(cmd *cobra.Command) *dbConfig {
 
 	err := utils.CheckEnvVars(dbHVars)
 	if err != nil {
-		logger.Error("Please make sure all required environment variables for database are set")
-		logger.Fatal("Error checking environment variables: %s", err)
+		utils.Error("Please make sure all required environment variables for database are set")
+		utils.Fatal("Error checking environment variables: %s", err)
 	}
 	return &dConf
 }
@@ -164,8 +163,8 @@ func loadFtpConfig() *FTPConfig {
 	fConfig.remotePath = os.Getenv("REMOTE_PATH")
 	err := utils.CheckEnvVars(ftpVars)
 	if err != nil {
-		logger.Error("Please make sure all required environment variables for FTP are set")
-		logger.Fatal("Error missing environment variables: %s", err)
+		utils.Error("Please make sure all required environment variables for FTP are set")
+		utils.Fatal("Error missing environment variables: %s", err)
 	}
 	return &fConfig
 }
@@ -178,8 +177,8 @@ func loadAzureConfig() *AzureConfig {
 
 	err := utils.CheckEnvVars(azureVars)
 	if err != nil {
-		logger.Error("Please make sure all required environment variables for Azure Blob storage are set")
-		logger.Fatal("Error missing environment variables: %s", err)
+		utils.Error("Please make sure all required environment variables for Azure Blob storage are set")
+		utils.Fatal("Error missing environment variables: %s", err)
 	}
 	return &aConfig
 }
@@ -206,8 +205,8 @@ func initAWSConfig() *AWSConfig {
 	aConfig.forcePathStyle = forcePathStyle
 	err = utils.CheckEnvVars(awsVars)
 	if err != nil {
-		logger.Error("Please make sure all required environment variables for AWS S3 are set")
-		logger.Fatal("Error checking environment variables: %s", err)
+		utils.Error("Please make sure all required environment variables for AWS S3 are set")
+		utils.Fatal("Error checking environment variables: %s", err)
 	}
 	return &aConfig
 }
@@ -304,8 +303,8 @@ func initTargetDbConfig() *targetDbConfig {
 
 	err := utils.CheckEnvVars(tdbRVars)
 	if err != nil {
-		logger.Error("Please make sure all required environment variables for the target database are set")
-		logger.Fatal("Error checking target database environment variables: %s", err)
+		utils.Error("Please make sure all required environment variables for the target database are set")
+		utils.Fatal("Error checking target database environment variables: %s", err)
 	}
 	return &tdbConfig
 }
