@@ -1,5 +1,5 @@
 // Package internal /
-package internal
+package pkg
 
 /*
 MIT License
@@ -27,7 +27,6 @@ SOFTWARE.
 import (
 	"github.com/jkaninda/encryptor"
 	"github.com/jkaninda/go-storage/pkg/local"
-	"github.com/jkaninda/mysql-bkup/pkg/logger"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 	"os"
@@ -56,14 +55,14 @@ func StartRestore(cmd *cobra.Command) {
 	}
 }
 func localRestore(dbConf *dbConfig, restoreConf *RestoreConfig) {
-	logger.Info("Restore database from local")
+	utils.Info("Restore database from local")
 	localStorage := local.NewStorage(local.Config{
 		RemotePath: storagePath,
 		LocalPath:  tmpPath,
 	})
 	err := localStorage.CopyFrom(restoreConf.file)
 	if err != nil {
-		logger.Fatal("Error copying backup file: %s", err)
+		utils.Fatal("Error copying backup file: %s", err)
 	}
 	RestoreDatabase(dbConf, restoreConf)
 
@@ -72,41 +71,41 @@ func localRestore(dbConf *dbConfig, restoreConf *RestoreConfig) {
 // RestoreDatabase restore database
 func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 	if conf.file == "" {
-		logger.Fatal("Error, file required")
+		utils.Fatal("Error, file required")
 	}
 	extension := filepath.Ext(filepath.Join(tmpPath, conf.file))
 	rFile, err := os.ReadFile(filepath.Join(tmpPath, conf.file))
 	outputFile := RemoveLastExtension(filepath.Join(tmpPath, conf.file))
 	if err != nil {
-		logger.Fatal("Error reading backup file: %s ", err)
+		utils.Fatal("Error reading backup file: %s ", err)
 	}
 
 	if extension == ".gpg" {
 
 		if conf.usingKey {
-			logger.Info("Decrypting backup using private key...")
-			logger.Warn("Backup decryption using a private key is not fully supported")
+			utils.Info("Decrypting backup using private key...")
+			utils.Warn("Backup decryption using a private key is not fully supported")
 			prKey, err := os.ReadFile(conf.privateKey)
 			if err != nil {
-				logger.Fatal("Error reading public key: %s ", err)
+				utils.Fatal("Error reading public key: %s ", err)
 			}
 			err = encryptor.DecryptWithPrivateKey(rFile, outputFile, prKey, conf.passphrase)
 			if err != nil {
-				logger.Fatal("error during decrypting backup %v", err)
+				utils.Fatal("error during decrypting backup %v", err)
 			}
-			logger.Info("Decrypting backup using private key...done")
+			utils.Info("Decrypting backup using private key...done")
 		} else {
 			if conf.passphrase == "" {
-				logger.Error("Error, passphrase or private key required")
-				logger.Fatal("Your file seems to be a GPG file.\nYou need to provide GPG keys. GPG_PASSPHRASE or GPG_PRIVATE_KEY environment variable is required.")
+				utils.Error("Error, passphrase or private key required")
+				utils.Fatal("Your file seems to be a GPG file.\nYou need to provide GPG keys. GPG_PASSPHRASE or GPG_PRIVATE_KEY environment variable is required.")
 			} else {
-				logger.Info("Decrypting backup using passphrase...")
+				utils.Info("Decrypting backup using passphrase...")
 				// decryptWithGPG file
 				err := encryptor.Decrypt(rFile, outputFile, conf.passphrase)
 				if err != nil {
-					logger.Fatal("Error decrypting file %s %v", file, err)
+					utils.Fatal("Error decrypting file %s %v", file, err)
 				}
-				logger.Info("Decrypting backup using passphrase...done")
+				utils.Info("Decrypting backup using passphrase...done")
 				// Update file name
 				conf.file = RemoveLastExtension(file)
 			}
@@ -120,7 +119,7 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 			return
 		}
 		testDatabaseConnection(db)
-		logger.Info("Restoring database...")
+		utils.Info("Restoring database...")
 
 		extension := filepath.Ext(filepath.Join(tmpPath, conf.file))
 		// Restore from compressed file / .sql.gz
@@ -128,10 +127,10 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 			str := "zcat " + filepath.Join(tmpPath, conf.file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
 			_, err := exec.Command("sh", "-c", str).Output()
 			if err != nil {
-				logger.Fatal("Error, in restoring the database  %v", err)
+				utils.Fatal("Error, in restoring the database  %v", err)
 			}
-			logger.Info("Restoring database... done")
-			logger.Info("Database has been restored")
+			utils.Info("Restoring database... done")
+			utils.Info("Database has been restored")
 			// Delete temp
 			deleteTemp()
 
@@ -140,17 +139,17 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 			str := "cat " + filepath.Join(tmpPath, conf.file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
 			_, err := exec.Command("sh", "-c", str).Output()
 			if err != nil {
-				logger.Fatal("Error in restoring the database %v", err)
+				utils.Fatal("Error in restoring the database %v", err)
 			}
-			logger.Info("Restoring database... done")
-			logger.Info("Database has been restored")
+			utils.Info("Restoring database... done")
+			utils.Info("Database has been restored")
 			// Delete temp
 			deleteTemp()
 		} else {
-			logger.Fatal("Unknown file extension %s", extension)
+			utils.Fatal("Unknown file extension %s", extension)
 		}
 
 	} else {
-		logger.Fatal("File not found in %s", filepath.Join(tmpPath, conf.file))
+		utils.Fatal("File not found in %s", filepath.Join(tmpPath, conf.file))
 	}
 }

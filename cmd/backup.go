@@ -25,8 +25,7 @@ SOFTWARE.
 package cmd
 
 import (
-	"github.com/jkaninda/mysql-bkup/internal"
-	"github.com/jkaninda/mysql-bkup/pkg/logger"
+	"github.com/jkaninda/mysql-bkup/pkg"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 )
@@ -37,9 +36,9 @@ var BackupCmd = &cobra.Command{
 	Example: utils.BackupExample,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			internal.StartBackup(cmd)
+			pkg.StartBackup(cmd)
 		} else {
-			logger.Fatal(`"backup" accepts no argument %q`, args)
+			utils.Fatal(`"backup" accepts no argument %q`, args)
 		}
 	},
 }

@@ -26,6 +26,7 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -41,6 +42,6 @@ var VersionCmd = &cobra.Command{
 }
 
 func Version() {
-	fmt.Printf("Version: %s \n", appVersion)
+	fmt.Printf("Version: %s \n", utils.Version)
 	fmt.Println()
 }

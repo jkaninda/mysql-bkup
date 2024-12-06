@@ -22,18 +22,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-package internal
+package pkg
 
 import (
 	"fmt"
-	"github.com/jkaninda/mysql-bkup/pkg/logger"
+	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 	"time"
 )
 
 func StartMigration(cmd *cobra.Command) {
 	intro()
-	logger.Info("Starting database migration...")
+	utils.Info("Starting database migration...")
 	// Get DB config
 	dbConf = initDbConfig(cmd)
 	targetDbConf = initTargetDbConfig()
@@ -53,8 +53,8 @@ func StartMigration(cmd *cobra.Command) {
 	// Backup source Database
 	BackupDatabase(dbConf, backupFileName, true)
 	// Restore source database into target database
-	logger.Info("Restoring [%s] database into [%s] database...", dbConf.dbName, targetDbConf.targetDbName)
+	utils.Info("Restoring [%s] database into [%s] database...", dbConf.dbName, targetDbConf.targetDbName)
 	RestoreDatabase(&newDbConfig, conf)
-	logger.Info("[%s] database has been restored into [%s] database", dbConf.dbName, targetDbConf.targetDbName)
-	logger.Info("Database migration completed.")
+	utils.Info("[%s] database has been restored into [%s] database", dbConf.dbName, targetDbConf.targetDbName)
+	utils.Info("Database migration completed.")
 }

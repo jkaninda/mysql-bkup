@@ -22,12 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-package internal
+package pkg
 
 import (
 	"fmt"
 	"github.com/jkaninda/go-storage/pkg/azure"
-	"github.com/jkaninda/mysql-bkup/pkg/logger"
 	"github.com/jkaninda/mysql-bkup/utils"
 
 	"os"
@@ -36,7 +35,7 @@ import (
 )
 
 func azureBackup(db *dbConfig, config *BackupConfig) {
-	logger.Info("Backup database to the remote FTP server")
+	utils.Info("Backup database to the remote FTP server")
 	startTime = time.Now().Format(utils.TimeFormat())
 
 	// Backup database
@@ -46,8 +45,8 @@ func azureBackup(db *dbConfig, config *BackupConfig) {
 		encryptBackup(config)
 		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, "gpg")
 	}
-	logger.Info("Uploading backup archive to Azure Blob storage ...")
-	logger.Info("Backup name is %s", finalFileName)
+	utils.Info("Uploading backup archive to Azure Blob storage ...")
+	utils.Info("Backup name is %s", finalFileName)
 	azureConfig := loadAzureConfig()
 	azureStorage, err := azure.NewStorage(azure.Config{
 		ContainerName: azureConfig.containerName,
@@ -57,34 +56,34 @@ func azureBackup(db *dbConfig, config *BackupConfig) {
 		LocalPath:     tmpPath,
 	})
 	if err != nil {
-		logger.Fatal("Error creating SSH storage: %s", err)
+		utils.Fatal("Error creating Azure storage: %s", err)
 	}
 	err = azureStorage.Copy(finalFileName)
 	if err != nil {
-		logger.Fatal("Error copying backup file: %s", err)
+		utils.Fatal("Error copying backup file: %s", err)
 	}
-	logger.Info("Backup saved in %s", filepath.Join(config.remotePath, finalFileName))
+	utils.Info("Backup saved in %s", filepath.Join(config.remotePath, finalFileName))
 	// Get backup info
 	fileInfo, err := os.Stat(filepath.Join(tmpPath, finalFileName))
 	if err != nil {
-		logger.Error("Error: %s", err)
+		utils.Error("Error: %s", err)
 	}
 	backupSize = fileInfo.Size()
 	// Delete backup file from tmp folder
 	err = utils.DeleteFile(filepath.Join(tmpPath, finalFileName))
 	if err != nil {
-		logger.Error("Error deleting file: %v", err)
+		utils.Error("Error deleting file: %v", err)
 
 	}
 	if config.prune {
 		err := azureStorage.Prune(config.backupRetention)
 		if err != nil {
-			logger.Fatal("Error deleting old backup from %s storage: %s ", config.storage, err)
+			utils.Fatal("Error deleting old backup from %s storage: %s ", config.storage, err)
 		}
 
 	}
 
-	logger.Info("Uploading backup archive to Azure Blob storage ... done ")
+	utils.Info("Uploading backup archive to Azure Blob storage ... done ")
 
 	// Send notification
 	utils.NotifySuccess(&utils.NotificationData{
@@ -98,10 +97,10 @@ func azureBackup(db *dbConfig, config *BackupConfig) {
 	})
 	// Delete temp
 	deleteTemp()
-	logger.Info("Backup completed successfully")
+	utils.Info("Backup completed successfully")
 }
 func azureRestore(db *dbConfig, conf *RestoreConfig) {
-	logger.Info("Restore database from Azure Blob storage")
+	utils.Info("Restore database from Azure Blob storage")
 	azureConfig := loadAzureConfig()
 	azureStorage, err := azure.NewStorage(azure.Config{
 		ContainerName: azureConfig.containerName,
@@ -111,12 +110,12 @@ func azureRestore(db *dbConfig, conf *RestoreConfig) {
 		LocalPath:     tmpPath,
 	})
 	if err != nil {
-		logger.Fatal("Error creating SSH storage: %s", err)
+		utils.Fatal("Error creating SSH storage: %s", err)
 	}
 
 	err = azureStorage.CopyFrom(conf.file)
 	if err != nil {
-		logger.Fatal("Error downloading backup file: %s", err)
+		utils.Fatal("Error downloading backup file: %s", err)
 	}
 	RestoreDatabase(db, conf)
 }

@@ -32,3 +32,4 @@ const BackupExample = "backup --dbname database --disable-compression\n" +
 const MainExample = "mysql-bkup backup --dbname database --disable-compression\n" +
 	"backup --dbname database --storage s3 --path /custom-path\n" +
 	"restore --dbname database --file db_20231219_022941.sql.gz"
+const traceLog = "trace"

@@ -1,4 +1,4 @@
-package logger
+package utils
 
 import (
 	"fmt"
@@ -54,7 +54,13 @@ func Error(msg string, args ...interface{}) {
 
 func Fatal(msg string, args ...interface{}) {
 	log.SetOutput(os.Stdout)
+	// Format message if there are additional arguments
+	formattedMessage := msg
+	if len(args) > 0 {
+		formattedMessage = fmt.Sprintf(msg, args...)
+	}
 	logWithCaller("ERROR", msg, args...)
+	NotifyError(formattedMessage)
 	os.Exit(1)
 }
 
