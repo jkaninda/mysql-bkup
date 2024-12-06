@@ -1,14 +1,33 @@
 // Package internal /
-/*****
-@author    Jonas Kaninda
-@license   MIT License <https://opensource.org/licenses/MIT>
-@Copyright © 2024 Jonas Kaninda
-**/
+/*
+MIT License
+
+Copyright (c) 2023 Jonas Kaninda
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 package internal
 
 import (
 	"bytes"
 	"fmt"
+	"github.com/jkaninda/mysql-bkup/pkg/logger"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -18,13 +37,14 @@ import (
 )
 
 func intro() {
-	utils.Info("Starting MySQL Backup...")
-	utils.Info("Copyright (c) 2024 Jonas Kaninda ")
+	fmt.Println("Starting MySQL Backup...")
+	fmt.Printf("Version: %s\n", utils.Version)
+	fmt.Println("Copyright (c) 2024 Jonas Kaninda")
 }
 
 // copyToTmp copy file to temporary directory
 func deleteTemp() {
-	utils.Info("Deleting %s ...", tmpPath)
+	logger.Info("Deleting %s ...", tmpPath)
 	err := filepath.Walk(tmpPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -40,9 +60,9 @@ func deleteTemp() {
 		return nil
 	})
 	if err != nil {
-		utils.Error("Error deleting files: %v", err)
+		logger.Error("Error deleting files: %v", err)
 	} else {
-		utils.Info("Deleting %s ... done", tmpPath)
+		logger.Info("Deleting %s ... done", tmpPath)
 	}
 }
 
@@ -52,7 +72,7 @@ func testDatabaseConnection(db *dbConfig) {
 	if err != nil {
 		return
 	}
-	utils.Info("Connecting to %s database ...", db.dbName)
+	logger.Info("Connecting to %s database ...", db.dbName)
 	cmd := exec.Command("mysql", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
 	// Capture the output
 	var out bytes.Buffer
@@ -60,10 +80,10 @@ func testDatabaseConnection(db *dbConfig) {
 	cmd.Stderr = &out
 	err = cmd.Run()
 	if err != nil {
-		utils.Fatal("Error testing database connection: %v\nOutput: %s", err, out.String())
+		logger.Fatal("Error testing database connection: %v\nOutput: %s", err, out.String())
 
 	}
-	utils.Info("Successfully connected to %s database", db.dbName)
+	logger.Info("Successfully connected to %s database", db.dbName)
 
 }
 
