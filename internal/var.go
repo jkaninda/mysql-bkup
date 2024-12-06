@@ -74,6 +74,11 @@ var ftpVars = []string{
 	"FTP_PASSWORD",
 	"FTP_PORT",
 }
+var azureVars = []string{
+	"AZURE_STORAGE_CONTAINER_NAME",
+	"AZURE_STORAGE_ACCOUNT_NAME",
+	"AZURE_STORAGE_ACCOUNT_KEY",
+}
 
 // AwsVars Required environment variables for AWS S3 storage
 var awsVars = []string{

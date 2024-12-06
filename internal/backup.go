@@ -27,10 +27,7 @@ package internal
 import (
 	"fmt"
 	"github.com/jkaninda/encryptor"
-	"github.com/jkaninda/go-storage/pkg/ftp"
 	"github.com/jkaninda/go-storage/pkg/local"
-	"github.com/jkaninda/go-storage/pkg/s3"
-	"github.com/jkaninda/go-storage/pkg/ssh"
 	"github.com/jkaninda/mysql-bkup/pkg/logger"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/robfig/cron/v3"
@@ -125,6 +122,8 @@ func BackupTask(db *dbConfig, config *BackupConfig) {
 		sshBackup(db, config)
 	case "ftp", "FTP":
 		ftpBackup(db, config)
+	case "azure":
+		azureBackup(db, config)
 	default:
 		localBackup(db, config)
 	}
@@ -297,214 +296,6 @@ func localBackup(db *dbConfig, config *BackupConfig) {
 		}
 
 	}
-	// Delete temp
-	deleteTemp()
-	logger.Info("Backup completed successfully")
-}
-
-func s3Backup(db *dbConfig, config *BackupConfig) {
-
-	logger.Info("Backup database to s3 storage")
-	startTime = time.Now().Format(utils.TimeFormat())
-	// Backup database
-	BackupDatabase(db, config.backupFileName, disableCompression)
-	finalFileName := config.backupFileName
-	if config.encryption {
-		encryptBackup(config)
-		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, "gpg")
-	}
-	logger.Info("Uploading backup archive to remote storage S3 ... ")
-	awsConfig := initAWSConfig()
-	if config.remotePath == "" {
-		config.remotePath = awsConfig.remotePath
-	}
-	logger.Info("Backup name is %s", finalFileName)
-	s3Storage, err := s3.NewStorage(s3.Config{
-		Endpoint:       awsConfig.endpoint,
-		Bucket:         awsConfig.bucket,
-		AccessKey:      awsConfig.accessKey,
-		SecretKey:      awsConfig.secretKey,
-		Region:         awsConfig.region,
-		DisableSsl:     awsConfig.disableSsl,
-		ForcePathStyle: awsConfig.forcePathStyle,
-		RemotePath:     awsConfig.remotePath,
-		LocalPath:      tmpPath,
-	})
-	if err != nil {
-		logger.Fatal("Error creating s3 storage: %s", err)
-	}
-	err = s3Storage.Copy(finalFileName)
-	if err != nil {
-		logger.Fatal("Error copying backup file: %s", err)
-	}
-	// Get backup info
-	fileInfo, err := os.Stat(filepath.Join(tmpPath, finalFileName))
-	if err != nil {
-		logger.Error("Error: %s", err)
-	}
-	backupSize = fileInfo.Size()
-
-	// Delete backup file from tmp folder
-	err = utils.DeleteFile(filepath.Join(tmpPath, config.backupFileName))
-	if err != nil {
-		fmt.Println("Error deleting file: ", err)
-
-	}
-	// Delete old backup
-	if config.prune {
-		err := s3Storage.Prune(config.backupRetention)
-		if err != nil {
-			logger.Fatal("Error deleting old backup from %s storage: %s ", config.storage, err)
-		}
-	}
-	logger.Info("Backup saved in %s", filepath.Join(config.remotePath, finalFileName))
-	logger.Info("Uploading backup archive to remote storage S3 ... done ")
-	// Send notification
-	utils.NotifySuccess(&utils.NotificationData{
-		File:           finalFileName,
-		BackupSize:     backupSize,
-		Database:       db.dbName,
-		Storage:        config.storage,
-		BackupLocation: filepath.Join(config.remotePath, finalFileName),
-		StartTime:      startTime,
-		EndTime:        time.Now().Format(utils.TimeFormat()),
-	})
-	// Delete temp
-	deleteTemp()
-	logger.Info("Backup completed successfully")
-
-}
-func sshBackup(db *dbConfig, config *BackupConfig) {
-	logger.Info("Backup database to Remote server")
-	startTime = time.Now().Format(utils.TimeFormat())
-	// Backup database
-	BackupDatabase(db, config.backupFileName, disableCompression)
-	finalFileName := config.backupFileName
-	if config.encryption {
-		encryptBackup(config)
-		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, "gpg")
-	}
-	logger.Info("Uploading backup archive to remote storage ... ")
-	logger.Info("Backup name is %s", finalFileName)
-	sshConfig, err := loadSSHConfig()
-	if err != nil {
-		logger.Fatal("Error loading ssh config: %s", err)
-	}
-
-	sshStorage, err := ssh.NewStorage(ssh.Config{
-		Host:       sshConfig.hostName,
-		Port:       sshConfig.port,
-		User:       sshConfig.user,
-		Password:   sshConfig.password,
-		RemotePath: config.remotePath,
-		LocalPath:  tmpPath,
-	})
-	if err != nil {
-		logger.Fatal("Error creating SSH storage: %s", err)
-	}
-	err = sshStorage.Copy(finalFileName)
-	if err != nil {
-		logger.Fatal("Error copying backup file: %s", err)
-	}
-	// Get backup info
-	fileInfo, err := os.Stat(filepath.Join(tmpPath, finalFileName))
-	if err != nil {
-		logger.Error("Error: %s", err)
-	}
-	backupSize = fileInfo.Size()
-	logger.Info("Backup saved in %s", filepath.Join(config.remotePath, finalFileName))
-
-	// Delete backup file from tmp folder
-	err = utils.DeleteFile(filepath.Join(tmpPath, finalFileName))
-	if err != nil {
-		logger.Error("Error deleting file: %v", err)
-
-	}
-	if config.prune {
-		err := sshStorage.Prune(config.backupRetention)
-		if err != nil {
-			logger.Fatal("Error deleting old backup from %s storage: %s ", config.storage, err)
-		}
-
-	}
-	logger.Info("Uploading backup archive to remote storage ... done ")
-	// Send notification
-	utils.NotifySuccess(&utils.NotificationData{
-		File:           finalFileName,
-		BackupSize:     backupSize,
-		Database:       db.dbName,
-		Storage:        config.storage,
-		BackupLocation: filepath.Join(config.remotePath, finalFileName),
-		StartTime:      startTime,
-		EndTime:        time.Now().Format(utils.TimeFormat()),
-	})
-	// Delete temp
-	deleteTemp()
-	logger.Info("Backup completed successfully")
-
-}
-func ftpBackup(db *dbConfig, config *BackupConfig) {
-	logger.Info("Backup database to the remote FTP server")
-	startTime = time.Now().Format(utils.TimeFormat())
-
-	// Backup database
-	BackupDatabase(db, config.backupFileName, disableCompression)
-	finalFileName := config.backupFileName
-	if config.encryption {
-		encryptBackup(config)
-		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, "gpg")
-	}
-	logger.Info("Uploading backup archive to the remote FTP server ... ")
-	logger.Info("Backup name is %s", finalFileName)
-	ftpConfig := loadFtpConfig()
-	ftpStorage, err := ftp.NewStorage(ftp.Config{
-		Host:       ftpConfig.host,
-		Port:       ftpConfig.port,
-		User:       ftpConfig.user,
-		Password:   ftpConfig.password,
-		RemotePath: config.remotePath,
-		LocalPath:  tmpPath,
-	})
-	if err != nil {
-		logger.Fatal("Error creating SSH storage: %s", err)
-	}
-	err = ftpStorage.Copy(finalFileName)
-	if err != nil {
-		logger.Fatal("Error copying backup file: %s", err)
-	}
-	logger.Info("Backup saved in %s", filepath.Join(config.remotePath, finalFileName))
-	// Get backup info
-	fileInfo, err := os.Stat(filepath.Join(tmpPath, finalFileName))
-	if err != nil {
-		logger.Error("Error: %s", err)
-	}
-	backupSize = fileInfo.Size()
-	// Delete backup file from tmp folder
-	err = utils.DeleteFile(filepath.Join(tmpPath, finalFileName))
-	if err != nil {
-		logger.Error("Error deleting file: %v", err)
-
-	}
-	if config.prune {
-		err := ftpStorage.Prune(config.backupRetention)
-		if err != nil {
-			logger.Fatal("Error deleting old backup from %s storage: %s ", config.storage, err)
-		}
-
-	}
-
-	logger.Info("Uploading backup archive to the remote FTP server ... done ")
-
-	// Send notification
-	utils.NotifySuccess(&utils.NotificationData{
-		File:           finalFileName,
-		BackupSize:     backupSize,
-		Database:       db.dbName,
-		Storage:        config.storage,
-		BackupLocation: filepath.Join(config.remotePath, finalFileName),
-		StartTime:      startTime,
-		EndTime:        time.Now().Format(utils.TimeFormat()),
-	})
 	// Delete temp
 	deleteTemp()
 	logger.Info("Backup completed successfully")

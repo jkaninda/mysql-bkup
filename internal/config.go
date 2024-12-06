@@ -84,6 +84,11 @@ type FTPConfig struct {
 	port       string
 	remotePath string
 }
+type AzureConfig struct {
+	accountName   string
+	accountKey    string
+	containerName string
+}
 
 // SSHConfig holds the SSH connection details
 type SSHConfig struct {
@@ -164,6 +169,21 @@ func loadFtpConfig() *FTPConfig {
 	}
 	return &fConfig
 }
+func loadAzureConfig() *AzureConfig {
+	// Initialize data configs
+	aConfig := AzureConfig{}
+	aConfig.containerName = os.Getenv("AZURE_STORAGE_CONTAINER_NAME")
+	aConfig.accountName = os.Getenv("AZURE_STORAGE_ACCOUNT_NAME")
+	aConfig.accountKey = os.Getenv("AZURE_STORAGE_ACCOUNT_KEY")
+
+	err := utils.CheckEnvVars(azureVars)
+	if err != nil {
+		logger.Error("Please make sure all required environment variables for Azure Blob storage are set")
+		logger.Fatal("Error missing environment variables: %s", err)
+	}
+	return &aConfig
+}
+
 func initAWSConfig() *AWSConfig {
 	// Initialize AWS configs
 	aConfig := AWSConfig{}
