@@ -22,7 +22,7 @@ services:
     # for a list of available releases.
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    command: backup --storage s3 -d database --path /my-custom-path
+    command: backup --storage azure -d database --path my-custom-path
     environment:
       - DB_PORT=3306
       - DB_HOST=mysql
