@@ -24,7 +24,7 @@ It supports a variety of storage options and ensures data security through GPG e
 - **Deployment Flexibility:**
     - Available as the [jkaninda/mysql-bkup](https://hub.docker.com/r/jkaninda/mysql-bkup) Docker image.
     - Deployable on **Docker**, **Docker Swarm**, and **Kubernetes**.
-    - Supports recurring backups of PostgreSQL databases when deployed:
+    - Supports recurring backups of MySQL databases when deployed:
         - On Docker for automated backup schedules.
         - As a **Job** or **CronJob** on Kubernetes.
 
@@ -35,9 +35,9 @@ It supports a variety of storage options and ensures data security through GPG e
 
 ## Use Cases
 
-- **Automated Recurring Backups:** Schedule regular backups for PostgreSQL databases.
-- **Cross-Environment Migration:** Easily migrate your PostgreSQL databases across different environments using supported storage options.
-- **Secure Backup Management:** Protect your data with Gmysql encryption.
+- **Automated Recurring Backups:** Schedule regular backups for MySQL databases.
+- **Cross-Environment Migration:** Easily migrate your MySQL databases across different environments using supported storage options.
+- **Secure Backup Management:** Protect your data with GPG encryption.
 
 
 Successfully tested on:
