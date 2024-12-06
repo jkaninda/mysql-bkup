@@ -27,6 +27,7 @@ package internal
 import (
 	"bytes"
 	"fmt"
+	"github.com/jkaninda/mysql-bkup/pkg/logger"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -36,13 +37,14 @@ import (
 )
 
 func intro() {
-	utils.Info("Starting MySQL Backup...")
-	utils.Info("Copyright (c) 2024 Jonas Kaninda ")
+	fmt.Println("Starting MySQL Backup...")
+	fmt.Printf("Version: %s\n", utils.Version)
+	fmt.Println("Copyright (c) 2024 Jonas Kaninda")
 }
 
 // copyToTmp copy file to temporary directory
 func deleteTemp() {
-	utils.Info("Deleting %s ...", tmpPath)
+	logger.Info("Deleting %s ...", tmpPath)
 	err := filepath.Walk(tmpPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -58,9 +60,9 @@ func deleteTemp() {
 		return nil
 	})
 	if err != nil {
-		utils.Error("Error deleting files: %v", err)
+		logger.Error("Error deleting files: %v", err)
 	} else {
-		utils.Info("Deleting %s ... done", tmpPath)
+		logger.Info("Deleting %s ... done", tmpPath)
 	}
 }
 
@@ -70,7 +72,7 @@ func testDatabaseConnection(db *dbConfig) {
 	if err != nil {
 		return
 	}
-	utils.Info("Connecting to %s database ...", db.dbName)
+	logger.Info("Connecting to %s database ...", db.dbName)
 	cmd := exec.Command("mysql", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
 	// Capture the output
 	var out bytes.Buffer
@@ -78,10 +80,10 @@ func testDatabaseConnection(db *dbConfig) {
 	cmd.Stderr = &out
 	err = cmd.Run()
 	if err != nil {
-		utils.Fatal("Error testing database connection: %v\nOutput: %s", err, out.String())
+		logger.Fatal("Error testing database connection: %v\nOutput: %s", err, out.String())
 
 	}
-	utils.Info("Successfully connected to %s database", db.dbName)
+	logger.Info("Successfully connected to %s database", db.dbName)
 
 }
 

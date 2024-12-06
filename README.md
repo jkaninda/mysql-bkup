@@ -87,11 +87,10 @@ services:
       - TZ=Europe/Paris
     # mysql-bkup container must be connected to the same network with your database
     networks:
-       - web
+      - web
 networks:
   web:
 ```
-
 ### Docker recurring backup
 
 ```shell

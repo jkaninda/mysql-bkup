@@ -25,6 +25,7 @@ SOFTWARE.
 */
 import (
 	"github.com/jkaninda/mysql-bkup/internal"
+	"github.com/jkaninda/mysql-bkup/pkg/logger"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 )
@@ -37,7 +38,7 @@ var RestoreCmd = &cobra.Command{
 		if len(args) == 0 {
 			internal.StartRestore(cmd)
 		} else {
-			utils.Fatal(`"restore" accepts no argument %q`, args)
+			logger.Fatal(`"restore" accepts no argument %q`, args)
 
 		}
 

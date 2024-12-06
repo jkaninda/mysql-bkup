@@ -1,9 +1,4 @@
 // Package internal /
-/*****
-@author    Jonas Kaninda
-@license   MIT License <https://opensource.org/licenses/MIT>
-@Copyright © 2024 Jonas Kaninda
-**/
 package internal
 
 /*
@@ -35,6 +30,7 @@ import (
 	"github.com/jkaninda/go-storage/pkg/local"
 	"github.com/jkaninda/go-storage/pkg/s3"
 	"github.com/jkaninda/go-storage/pkg/ssh"
+	"github.com/jkaninda/mysql-bkup/pkg/logger"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/spf13/cobra"
 	"os"
@@ -61,20 +57,20 @@ func StartRestore(cmd *cobra.Command) {
 	}
 }
 func localRestore(dbConf *dbConfig, restoreConf *RestoreConfig) {
-	utils.Info("Restore database from local")
+	logger.Info("Restore database from local")
 	localStorage := local.NewStorage(local.Config{
 		RemotePath: storagePath,
 		LocalPath:  tmpPath,
 	})
 	err := localStorage.CopyFrom(restoreConf.file)
 	if err != nil {
-		utils.Fatal("Error copying backup file: %s", err)
+		logger.Fatal("Error copying backup file: %s", err)
 	}
 	RestoreDatabase(dbConf, restoreConf)
 
 }
 func restoreFromS3(db *dbConfig, conf *RestoreConfig) {
-	utils.Info("Restore database from s3")
+	logger.Info("Restore database from s3")
 	awsConfig := initAWSConfig()
 	if conf.remotePath == "" {
 		conf.remotePath = awsConfig.remotePath
@@ -91,40 +87,41 @@ func restoreFromS3(db *dbConfig, conf *RestoreConfig) {
 		LocalPath:      tmpPath,
 	})
 	if err != nil {
-		utils.Fatal("Error creating s3 storage: %s", err)
+		logger.Fatal("Error creating s3 storage: %s", err)
 	}
 	err = s3Storage.CopyFrom(conf.file)
 	if err != nil {
-		utils.Fatal("Error download file from S3 storage: %s", err)
+		logger.Fatal("Error download file from S3 storage: %s", err)
 	}
 	RestoreDatabase(db, conf)
 }
 func restoreFromRemote(db *dbConfig, conf *RestoreConfig) {
-	utils.Info("Restore database from remote server")
+	logger.Info("Restore database from remote server")
 	sshConfig, err := loadSSHConfig()
 	if err != nil {
-		utils.Fatal("Error loading ssh config: %s", err)
+		logger.Fatal("Error loading ssh config: %s", err)
 	}
 
 	sshStorage, err := ssh.NewStorage(ssh.Config{
-		Host:       sshConfig.hostName,
-		Port:       sshConfig.port,
-		User:       sshConfig.user,
-		Password:   sshConfig.password,
-		RemotePath: conf.remotePath,
-		LocalPath:  tmpPath,
+		Host:         sshConfig.hostName,
+		Port:         sshConfig.port,
+		User:         sshConfig.user,
+		Password:     sshConfig.password,
+		IdentifyFile: sshConfig.identifyFile,
+		RemotePath:   conf.remotePath,
+		LocalPath:    tmpPath,
 	})
 	if err != nil {
-		utils.Fatal("Error creating SSH storage: %s", err)
+		logger.Fatal("Error creating SSH storage: %s", err)
 	}
 	err = sshStorage.CopyFrom(conf.file)
 	if err != nil {
-		utils.Fatal("Error copying backup file: %s", err)
+		logger.Fatal("Error copying backup file: %s", err)
 	}
 	RestoreDatabase(db, conf)
 }
 func restoreFromFTP(db *dbConfig, conf *RestoreConfig) {
-	utils.Info("Restore database from FTP server")
+	logger.Info("Restore database from FTP server")
 	ftpConfig := loadFtpConfig()
 	ftpStorage, err := ftp.NewStorage(ftp.Config{
 		Host:       ftpConfig.host,
@@ -135,11 +132,11 @@ func restoreFromFTP(db *dbConfig, conf *RestoreConfig) {
 		LocalPath:  tmpPath,
 	})
 	if err != nil {
-		utils.Fatal("Error creating SSH storage: %s", err)
+		logger.Fatal("Error creating SSH storage: %s", err)
 	}
 	err = ftpStorage.CopyFrom(conf.file)
 	if err != nil {
-		utils.Fatal("Error copying backup file: %s", err)
+		logger.Fatal("Error copying backup file: %s", err)
 	}
 	RestoreDatabase(db, conf)
 }
@@ -147,42 +144,42 @@ func restoreFromFTP(db *dbConfig, conf *RestoreConfig) {
 // RestoreDatabase restore database
 func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 	if conf.file == "" {
-		utils.Fatal("Error, file required")
+		logger.Fatal("Error, file required")
 	}
 	extension := filepath.Ext(filepath.Join(tmpPath, conf.file))
 	rFile, err := os.ReadFile(filepath.Join(tmpPath, conf.file))
 	outputFile := RemoveLastExtension(filepath.Join(tmpPath, conf.file))
 	if err != nil {
-		utils.Fatal("Error reading backup file: %s ", err)
+		logger.Fatal("Error reading backup file: %s ", err)
 	}
 
 	if extension == ".gpg" {
 
 		if conf.usingKey {
-			utils.Info("Decrypting backup using private key...")
-			utils.Warn("Backup decryption using a private key is not fully supported")
+			logger.Info("Decrypting backup using private key...")
+			logger.Warn("Backup decryption using a private key is not fully supported")
 			prKey, err := os.ReadFile(conf.privateKey)
 			if err != nil {
-				utils.Fatal("Error reading public key: %s ", err)
+				logger.Fatal("Error reading public key: %s ", err)
 			}
 			err = encryptor.DecryptWithPrivateKey(rFile, outputFile, prKey, conf.passphrase)
 			if err != nil {
-				utils.Fatal("error during decrypting backup %v", err)
+				logger.Fatal("error during decrypting backup %v", err)
 			}
-			utils.Info("Decrypting backup using private key...done")
+			logger.Info("Decrypting backup using private key...done")
 		} else {
 			if conf.passphrase == "" {
-				utils.Error("Error, passphrase or private key required")
-				utils.Fatal("Your file seems to be a GPG file.\nYou need to provide GPG keys. GPG_PASSPHRASE or GPG_PRIVATE_KEY environment variable is required.")
+				logger.Error("Error, passphrase or private key required")
+				logger.Fatal("Your file seems to be a GPG file.\nYou need to provide GPG keys. GPG_PASSPHRASE or GPG_PRIVATE_KEY environment variable is required.")
 			} else {
-				utils.Info("Decrypting backup using passphrase...")
-				//decryptWithGPG file
+				logger.Info("Decrypting backup using passphrase...")
+				// decryptWithGPG file
 				err := encryptor.Decrypt(rFile, outputFile, conf.passphrase)
 				if err != nil {
-					utils.Fatal("Error decrypting file %s %v", file, err)
+					logger.Fatal("Error decrypting file %s %v", file, err)
 				}
-				utils.Info("Decrypting backup using passphrase...done")
-				//Update file name
+				logger.Info("Decrypting backup using passphrase...done")
+				// Update file name
 				conf.file = RemoveLastExtension(file)
 			}
 		}
@@ -195,7 +192,7 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 			return
 		}
 		testDatabaseConnection(db)
-		utils.Info("Restoring database...")
+		logger.Info("Restoring database...")
 
 		extension := filepath.Ext(filepath.Join(tmpPath, conf.file))
 		// Restore from compressed file / .sql.gz
@@ -203,29 +200,29 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 			str := "zcat " + filepath.Join(tmpPath, conf.file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
 			_, err := exec.Command("sh", "-c", str).Output()
 			if err != nil {
-				utils.Fatal("Error, in restoring the database  %v", err)
+				logger.Fatal("Error, in restoring the database  %v", err)
 			}
-			utils.Info("Restoring database... done")
-			utils.Info("Database has been restored")
-			//Delete temp
+			logger.Info("Restoring database... done")
+			logger.Info("Database has been restored")
+			// Delete temp
 			deleteTemp()
 
 		} else if extension == ".sql" {
-			//Restore from sql file
+			// Restore from sql file
 			str := "cat " + filepath.Join(tmpPath, conf.file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
 			_, err := exec.Command("sh", "-c", str).Output()
 			if err != nil {
-				utils.Fatal("Error in restoring the database %v", err)
+				logger.Fatal("Error in restoring the database %v", err)
 			}
-			utils.Info("Restoring database... done")
-			utils.Info("Database has been restored")
-			//Delete temp
+			logger.Info("Restoring database... done")
+			logger.Info("Database has been restored")
+			// Delete temp
 			deleteTemp()
 		} else {
-			utils.Fatal("Unknown file extension %s", extension)
+			logger.Fatal("Unknown file extension %s", extension)
 		}
 
 	} else {
-		utils.Fatal("File not found in %s", filepath.Join(tmpPath, conf.file))
+		logger.Fatal("File not found in %s", filepath.Join(tmpPath, conf.file))
 	}
 }

@@ -26,7 +26,7 @@ package cmd
 
 import (
 	"github.com/jkaninda/mysql-bkup/internal"
-	"github.com/jkaninda/mysql-bkup/utils"
+	"github.com/jkaninda/mysql-bkup/pkg/logger"
 	"github.com/spf13/cobra"
 )
 
@@ -37,7 +37,7 @@ var MigrateCmd = &cobra.Command{
 		if len(args) == 0 {
 			internal.StartMigration(cmd)
 		} else {
-			utils.Fatal(`"migrate" accepts no argument %q`, args)
+			logger.Fatal(`"migrate" accepts no argument %q`, args)
 
 		}
 
