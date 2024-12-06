@@ -8,7 +8,7 @@ COPY . .
 RUN go mod download
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X 'github.com/jkaninda/pg-bkup/utils.Version=${appVersion}'" -o /app/mysql-bkup
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X 'github.com/jkaninda/mysql-bkup/utils.Version=${appVersion}'" -o /app/mysql-bkup
 
 FROM alpine:3.20.3
 ENV TZ=UTC
