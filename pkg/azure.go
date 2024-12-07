@@ -35,7 +35,7 @@ import (
 )
 
 func azureBackup(db *dbConfig, config *BackupConfig) {
-	utils.Info("Backup database to the remote FTP server")
+	utils.Info("Backup database to Azure Blob Storage")
 	startTime = time.Now().Format(utils.TimeFormat())
 
 	// Backup database
