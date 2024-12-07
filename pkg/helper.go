@@ -74,7 +74,7 @@ func testDatabaseConnection(db *dbConfig) {
 	utils.Info("Connecting to %s database ...", db.dbName)
 	// Set database name for notification error
 	utils.DatabaseName = db.dbName
-	cmd := exec.Command("mysql", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
+	cmd := exec.Command("mariadb", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
 	// Capture the output
 	var out bytes.Buffer
 	cmd.Stdout = &out

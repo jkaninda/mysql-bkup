@@ -124,7 +124,7 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 		extension := filepath.Ext(filepath.Join(tmpPath, conf.file))
 		// Restore from compressed file / .sql.gz
 		if extension == ".gz" {
-			str := "zcat " + filepath.Join(tmpPath, conf.file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
+			str := "zcat " + filepath.Join(tmpPath, conf.file) + " | mariadb -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
 			_, err := exec.Command("sh", "-c", str).Output()
 			if err != nil {
 				utils.Fatal("Error, in restoring the database  %v", err)
@@ -136,7 +136,7 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 
 		} else if extension == ".sql" {
 			// Restore from sql file
-			str := "cat " + filepath.Join(tmpPath, conf.file) + " | mysql -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
+			str := "cat " + filepath.Join(tmpPath, conf.file) + " | mariadb -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
 			_, err := exec.Command("sh", "-c", str).Output()
 			if err != nil {
 				utils.Fatal("Error in restoring the database %v", err)
