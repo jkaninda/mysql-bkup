@@ -1,4 +1,3 @@
-// Package utils /
 /*
 MIT License
 
@@ -22,6 +21,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+
 package utils
 
 const RestoreExample = "restore --dbname database --file db_20231219_022941.sql.gz\n" +
