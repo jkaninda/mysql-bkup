@@ -45,16 +45,16 @@
 </head>
 <body>
     <h2>🔴 Urgent: Database Backup Failure Notification</h2>
-    <p>Dear Team,</p>
+    <p>Hi,</p>
     <p>An error occurred during the database backup process. Please review the details below and take the necessary actions:</p>
 
     <div class="details">
         <h3>Failure Details:</h3>
         <ul>
             <li><strong>Database Name:</strong> {{.DatabaseName}}</li>
-            <li><strong>Error Message:</strong> {{.Error}}</li>
             <li><strong>Date:</strong> {{.EndTime}}</li>
             <li><strong>Backup Reference:</strong> {{.BackupReference}}</li>
+            <li><strong>Error Message:</strong> {{.Error}}</li>
         </ul>
     </div>
 
