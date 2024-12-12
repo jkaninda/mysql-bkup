@@ -46,7 +46,6 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 		finalFileName = fmt.Sprintf("%s.%s", config.backupFileName, "gpg")
 	}
 	utils.Info("Uploading backup archive to remote storage ... ")
-	utils.Info("Backup name is %s", finalFileName)
 	sshConfig, err := loadSSHConfig()
 	if err != nil {
 		utils.Fatal("Error loading ssh config: %s", err)
@@ -74,6 +73,8 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 		utils.Error("Error: %s", err)
 	}
 	backupSize = fileInfo.Size()
+	utils.Info("Backup name is %s", finalFileName)
+	utils.Info("Backup size: %s", utils.ConvertBytes(uint64(backupSize)))
 	utils.Info("Backup saved in %s", filepath.Join(config.remotePath, finalFileName))
 
 	// Delete backup file from tmp folder
@@ -93,7 +94,7 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 	// Send notification
 	utils.NotifySuccess(&utils.NotificationData{
 		File:           finalFileName,
-		BackupSize:     backupSize,
+		BackupSize:     utils.ConvertBytes(uint64(backupSize)),
 		Database:       db.dbName,
 		Storage:        config.storage,
 		BackupLocation: filepath.Join(config.remotePath, finalFileName),
@@ -199,13 +200,14 @@ func ftpBackup(db *dbConfig, config *BackupConfig) {
 		}
 
 	}
-
+	utils.Info("Backup name is %s", finalFileName)
+	utils.Info("Backup size: %s", utils.ConvertBytes(uint64(backupSize)))
 	utils.Info("Uploading backup archive to the remote FTP server ... done ")
 
 	// Send notification
 	utils.NotifySuccess(&utils.NotificationData{
 		File:           finalFileName,
-		BackupSize:     backupSize,
+		BackupSize:     utils.ConvertBytes(uint64(backupSize)),
 		Database:       db.dbName,
 		Storage:        config.storage,
 		BackupLocation: filepath.Join(config.remotePath, finalFileName),
