@@ -20,7 +20,7 @@ description: >- # this means to ignore newlines until "baseurl:"
   It supports local storage, AWS S3 or any S3 Alternatives for Object Storage, and SSH compatible storage.
 
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "jkaninda.github.io/mysql-bkup/" # the base hostname & protocol for your site, e.g. http://example.com
+url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username: jonaskaninda
 github_username:  jkaninda
 
