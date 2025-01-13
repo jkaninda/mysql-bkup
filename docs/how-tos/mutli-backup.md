@@ -71,7 +71,7 @@ services:
     # for available releases.
     image: jkaninda/mysql-bkup
     container_name: mysql-bkup
-    command: backup
+    command: backup #--config /backup/config.yaml # config file
     volumes:
       - ./backup:/backup  # Mount the backup directory
       - ./config.yaml:/backup/config.yaml  # Mount the configuration file
