@@ -30,12 +30,12 @@ Below is an example `docker-compose.yml` configuration for backing up a database
 
 ```yaml
 services:
-  pg-bkup:
+  mysql-bkup:
     # In production, lock your image tag to a specific release version
-    # instead of using `latest`. Check https://github.com/jkaninda/pg-bkup/releases
+    # instead of using `latest`. Check https://github.com/jkaninda/mysql-bkup/releases
     # for available releases.
-    image: jkaninda/pg-bkup
-    container_name: pg-bkup
+    image: jkaninda/mysql-bkup
+    container_name: mysql-bkup
     command: backup -d database
     volumes:
       - ./backup:/backup
@@ -46,7 +46,7 @@ services:
       - DB_USERNAME=username
       - DB_PASSWORD=password
 
-    # Ensure the pg-bkup container is connected to the same network as your database
+    # Ensure the mysql-bkup container is connected to the same network as your database
     networks:
       - web
 
@@ -73,7 +73,7 @@ docker run --rm --network your_network_name \
 
 ## Recurring Backups
 
-To schedule recurring backups, use the `--cron-expression` flag or the `BACKUP_CRON_EXPRESSION` environment variable. This allows you to define a cron schedule for automated backups.
+To schedule recurring backups, use the `--cron-expression (-e)` flag or the `BACKUP_CRON_EXPRESSION` environment variable. This allows you to define a cron schedule for automated backups.
 
 ### Example: Recurring Backup Configuration
 
@@ -111,7 +111,7 @@ networks:
 
 ## Key Notes
 
-- **Cron Expression**: Use the `--cron-expression` flag or `BACKUP_CRON_EXPRESSION` environment variable to define the backup schedule. For example:
+- **Cron Expression**: Use the `--cron-expression (-e)` flag or `BACKUP_CRON_EXPRESSION` environment variable to define the backup schedule. For example:
     - `@midnight`: Runs the backup daily at midnight.
     - `0 1 * * *`: Runs the backup daily at 1:00 AM.
 - **Backup Retention**: Optionally, use the `BACKUP_RETENTION_DAYS` environment variable to automatically delete backups older than a specified number of days.
