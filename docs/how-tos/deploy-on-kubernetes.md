@@ -5,12 +5,17 @@ parent: How Tos
 nav_order: 9
 ---
 
-## Deploy on Kubernetes
+# Deploy on Kubernetes
 
-To deploy MySQL Backup on Kubernetes, you can use Job to backup or Restore your database.
-For recurring backup you can use CronJob, you don't need to run it in scheduled mode. as described bellow.
+To deploy MySQL Backup on Kubernetes, you can use a `Job` for one-time backups or restores, and a `CronJob` for recurring backups. 
 
-## Backup to S3 storage
+Below are examples for different use cases.
+
+---
+
+## Backup Job to S3 Storage
+
+This example demonstrates how to configure a Kubernetes `Job` to back up a MySQL database to an S3-compatible storage.
 
 ```yaml
 apiVersion: batch/v1
@@ -21,50 +26,53 @@ spec:
   template:
     spec:
       containers:
-        - name: mysql-bkup
-          # In production, it is advised to lock your image tag to a proper
-          # release version instead of using `latest`.
-          # Check https://github.com/jkaninda/mysql-bkup/releases
-          # for a list of available releases.
-          image: jkaninda/mysql-bkup
-          command:
-            - /bin/sh
-            - -c
-            - backup --storage s3
-          resources:
-            limits:
-              memory: "128Mi"
-              cpu: "500m"
-          env:
-            - name: DB_PORT
-              value: "3306"
-            - name: DB_HOST
-              value: ""
-            - name: DB_NAME
-              value: "dbname"
-            - name: DB_USERNAME
-              value: "username"
-            # Please use secret!
-            - name: DB_PASSWORD
-              value: ""
-            - name: AWS_S3_ENDPOINT
-              value: "https://s3.amazonaws.com"
-            - name: AWS_S3_BUCKET_NAME
-              value: "xxx"
-            - name: AWS_REGION
-              value: "us-west-2"
-            - name: AWS_ACCESS_KEY
-              value: "xxxx"
-            - name: AWS_SECRET_KEY
-              value: "xxxx"
-            - name: AWS_DISABLE_SSL
-              value: "false"
-            - name: AWS_FORCE_PATH_STYLE
-              value: "false"
+      - name: mysql-bkup
+        # In production, lock your image tag to a specific release version
+        # instead of using `latest`. Check https://github.com/jkaninda/mysql-bkup/releases
+        # for available releases.
+        image: jkaninda/mysql-bkup
+        command:
+        - /bin/sh
+        - -c
+        - backup --storage s3
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_HOST
+            value: ""
+          - name: DB_NAME
+            value: ""
+          - name: DB_USERNAME
+            value: ""
+          # Use Kubernetes Secrets for sensitive data like passwords
+          - name: DB_PASSWORD
+            value: ""
+          - name: AWS_S3_ENDPOINT
+            value: "https://s3.amazonaws.com"
+          - name: AWS_S3_BUCKET_NAME
+            value: "xxx"
+          - name: AWS_REGION
+            value: "us-west-2"
+          - name: AWS_ACCESS_KEY
+            value: "xxxx"
+          - name: AWS_SECRET_KEY
+            value: "xxxx"
+          - name: AWS_DISABLE_SSL
+            value: "false"
+          - name: AWS_FORCE_PATH_STYLE
+            value: "false"
       restartPolicy: Never
 ```
 
-## Backup Job to SSH remote server
+---
+
+## Backup Job to SSH Remote Server
+
+This example demonstrates how to configure a Kubernetes `Job` to back up a MySQL database to an SSH remote server.
 
 ```yaml
 apiVersion: batch/v1
@@ -77,15 +85,14 @@ spec:
     spec:
       containers:
       - name: mysql-bkup
-        # In production, it is advised to lock your image tag to a proper
-        # release version instead of using `latest`.
-        # Check https://github.com/jkaninda/mysql-bkup/releases
-        # for a list of available releases.
+        # In production, lock your image tag to a specific release version
+        # instead of using `latest`. Check https://github.com/jkaninda/mysql-bkup/releases
+        # for available releases.
         image: jkaninda/mysql-bkup
         command:
-          - /bin/sh
-          - -c
-          - backup --storage ssh
+        - /bin/sh
+        - -c
+        - backup --storage ssh --disable-compression
         resources:
           limits:
             memory: "128Mi"
@@ -98,8 +105,8 @@ spec:
           - name: DB_NAME
             value: "dbname"
           - name: DB_USERNAME
-            value: "username"
-          # Please use secret!
+            value: "postgres"
+          # Use Kubernetes Secrets for sensitive data like passwords
           - name: DB_PASSWORD
             value: ""
           - name: SSH_HOST_NAME
@@ -112,13 +119,17 @@ spec:
             value: "xxxx"
           - name: SSH_REMOTE_PATH
             value: "/home/toto/backup"
-          # Optional, required if you want to encrypt your backup
+          # Optional: Required if you want to encrypt your backup
           - name: GPG_PASSPHRASE
-            value: "secure-passphrase"
+            value: "xxxx"
       restartPolicy: Never
 ```
 
+---
+
 ## Restore Job
+
+This example demonstrates how to configure a Kubernetes `Job` to restore a MySQL database from a backup stored on an SSH remote server.
 
 ```yaml
 apiVersion: batch/v1
@@ -131,48 +142,51 @@ spec:
     spec:
       containers:
       - name: mysql-bkup
-        # In production, it is advised to lock your image tag to a proper
-        # release version instead of using `latest`.
-        # Check https://github.com/jkaninda/mysql-bkup/releases
-        # for a list of available releases.
+        # In production, lock your image tag to a specific release version
+        # instead of using `latest`. Check https://github.com/jkaninda/mysql-bkup/releases
+        # for available releases.
         image: jkaninda/mysql-bkup
         command:
-          - /bin/sh
-          - -c
-          - backup --storage ssh --file store_20231219_022941.sql.gz
+        - /bin/sh
+        - -c
+        - restore --storage ssh --file store_20231219_022941.sql.gz
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
         env:
-        - name: DB_PORT
-          value: "3306" 
-        - name: DB_HOST
-          value: ""
-        - name: DB_NAME
-          value: "dbname"
-        - name: DB_USERNAME
-          value: "username"
-        # Please use secret!
-        - name: DB_PASSWORD
-          value: ""
-        - name: SSH_HOST_NAME
-          value: "xxx"
-        - name: SSH_PORT
-          value: "22"
-        - name: SSH_USER
-          value: "xxx"
-        - name: SSH_PASSWORD
-          value: "xxxx"
-        - name: SSH_REMOTE_PATH
-          value: "/home/xxxx/backup"
-          # Optional, required if your backup was encrypted
-        #- name: GPG_PASSPHRASE
-        #  value: "xxxx"
+          - name: DB_PORT
+            value: "3306"
+          - name: DB_HOST
+            value: ""
+          - name: DB_NAME
+            value: "dbname"
+          - name: DB_USERNAME
+            value: "postgres"
+          # Use Kubernetes Secrets for sensitive data like passwords
+          - name: DB_PASSWORD
+            value: ""
+          - name: SSH_HOST_NAME
+            value: "xxx"
+          - name: SSH_PORT
+            value: "22"
+          - name: SSH_USER
+            value: "xxx"
+          - name: SSH_PASSWORD
+            value: "xxxx"
+          - name: SSH_REMOTE_PATH
+            value: "/home/toto/backup"
+          # Optional: Required if your backup was encrypted
+          #- name: GPG_PASSPHRASE
+          #  value: "xxxx"
       restartPolicy: Never
 ```
 
-## Recurring backup
+---
+
+## Recurring Backup with CronJob
+
+This example demonstrates how to configure a Kubernetes `CronJob` for recurring backups to an SSH remote server.
 
 ```yaml
 apiVersion: batch/v1
@@ -187,51 +201,51 @@ spec:
         spec:
           containers:
           - name: mysql-bkup
+            # In production, lock your image tag to a specific release version
+            # instead of using `latest`. Check https://github.com/jkaninda/mysql-bkup/releases
+            # for available releases.
             image: jkaninda/mysql-bkup
             command:
             - /bin/sh
             - -c
-            - bkup
-            - backup
-            - --storage
-            - ssh
-            - --disable-compression
+            - backup --storage ssh --disable-compression
             resources:
               limits:
                 memory: "128Mi"
                 cpu: "500m"
             env:
-            - name: DB_PORT
-              value: "3306" 
-            - name: DB_HOST
-              value: ""
-            - name: DB_NAME
-              value: "username"
-            - name: DB_USERNAME
-              value: "username"
-            # Please use secret!
-            - name: DB_PASSWORD
-              value: ""
-            - name: SSH_HOST_NAME
-              value: "xxx"
-            - name: SSH_PORT
-              value: "xxx"
-            - name: SSH_USER
-              value: "jkaninda"
-            - name: SSH_REMOTE_PATH
-              value: "/home/jkaninda/backup"
-            - name: SSH_PASSWORD
-              value: "password"
-            # Optional, required if you want to encrypt your backup
-            #- name: GPG_PASSPHRASE
-            #  value: "xxx"
+              - name: DB_PORT
+                value: "3306"
+              - name: DB_HOST
+                value: ""
+              - name: DB_NAME
+                value: "test"
+              - name: DB_USERNAME
+                value: "postgres"
+              # Use Kubernetes Secrets for sensitive data like passwords
+              - name: DB_PASSWORD
+                value: ""
+              - name: SSH_HOST_NAME
+                value: "192.168.1.16"
+              - name: SSH_PORT
+                value: "2222"
+              - name: SSH_USER
+                value: "jkaninda"
+              - name: SSH_REMOTE_PATH
+                value: "/config/backup"
+              - name: SSH_PASSWORD
+                value: "password"
+              # Optional: Required if you want to encrypt your backup
+              #- name: GPG_PASSPHRASE
+              #  value: "xxx"
           restartPolicy: Never
 ```
 
-## Kubernetes Rootless
+---
 
-This image also supports Kubernetes security context, you can run it in Rootless environment.
-It has been tested on Openshift, it works well.
+## Kubernetes Rootless Deployment
+
+This example demonstrates how to run the backup container in a rootless environment, suitable for platforms like OpenShift.
 
 ```yaml
 apiVersion: batch/v1
@@ -249,53 +263,52 @@ spec:
             runAsGroup: 3000
             fsGroup: 2000
           containers:
-            # In production, it is advised to lock your image tag to a proper
-            # release version instead of using `latest`.
-            # Check https://github.com/jkaninda/mysql-bkup/releases
-            # for a list of available releases.
-            - name: mysql-bkup
-              image: jkaninda/mysql-bkup
-              command:
-                - /bin/sh
-                - -c
-                - bkup
-                - backup
-                - --storage
-                - ssh
-                - --disable-compression
-              resources:
-                limits:
-                  memory: "128Mi"
-                  cpu: "500m"
-              env:
-                - name: DB_PORT
-                  value: "3306"
-                - name: DB_HOST
-                  value: ""
-                - name: DB_NAME
-                  value: "xxx"
-                - name: DB_USERNAME
-                  value: "xxx"
-                # Please use secret!
-                - name: DB_PASSWORD
-                  value: ""
-                - name: SSH_HOST_NAME
-                  value: "xxx"
-                - name: SSH_PORT
-                  value: "22"
-                - name: SSH_USER
-                  value: "jkaninda"
-                - name: SSH_REMOTE_PATH
-                  value: "/home/jkaninda/backup"
-                - name: SSH_PASSWORD
-                  value: "password"
-              # Optional, required if you want to encrypt your backup
+          - name: mysql-bkup
+            # In production, lock your image tag to a specific release version
+            # instead of using `latest`. Check https://github.com/jkaninda/mysql-bkup/releases
+            # for available releases.
+            image: jkaninda/mysql-bkup
+            command:
+            - /bin/sh
+            - -c
+            - backup --storage ssh --disable-compression
+            resources:
+              limits:
+                memory: "128Mi"
+                cpu: "500m"
+            env:
+              - name: DB_PORT
+                value: "3306"
+              - name: DB_HOST
+                value: ""
+              - name: DB_NAME
+                value: "test"
+              - name: DB_USERNAME
+                value: "postgres"
+              # Use Kubernetes Secrets for sensitive data like passwords
+              - name: DB_PASSWORD
+                value: ""
+              - name: SSH_HOST_NAME
+                value: "192.168.1.16"
+              - name: SSH_PORT
+                value: "2222"
+              - name: SSH_USER
+                value: "jkaninda"
+              - name: SSH_REMOTE_PATH
+                value: "/config/backup"
+              - name: SSH_PASSWORD
+                value: "password"
+              # Optional: Required if you want to encrypt your backup
               #- name: GPG_PASSPHRASE
               #  value: "xxx"
           restartPolicy: OnFailure
 ```
 
-## Migrate database
+---
+
+## Migrate Database
+
+This example demonstrates how to configure a Kubernetes `Job` to migrate a MySQL database from one server to another.
 
 ```yaml
 apiVersion: batch/v1
@@ -308,10 +321,9 @@ spec:
     spec:
       containers:
       - name: mysql-bkup
-        # In production, it is advised to lock your image tag to a proper
-        # release version instead of using `latest`.
-        # Check https://github.com/jkaninda/mysql-bkup/releases
-        # for a list of available releases.
+        # In production, lock your image tag to a specific release version
+        # instead of using `latest`. Check https://github.com/jkaninda/mysql-bkup/releases
+        # for available releases.
         image: jkaninda/mysql-bkup
         command:
         - /bin/sh
@@ -322,11 +334,11 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         env:
-        ## Source Database
+          ## Source Database
           - name: DB_HOST
-            value: "mysql"    
+            value: "postgres"
           - name: DB_PORT
-            value: "3306"  
+            value: "3306"
           - name: DB_NAME
             value: "dbname"
           - name: DB_USERNAME
@@ -335,7 +347,7 @@ spec:
             value: "password"
           ## Target Database
           - name: TARGET_DB_HOST
-            value: "target-mysql"    
+            value: "target-postgres"
           - name: TARGET_DB_PORT
             value: "3306"
           - name: TARGET_DB_NAME
@@ -346,3 +358,12 @@ spec:
             value: "password"
       restartPolicy: Never
 ```
+
+---
+
+## Key Notes
+
+- **Security**: Always use Kubernetes Secrets for sensitive data like passwords and access keys.
+- **Resource Limits**: Adjust resource limits (`memory` and `cpu`) based on your workload requirements.
+- **Cron Schedule**: Use standard cron expressions for scheduling recurring backups.
+- **Rootless Deployment**: The image supports running in rootless environments, making it suitable for platforms like OpenShift.
