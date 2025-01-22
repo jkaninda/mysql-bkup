@@ -27,6 +27,7 @@ package pkg
 import (
 	"fmt"
 	"github.com/jkaninda/go-storage/pkg/s3"
+	goutils "github.com/jkaninda/go-utils"
 	"github.com/jkaninda/mysql-bkup/utils"
 
 	"os"
@@ -37,7 +38,6 @@ import (
 func s3Backup(db *dbConfig, config *BackupConfig) {
 
 	utils.Info("Backup database to s3 storage")
-	startTime = time.Now().Format(utils.TimeFormat())
 	// Backup database
 	BackupDatabase(db, config.backupFileName, disableCompression)
 	finalFileName := config.backupFileName
@@ -91,6 +91,7 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 	}
 	utils.Info("Backup saved in %s", filepath.Join(config.remotePath, finalFileName))
 	utils.Info("Uploading backup archive to remote storage S3 ... done ")
+	duration := goutils.FormatDuration(time.Since(startTime), 0)
 	// Send notification
 	utils.NotifySuccess(&utils.NotificationData{
 		File:           finalFileName,
@@ -98,12 +99,11 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 		Database:       db.dbName,
 		Storage:        config.storage,
 		BackupLocation: filepath.Join(config.remotePath, finalFileName),
-		StartTime:      startTime,
-		EndTime:        time.Now().Format(utils.TimeFormat()),
+		Duration:       duration,
 	})
 	// Delete temp
 	deleteTemp()
-	utils.Info("Backup completed successfully")
+	utils.Info("Backup successfully completed in %s", duration)
 
 }
 func s3Restore(db *dbConfig, conf *RestoreConfig) {

@@ -39,8 +39,7 @@ type NotificationData struct {
 	File            string
 	BackupSize      string
 	Database        string
-	StartTime       string
-	EndTime         string
+	Duration        string
 	Storage         string
 	BackupLocation  string
 	BackupReference string
