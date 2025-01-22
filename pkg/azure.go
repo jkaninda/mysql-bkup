@@ -27,6 +27,7 @@ package pkg
 import (
 	"fmt"
 	"github.com/jkaninda/go-storage/pkg/azure"
+	goutils "github.com/jkaninda/go-utils"
 	"github.com/jkaninda/mysql-bkup/utils"
 
 	"os"
@@ -36,7 +37,6 @@ import (
 
 func azureBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to Azure Blob Storage")
-	startTime = time.Now().Format(utils.TimeFormat())
 
 	// Backup database
 	BackupDatabase(db, config.backupFileName, disableCompression)
@@ -87,6 +87,8 @@ func azureBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup size: %s", utils.ConvertBytes(uint64(backupSize)))
 	utils.Info("Uploading backup archive to Azure Blob storage ... done ")
 
+	duration := goutils.FormatDuration(time.Since(startTime), 0)
+
 	// Send notification
 	utils.NotifySuccess(&utils.NotificationData{
 		File:           finalFileName,
@@ -94,12 +96,11 @@ func azureBackup(db *dbConfig, config *BackupConfig) {
 		Database:       db.dbName,
 		Storage:        config.storage,
 		BackupLocation: filepath.Join(config.remotePath, finalFileName),
-		StartTime:      startTime,
-		EndTime:        time.Now().Format(utils.TimeFormat()),
+		Duration:       duration,
 	})
 	// Delete temp
 	deleteTemp()
-	utils.Info("Backup completed successfully")
+	utils.Info("Backup successfully completed in %s", duration)
 }
 func azureRestore(db *dbConfig, conf *RestoreConfig) {
 	utils.Info("Restore database from Azure Blob storage")

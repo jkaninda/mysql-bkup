@@ -28,6 +28,7 @@ import (
 	"fmt"
 	"github.com/jkaninda/go-storage/pkg/ftp"
 	"github.com/jkaninda/go-storage/pkg/ssh"
+	goutils "github.com/jkaninda/go-utils"
 	"github.com/jkaninda/mysql-bkup/utils"
 
 	"os"
@@ -37,7 +38,6 @@ import (
 
 func sshBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to Remote server")
-	startTime = time.Now().Format(utils.TimeFormat())
 	// Backup database
 	BackupDatabase(db, config.backupFileName, disableCompression)
 	finalFileName := config.backupFileName
@@ -91,6 +91,8 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 
 	}
 	utils.Info("Uploading backup archive to remote storage ... done ")
+	duration := goutils.FormatDuration(time.Since(startTime), 0)
+
 	// Send notification
 	utils.NotifySuccess(&utils.NotificationData{
 		File:           finalFileName,
@@ -98,12 +100,11 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 		Database:       db.dbName,
 		Storage:        config.storage,
 		BackupLocation: filepath.Join(config.remotePath, finalFileName),
-		StartTime:      startTime,
-		EndTime:        time.Now().Format(utils.TimeFormat()),
+		Duration:       duration,
 	})
 	// Delete temp
 	deleteTemp()
-	utils.Info("Backup completed successfully")
+	utils.Info("Backup successfully completed in %s", duration)
 
 }
 func remoteRestore(db *dbConfig, conf *RestoreConfig) {
@@ -153,7 +154,6 @@ func ftpRestore(db *dbConfig, conf *RestoreConfig) {
 }
 func ftpBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to the remote FTP server")
-	startTime = time.Now().Format(utils.TimeFormat())
 
 	// Backup database
 	BackupDatabase(db, config.backupFileName, disableCompression)
@@ -203,6 +203,7 @@ func ftpBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup name is %s", finalFileName)
 	utils.Info("Backup size: %s", utils.ConvertBytes(uint64(backupSize)))
 	utils.Info("Uploading backup archive to the remote FTP server ... done ")
+	duration := goutils.FormatDuration(time.Since(startTime), 0)
 
 	// Send notification
 	utils.NotifySuccess(&utils.NotificationData{
@@ -211,10 +212,9 @@ func ftpBackup(db *dbConfig, config *BackupConfig) {
 		Database:       db.dbName,
 		Storage:        config.storage,
 		BackupLocation: filepath.Join(config.remotePath, finalFileName),
-		StartTime:      startTime,
-		EndTime:        time.Now().Format(utils.TimeFormat()),
+		Duration:       duration,
 	})
 	// Delete temp
 	deleteTemp()
-	utils.Info("Backup completed successfully")
+	utils.Info("Backup successfully completed in %s", duration)
 }
