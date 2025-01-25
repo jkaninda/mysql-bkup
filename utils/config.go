@@ -83,3 +83,13 @@ func backupReference() string {
 const templatePath = "/config/templates"
 
 var DatabaseName = ""
+var vars = []string{
+	"TG_TOKEN",
+	"TG_CHAT_ID",
+}
+var mailVars = []string{
+	"MAIL_HOST",
+	"MAIL_PORT",
+	"MAIL_FROM",
+	"MAIL_TO",
+}

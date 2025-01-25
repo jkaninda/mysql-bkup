@@ -132,7 +132,7 @@ func getDatabase(database Database) *dbConfig {
 	database.User = getEnvOrDefault(database.User, "DB_USERNAME", database.Name, "")
 	database.Password = getEnvOrDefault(database.Password, "DB_PASSWORD", database.Name, "")
 	database.Host = getEnvOrDefault(database.Host, "DB_HOST", database.Name, "")
-	database.Port = getEnvOrDefault(database.Port, "DB_PORT", database.Name, "5432")
+	database.Port = getEnvOrDefault(database.Port, "DB_PORT", database.Name, "3306")
 	return &dbConfig{
 		dbHost:     database.Host,
 		dbPort:     database.Port,
