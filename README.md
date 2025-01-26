@@ -74,6 +74,7 @@ To run a one time backup, bind your local volume to `/backup` in the container a
  docker run --rm --network your_network_name \
  -v $PWD/backup:/backup/ \
  -e "DB_HOST=dbhost" \
+ -e "DB_PORT=3306" \
  -e "DB_USERNAME=username" \
  -e "DB_PASSWORD=password" \
  jkaninda/mysql-bkup backup -d database_name
@@ -87,7 +88,19 @@ Alternatively, pass a `--env-file` in order to use a full config as described be
  -v $PWD/backup:/backup/ \
  jkaninda/mysql-bkup backup -d database_name
 ```
+### Simple restore using Docker CLI
 
+To restore a database, bind your local volume to `/backup` in the container and run the `restore` command:
+
+```shell
+ docker run --rm --network your_network_name \
+ -v $PWD/backup:/backup/ \
+ -e "DB_HOST=dbhost" \
+ -e "DB_PORT=3306" \
+ -e "DB_USERNAME=username" \
+ -e "DB_PASSWORD=password" \
+ jkaninda/mysql-bkup restore -d database_name -f backup_file.sql.gz
+```
 ### Simple backup in docker compose file
 
 ```yaml
