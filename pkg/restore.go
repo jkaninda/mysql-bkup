@@ -118,7 +118,10 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 		if err != nil {
 			return
 		}
-		testDatabaseConnection(db)
+		err = testDatabaseConnection(db)
+		if err != nil {
+			utils.Fatal("Error connecting to the database %v", err)
+		}
 		utils.Info("Restoring database...")
 
 		extension := filepath.Ext(filepath.Join(tmpPath, conf.file))

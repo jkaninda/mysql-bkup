@@ -44,7 +44,7 @@ var BackupCmd = &cobra.Command{
 }
 
 func init() {
-	//Backup
+	// Backup
 	BackupCmd.PersistentFlags().StringP("storage", "s", "local", "Define storage: local, s3, ssh, ftp, azure")
 	BackupCmd.PersistentFlags().StringP("path", "P", "", "Storage path without file name. e.g: /custom_path or ssh remote path `/home/foo/backup`")
 	BackupCmd.PersistentFlags().StringP("cron-expression", "e", "", "Backup cron expression (e.g., `0 0 * * *` or `@daily`)")

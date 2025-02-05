@@ -66,10 +66,10 @@ func deleteTemp() {
 }
 
 // TestDatabaseConnection  tests the database connection
-func testDatabaseConnection(db *dbConfig) {
+func testDatabaseConnection(db *dbConfig) error {
 	err := os.Setenv("MYSQL_PWD", db.dbPassword)
 	if err != nil {
-		return
+		return fmt.Errorf("failed to set MYSQL_PWD environment variable: %v", err)
 	}
 	utils.Info("Connecting to %s database ...", db.dbName)
 	// Set database name for notification error
@@ -81,11 +81,11 @@ func testDatabaseConnection(db *dbConfig) {
 	cmd.Stderr = &out
 	err = cmd.Run()
 	if err != nil {
-		utils.Fatal("Error testing database connection: %v\nOutput: %s", err, out.String())
+		return fmt.Errorf("failed to connect to %s database: %v", db.dbName, err)
 
 	}
 	utils.Info("Successfully connected to %s database", db.dbName)
-
+	return nil
 }
 
 // checkPubKeyFile checks gpg public key

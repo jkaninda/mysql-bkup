@@ -42,6 +42,7 @@ var (
 	usingKey                 = false
 	backupSize         int64 = 0
 	startTime                = time.Now()
+	backupRescueMode         = false
 )
 
 // dbHVars Required environment variables for database
@@ -61,13 +62,6 @@ var tdbRVars = []string{
 var dbConf *dbConfig
 var targetDbConf *targetDbConfig
 
-// sshVars Required environment variables for SSH remote server storage
-var sshVars = []string{
-	"SSH_USER",
-	"SSH_HOST_NAME",
-	"SSH_PORT",
-	"REMOTE_PATH",
-}
 var ftpVars = []string{
 	"FTP_HOST_NAME",
 	"FTP_USER",
