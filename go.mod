@@ -2,14 +2,15 @@ module github.com/jkaninda/mysql-bkup
 
 go 1.23.2
 
-require github.com/spf13/pflag v1.0.5 // indirect
+require github.com/spf13/pflag v1.0.6 // indirect
 
 require (
 	github.com/go-mail/mail v2.3.1+incompatible
 	github.com/jkaninda/encryptor v0.0.0-20241111100652-926393c9437e
 	github.com/jkaninda/go-storage v0.1.3
+	github.com/jkaninda/go-utils v0.0.0-20250122060806-26119182077a
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.9.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -26,7 +27,6 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/jkaninda/go-utils v0.0.0-20250122060806-26119182077a // indirect
 	github.com/jlaffaye/ftp v0.2.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
