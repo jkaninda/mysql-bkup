@@ -10,7 +10,7 @@ RUN go mod download
 # Build
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-X 'github.com/jkaninda/mysql-bkup/utils.Version=${appVersion}'" -o /app/mysql-bkup
 
-FROM alpine:3.21.2
+FROM alpine:3.21.3
 ENV TZ=UTC
 ARG WORKDIR="/config"
 ARG BACKUPDIR="/backup"
