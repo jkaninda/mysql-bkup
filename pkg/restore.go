@@ -25,6 +25,7 @@ SOFTWARE.
 package pkg
 
 import (
+	"fmt"
 	"github.com/jkaninda/encryptor"
 	"github.com/jkaninda/go-storage/pkg/local"
 	"github.com/jkaninda/mysql-bkup/utils"
@@ -114,10 +115,6 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 	}
 
 	if utils.FileExists(filepath.Join(tmpPath, conf.file)) {
-		err := os.Setenv("MYSQL_PWD", db.dbPassword)
-		if err != nil {
-			return
-		}
 		err = testDatabaseConnection(db)
 		if err != nil {
 			utils.Fatal("Error connecting to the database %v", err)
@@ -125,12 +122,12 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 		utils.Info("Restoring database...")
 
 		extension := filepath.Ext(filepath.Join(tmpPath, conf.file))
-		// Restore from compressed file / .sql.gz
+		// Restore from a compressed file / .sql.gz
 		if extension == ".gz" {
-			str := "zcat " + filepath.Join(tmpPath, conf.file) + " | mariadb -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
-			_, err := exec.Command("sh", "-c", str).Output()
+			str := "zcat " + filepath.Join(tmpPath, conf.file) + " | mariadb " + fmt.Sprintf("--defaults-file=%s", mysqlClientConfig) + " " + db.dbName
+			output, err := exec.Command("sh", "-c", str).Output()
 			if err != nil {
-				utils.Fatal("Error, in restoring the database  %v", err)
+				utils.Fatal("Error, in restoring the database  %v output: %v", err, output)
 			}
 			utils.Info("Restoring database... done")
 			utils.Info("Database has been restored")
@@ -138,11 +135,11 @@ func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 			deleteTemp()
 
 		} else if extension == ".sql" {
-			// Restore from sql file
-			str := "cat " + filepath.Join(tmpPath, conf.file) + " | mariadb -h " + db.dbHost + " -P " + db.dbPort + " -u " + db.dbUserName + " " + db.dbName
-			_, err := exec.Command("sh", "-c", str).Output()
+			// Restore from SQL file
+			str := "cat " + filepath.Join(tmpPath, conf.file) + " | mariadb " + fmt.Sprintf("--defaults-file=%s", mysqlClientConfig) + " " + db.dbName
+			output, err := exec.Command("sh", "-c", str).Output()
 			if err != nil {
-				utils.Fatal("Error in restoring the database %v", err)
+				utils.Fatal("Error, in restoring the database  %v output: %v", err, output)
 			}
 			utils.Info("Restoring database... done")
 			utils.Info("Database has been restored")

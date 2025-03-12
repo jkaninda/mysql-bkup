@@ -27,6 +27,7 @@ package pkg
 import (
 	"bytes"
 	"fmt"
+	goutils "github.com/jkaninda/go-utils"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -67,16 +68,17 @@ func deleteTemp() {
 
 // TestDatabaseConnection tests the database connection
 func testDatabaseConnection(db *dbConfig) error {
-	// Set the MYSQL_PWD environment variable
-	if err := os.Setenv("MYSQL_PWD", db.dbPassword); err != nil {
-		return fmt.Errorf("failed to set MYSQL_PWD environment variable: %v", err)
+	// Create the mysql client config file
+	if err := createMysqlClientConfigFile(*db); err != nil {
+		return fmt.Errorf(err.Error())
 	}
 	utils.Info("Connecting to %s database ...", db.dbName)
 	// Set database name for notification error
 	utils.DatabaseName = db.dbName
 
 	// Prepare the command to test the database connection
-	cmd := exec.Command("mariadb", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
+	//cmd := exec.Command("mariadb", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
+	cmd := exec.Command("mariadb", fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), db.dbName, "-e", "quit")
 	// Capture the output
 	var out bytes.Buffer
 	cmd.Stdout = &out
@@ -189,9 +191,11 @@ func RemoveLastExtension(filename string) string {
 
 // Create mysql client config file
 func createMysqlClientConfigFile(db dbConfig) error {
+	caCertPath := goutils.GetStringEnvWithDefault("DB_SSL_CA", "/etc/ssl/certs/ca-certificates.crt")
+	sslMode := goutils.GetStringEnvWithDefault("DB_SSL_MODE", "0")
 	// Create the mysql client config file
 	mysqlClientConfigFile := filepath.Join(tmpPath, "my.cnf")
-	mysqlClientConfig := fmt.Sprintf("[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\nssl-ca=%s\nssl=0\n", db.dbHost, db.dbPort, db.dbUserName, db.dbPassword, db.caCertPath)
+	mysqlClientConfig := fmt.Sprintf("[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\nssl-ca=%s\nssl=%s\n", db.dbHost, db.dbPort, db.dbUserName, db.dbPassword, caCertPath, sslMode)
 	if err := os.WriteFile(mysqlClientConfigFile, []byte(mysqlClientConfig), 0644); err != nil {
 		return fmt.Errorf("failed to create mysql client config file: %v", err)
 	}

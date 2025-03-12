@@ -24,7 +24,10 @@ SOFTWARE.
 
 package pkg
 
-import "time"
+import (
+	"path/filepath"
+	"time"
+)
 
 const tmpPath = "/tmp/backup"
 const gpgHome = "/config/gnupg"
@@ -43,6 +46,7 @@ var (
 	backupSize         int64 = 0
 	startTime                = time.Now()
 	backupRescueMode         = false
+	mysqlClientConfig        = filepath.Join(tmpPath, "my.cnf")
 )
 
 // dbHVars Required environment variables for database

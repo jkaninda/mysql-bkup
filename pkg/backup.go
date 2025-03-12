@@ -217,10 +217,7 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool
 	if disableCompression {
 		// Execute mysqldump
 		cmd := exec.Command("mysqldump",
-			"-h", db.dbHost,
-			"-P", db.dbPort,
-			"-u", db.dbUserName,
-			db.dbName,
+			fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), db.dbName,
 		)
 		output, err := cmd.Output()
 		if err != nil {
@@ -247,7 +244,7 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool
 
 	} else {
 		// Execute mysqldump
-		cmd := exec.Command("mysqldump", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName)
+		cmd := exec.Command("mysqldump", fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), db.dbName)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			return fmt.Errorf("failed to backup database: %v output: %v", err, stdout)
