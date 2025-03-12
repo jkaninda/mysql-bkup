@@ -26,7 +26,6 @@ SOFTWARE.
 package pkg
 
 import (
-	"errors"
 	"fmt"
 	"github.com/jkaninda/encryptor"
 	"github.com/jkaninda/go-storage/pkg/local"
@@ -34,7 +33,6 @@ import (
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -114,10 +112,14 @@ func multiBackupTask(databases []Database, bkConfig *BackupConfig) {
 func BackupTask(db *dbConfig, config *BackupConfig) {
 	utils.Info("Starting backup task...")
 	startTime = time.Now()
+	prefix := db.dbName
+	if config.all {
+		prefix = "all_databases"
+	}
 	// Generate file name
-	backupFileName := fmt.Sprintf("%s_%s.sql.gz", db.dbName, time.Now().Format("20060102_150405"))
+	backupFileName := fmt.Sprintf("%s_%s.sql.gz", prefix, time.Now().Format("20060102_150405"))
 	if config.disableCompression {
-		backupFileName = fmt.Sprintf("%s_%s.sql", db.dbName, time.Now().Format("20060102_150405"))
+		backupFileName = fmt.Sprintf("%s_%s.sql", prefix, time.Now().Format("20060102_150405"))
 	}
 	config.backupFileName = backupFileName
 	switch config.storage {
@@ -199,123 +201,67 @@ func startMultiBackup(bkConfig *BackupConfig, configFile string) {
 // BackupDatabase backup database
 func BackupDatabase(db *dbConfig, backupFileName string, disableCompression, all bool) error {
 	storagePath = os.Getenv("STORAGE_PATH")
-
 	utils.Info("Starting database backup...")
 
-	//err := os.Setenv("MYSQL_PWD", db.dbPassword)
-	//if err != nil {
-	//	return fmt.Errorf("failed to set MYSQL_PWD environment variable: %v", err)
-	//}
-	err := testDatabaseConnection(db)
-	if err != nil {
-		return errors.New(err.Error())
+	if err := testDatabaseConnection(db); err != nil {
+		return fmt.Errorf("database connection failed: %w", err)
 	}
-	// Backup Database database
-	utils.Info("Backing up database...")
-	// Verify is compression is disabled
-	if disableCompression {
-		if all {
-			// Backup all databases
-			// Execute mysqldump
-			cmd := exec.Command("mysqldump",
-				fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), "--all-databases", "--single-transaction", "--routines", "--triggers",
-			)
-			output, err := cmd.Output()
-			if err != nil {
-				return fmt.Errorf("failed to backup database: %v output: %v", err, string(output))
-			}
 
-			// save output
-			file, err := os.Create(filepath.Join(tmpPath, backupFileName))
-			if err != nil {
-				return fmt.Errorf("failed to create backup file: %v", err)
-			}
-			defer func(file *os.File) {
-				err := file.Close()
-				if err != nil {
-					return
-				}
-			}(file)
-
-			_, err = file.Write(output)
-			if err != nil {
-				return err
-			}
-			utils.Info("Database has been backed up")
-		} else {
-			// Execute mysqldump
-			cmd := exec.Command("mysqldump",
-				fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), db.dbName,
-			)
-			output, err := cmd.Output()
-			if err != nil {
-				return fmt.Errorf("failed to backup database: %v output: %v", err, string(output))
-			}
-
-			// save output
-			file, err := os.Create(filepath.Join(tmpPath, backupFileName))
-			if err != nil {
-				return fmt.Errorf("failed to create backup file: %v", err)
-			}
-			defer func(file *os.File) {
-				err := file.Close()
-				if err != nil {
-					return
-				}
-			}(file)
-
-			_, err = file.Write(output)
-			if err != nil {
-				return err
-			}
-			utils.Info("Database has been backed up")
-		}
-
+	dumpArgs := []string{fmt.Sprintf("--defaults-file=%s", mysqlClientConfig)}
+	if all {
+		dumpArgs = append(dumpArgs, "--all-databases", "--single-transaction", "--routines", "--triggers")
 	} else {
-		if all {
-			// Execute mysqldump
-			cmd := exec.Command("mysqldump", fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), "--all-databases", "--single-transaction", "--routines", "--triggers")
-			stdout, err := cmd.StdoutPipe()
-			if err != nil {
-				return fmt.Errorf("failed to backup database: %v output: %v", err, stdout)
-			}
-			gzipCmd := exec.Command("gzip")
-			gzipCmd.Stdin = stdout
-			gzipCmd.Stdout, err = os.Create(filepath.Join(tmpPath, backupFileName))
-			err = gzipCmd.Start()
-			if err != nil {
-				return fmt.Errorf("failed to backup database: %v", err)
-			}
-			if err := cmd.Run(); err != nil {
-				log.Fatal(err)
-			}
-			if err := gzipCmd.Wait(); err != nil {
-				log.Fatal(err)
-			}
-
-		} else {
-			// Execute mysqldump
-			cmd := exec.Command("mysqldump", fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), db.dbName)
-			stdout, err := cmd.StdoutPipe()
-			if err != nil {
-				return fmt.Errorf("failed to backup database: %v output: %v", err, stdout)
-			}
-			gzipCmd := exec.Command("gzip")
-			gzipCmd.Stdin = stdout
-			gzipCmd.Stdout, err = os.Create(filepath.Join(tmpPath, backupFileName))
-			err = gzipCmd.Start()
-			if err != nil {
-				return fmt.Errorf("failed to backup database: %v", err)
-			}
-			if err := cmd.Run(); err != nil {
-				log.Fatal(err)
-			}
-			if err := gzipCmd.Wait(); err != nil {
-				log.Fatal(err)
-			}
-
-		}
+		dumpArgs = append(dumpArgs, db.dbName)
 	}
+
+	backupPath := filepath.Join(tmpPath, backupFileName)
+	if disableCompression {
+		return runCommandAndSaveOutput("mysqldump", dumpArgs, backupPath)
+	}
+	return runCommandWithCompression("mysqldump", dumpArgs, backupPath)
+}
+
+func runCommandAndSaveOutput(command string, args []string, outputPath string) error {
+	cmd := exec.Command(command, args...)
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("failed to execute %s: %v, output: %s", command, err, string(output))
+	}
+
+	return os.WriteFile(outputPath, output, 0644)
+}
+
+func runCommandWithCompression(command string, args []string, outputPath string) error {
+	cmd := exec.Command(command, args...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stdout pipe: %w", err)
+	}
+
+	gzipCmd := exec.Command("gzip")
+	gzipCmd.Stdin = stdout
+	gzipFile, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("failed to create gzip file: %w", err)
+	}
+	defer func(gzipFile *os.File) {
+		err := gzipFile.Close()
+		if err != nil {
+			utils.Error("Error closing gzip file: %v", err)
+		}
+	}(gzipFile)
+	gzipCmd.Stdout = gzipFile
+
+	if err := gzipCmd.Start(); err != nil {
+		return fmt.Errorf("failed to start gzip: %w", err)
+	}
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to execute %s: %w", command, err)
+	}
+	if err := gzipCmd.Wait(); err != nil {
+		return fmt.Errorf("failed to wait for gzip completion: %w", err)
+	}
+
 	utils.Info("Database has been backed up")
 	return nil
 }
@@ -408,8 +354,8 @@ func recoverMode(err error, msg string) {
 			utils.Error("Backup rescue mode is enabled")
 			utils.Error("Backup will continue")
 		} else {
-			utils.Error("Error 10: %s", msg)
-			utils.Fatal("Error 10: %v", err)
+			utils.Error("Error: %s", msg)
+			utils.Fatal("Error: %v", err)
 			return
 		}
 	}
