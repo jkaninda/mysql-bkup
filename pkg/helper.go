@@ -65,25 +65,28 @@ func deleteTemp() {
 	}
 }
 
-// TestDatabaseConnection  tests the database connection
+// TestDatabaseConnection tests the database connection
 func testDatabaseConnection(db *dbConfig) error {
-	err := os.Setenv("MYSQL_PWD", db.dbPassword)
-	if err != nil {
+	// Set the MYSQL_PWD environment variable
+	if err := os.Setenv("MYSQL_PWD", db.dbPassword); err != nil {
 		return fmt.Errorf("failed to set MYSQL_PWD environment variable: %v", err)
 	}
 	utils.Info("Connecting to %s database ...", db.dbName)
 	// Set database name for notification error
 	utils.DatabaseName = db.dbName
+
+	// Prepare the command to test the database connection
 	cmd := exec.Command("mariadb", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
 	// Capture the output
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("failed to connect to %s database: %v", db.dbName, err)
 
+	// Run the command
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to connect to database %s: %v, output: %s", db.dbName, err, out.String())
 	}
+
 	utils.Info("Successfully connected to %s database", db.dbName)
 	return nil
 }
@@ -182,4 +185,15 @@ func RemoveLastExtension(filename string) string {
 		return filename[:idx]
 	}
 	return filename
+}
+
+// Create mysql client config file
+func createMysqlClientConfigFile(db dbConfig) error {
+	// Create the mysql client config file
+	mysqlClientConfigFile := filepath.Join(tmpPath, "my.cnf")
+	mysqlClientConfig := fmt.Sprintf("[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\nssl-ca=%s\nssl=0\n", db.dbHost, db.dbPort, db.dbUserName, db.dbPassword, db.caCertPath)
+	if err := os.WriteFile(mysqlClientConfigFile, []byte(mysqlClientConfig), 0644); err != nil {
+		return fmt.Errorf("failed to create mysql client config file: %v", err)
+	}
+	return nil
 }

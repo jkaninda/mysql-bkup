@@ -26,6 +26,7 @@ SOFTWARE.
 package pkg
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jkaninda/encryptor"
 	"github.com/jkaninda/go-storage/pkg/local"
@@ -207,7 +208,7 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool
 	}
 	err = testDatabaseConnection(db)
 	if err != nil {
-		return fmt.Errorf("failed to connect to the database: %v", err)
+		return errors.New(err.Error())
 	}
 	// Backup Database database
 	utils.Info("Backing up database...")
@@ -223,7 +224,7 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool
 		)
 		output, err := cmd.Output()
 		if err != nil {
-			return fmt.Errorf("failed to backup database: %v", err)
+			return fmt.Errorf("failed to backup database: %v output: %v", err, output)
 		}
 
 		// save output
@@ -249,7 +250,7 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool
 		cmd := exec.Command("mysqldump", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			return fmt.Errorf("failed to backup database: %v", err)
+			return fmt.Errorf("failed to backup database: %v output: %v", err, stdout)
 		}
 		gzipCmd := exec.Command("gzip")
 		gzipCmd.Stdin = stdout
@@ -358,8 +359,9 @@ func recoverMode(err error, msg string) {
 			utils.Error("Backup rescue mode is enabled")
 			utils.Error("Backup will continue")
 		} else {
-			utils.Error("Error: %s", msg)
-			utils.Fatal("Error: %v", err)
+			utils.Error("Error 10: %s", msg)
+			utils.Fatal("Error 10: %v", err)
+			return
 		}
 	}
 
