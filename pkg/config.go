@@ -77,6 +77,7 @@ type BackupConfig struct {
 	publicKey          string
 	storage            string
 	cronExpression     string
+	all                bool
 }
 type FTPConfig struct {
 	host       string
@@ -256,6 +257,7 @@ func initBackupConfig(cmd *cobra.Command) *BackupConfig {
 		prune = true
 	}
 	disableCompression, _ = cmd.Flags().GetBool("disable-compression")
+	all, _ := cmd.Flags().GetBool("all")
 	_, _ = cmd.Flags().GetString("mode")
 	passphrase := os.Getenv("GPG_PASSPHRASE")
 	_ = utils.GetEnv(cmd, "path", "AWS_S3_PATH")
@@ -281,6 +283,7 @@ func initBackupConfig(cmd *cobra.Command) *BackupConfig {
 	config.publicKey = publicKeyFile
 	config.usingKey = usingKey
 	config.cronExpression = cronExpression
+	config.all = all
 	return &config
 }
 
