@@ -108,7 +108,7 @@ func sshBackup(db *dbConfig, config *BackupConfig) {
 	})
 	// Delete temp
 	deleteTemp()
-	utils.Info("Backup successfully completed in %s", duration)
+	utils.Info("The backup of the %s database has been completed in %s", db.dbName, duration)
 
 }
 func remoteRestore(db *dbConfig, conf *RestoreConfig) {
@@ -224,5 +224,5 @@ func ftpBackup(db *dbConfig, config *BackupConfig) {
 	})
 	// Delete temp
 	deleteTemp()
-	utils.Info("Backup successfully completed in %s", duration)
+	utils.Info("The backup of the %s database has been completed in %s", db.dbName, duration)
 }

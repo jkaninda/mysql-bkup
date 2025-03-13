@@ -149,14 +149,15 @@ func backupTask(db *dbConfig, config *BackupConfig) {
 		backupFileName = fmt.Sprintf("%s_%s.sql", prefix, time.Now().Format("20060102_150405"))
 	}
 	config.backupFileName = backupFileName
-	switch config.storage {
+	s := strings.ToLower(config.storage)
+	switch s {
 	case "local":
 		localBackup(db, config)
-	case "s3", "S3":
+	case "s3":
 		s3Backup(db, config)
-	case "ssh", "SSH", "remote", "sftp":
+	case "ssh", "remote", "sftp":
 		sshBackup(db, config)
-	case "ftp", "FTP":
+	case "ftp":
 		ftpBackup(db, config)
 	case "azure":
 		azureBackup(db, config)
@@ -341,7 +342,7 @@ func localBackup(db *dbConfig, config *BackupConfig) {
 	}
 	// Delete temp
 	deleteTemp()
-	utils.Info("Backup successfully completed in %s", duration)
+	utils.Info("The backup of the %s database has been completed in %s", db.dbName, duration)
 }
 
 func encryptBackup(config *BackupConfig) {

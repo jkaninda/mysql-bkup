@@ -104,7 +104,7 @@ func azureBackup(db *dbConfig, config *BackupConfig) {
 	})
 	// Delete temp
 	deleteTemp()
-	utils.Info("Backup successfully completed in %s", duration)
+	utils.Info("The backup of the %s database has been completed in %s", db.dbName, duration)
 }
 func azureRestore(db *dbConfig, conf *RestoreConfig) {
 	utils.Info("Restore database from Azure Blob storage")
