@@ -39,7 +39,7 @@ import (
 func sshBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to Remote server")
 	// Backup database
-	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all)
+	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all, config.singleFile)
 	if err != nil {
 		recoverMode(err, "Error backing up database")
 		return
@@ -160,7 +160,7 @@ func ftpBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to the remote FTP server")
 
 	// Backup database
-	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all)
+	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all, config.singleFile)
 	if err != nil {
 		recoverMode(err, "Error backing up database")
 		return

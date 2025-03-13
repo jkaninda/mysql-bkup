@@ -195,8 +195,8 @@ func createMysqlClientConfigFile(db dbConfig) error {
 	sslMode := goutils.GetStringEnvWithDefault("DB_SSL_MODE", "0")
 	// Create the mysql client config file
 	mysqlClientConfigFile := filepath.Join(tmpPath, "my.cnf")
-	mysqlClientConfig := fmt.Sprintf("[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\nssl-ca=%s\nssl=%s\n", db.dbHost, db.dbPort, db.dbUserName, db.dbPassword, caCertPath, sslMode)
-	if err := os.WriteFile(mysqlClientConfigFile, []byte(mysqlClientConfig), 0644); err != nil {
+	mysqlCl := fmt.Sprintf("[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\nssl-ca=%s\nssl=%s\n", db.dbHost, db.dbPort, db.dbUserName, db.dbPassword, caCertPath, sslMode)
+	if err := os.WriteFile(mysqlClientConfigFile, []byte(mysqlCl), 0644); err != nil {
 		return fmt.Errorf("failed to create mysql client config file: %v", err)
 	}
 	return nil

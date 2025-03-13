@@ -51,5 +51,6 @@ func init() {
 	BackupCmd.PersistentFlags().StringP("config", "c", "", "Configuration file for multi database backup. (e.g: `/backup/config.yaml`)")
 	BackupCmd.PersistentFlags().BoolP("disable-compression", "", false, "Disable backup compression")
 	BackupCmd.PersistentFlags().BoolP("all", "a", false, "Backup all databases")
+	BackupCmd.PersistentFlags().BoolP("single-file", "", false, "Backup all databases in a single file")
 
 }

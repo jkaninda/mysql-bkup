@@ -26,6 +26,7 @@ SOFTWARE.
 package pkg
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/jkaninda/encryptor"
 	"github.com/jkaninda/go-storage/pkg/local"
@@ -36,6 +37,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -48,7 +50,7 @@ func StartBackup(cmd *cobra.Command) {
 	if err != nil {
 		dbConf = initDbConfig(cmd)
 		if config.cronExpression == "" {
-			BackupTask(dbConf, config)
+			createBackupTask(dbConf, config)
 		} else {
 			if utils.IsValidCronExpression(config.cronExpression) {
 				scheduledMode(dbConf, config)
@@ -82,7 +84,7 @@ func scheduledMode(db *dbConfig, config *BackupConfig) {
 	c := cron.New()
 
 	_, err = c.AddFunc(config.cronExpression, func() {
-		BackupTask(db, config)
+		createBackupTask(db, config)
 		utils.Info("Next backup time is: %v", utils.CronNextTime(config.cronExpression).Format(timeFormat))
 
 	})
@@ -104,16 +106,41 @@ func multiBackupTask(databases []Database, bkConfig *BackupConfig) {
 		if db.Path != "" {
 			bkConfig.remotePath = db.Path
 		}
-		BackupTask(getDatabase(db), bkConfig)
+		createBackupTask(getDatabase(db), bkConfig)
 	}
 }
 
-// BackupTask backups database
-func BackupTask(db *dbConfig, config *BackupConfig) {
+// createBackupTask backup task
+func createBackupTask(db *dbConfig, config *BackupConfig) {
+	if config.all && !config.singleFile {
+		backupAll(db, config)
+	} else {
+		backupTask(db, config)
+	}
+}
+
+// backupAll backup all databases
+func backupAll(db *dbConfig, config *BackupConfig) {
+	databases, err := listDatabases(*db)
+	if err != nil {
+		utils.Fatal("Error listing databases: %s", err)
+	}
+	for _, dbName := range databases {
+		if dbName == "information_schema" || dbName == "performance_schema" || dbName == "mysql" || dbName == "sys" || dbName == "innodb" || dbName == "Database" {
+			continue
+		}
+		db.dbName = dbName
+		config.backupFileName = fmt.Sprintf("%s_%s.sql.gz", dbName, time.Now().Format("20060102_150405"))
+		backupTask(db, config)
+	}
+
+}
+
+func backupTask(db *dbConfig, config *BackupConfig) {
 	utils.Info("Starting backup task...")
 	startTime = time.Now()
 	prefix := db.dbName
-	if config.all {
+	if config.all && config.singleFile {
 		prefix = "all_databases"
 	}
 	// Generate file name
@@ -199,7 +226,7 @@ func startMultiBackup(bkConfig *BackupConfig, configFile string) {
 }
 
 // BackupDatabase backup database
-func BackupDatabase(db *dbConfig, backupFileName string, disableCompression, all bool) error {
+func BackupDatabase(db *dbConfig, backupFileName string, disableCompression, all, singleFile bool) error {
 	storagePath = os.Getenv("STORAGE_PATH")
 	utils.Info("Starting database backup...")
 
@@ -208,7 +235,7 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression, all
 	}
 
 	dumpArgs := []string{fmt.Sprintf("--defaults-file=%s", mysqlClientConfig)}
-	if all {
+	if all && singleFile {
 		dumpArgs = append(dumpArgs, "--all-databases", "--single-transaction", "--routines", "--triggers")
 	} else {
 		dumpArgs = append(dumpArgs, db.dbName)
@@ -267,7 +294,7 @@ func runCommandWithCompression(command string, args []string, outputPath string)
 }
 func localBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to local storage")
-	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all)
+	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all, config.singleFile)
 	if err != nil {
 		recoverMode(err, "Error backing up database")
 		return
@@ -345,6 +372,31 @@ func encryptBackup(config *BackupConfig) {
 
 	}
 
+}
+
+// listDatabases list all databases
+func listDatabases(db dbConfig) ([]string, error) {
+	databases := []string{}
+	// Create the mysql client config file
+	if err := createMysqlClientConfigFile(db); err != nil {
+		return databases, fmt.Errorf(err.Error())
+	}
+	utils.Info("Listing databases...")
+	// Step 1: List all databases
+	cmd := exec.Command("mariadb", fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), "-e", "SHOW DATABASES;")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return databases, fmt.Errorf("failed to list databases: %s", err)
+	}
+	// Step 2: Parse the output
+	for _, _db := range strings.Split(out.String(), "\n") {
+		if _db != "" {
+			databases = append(databases, _db)
+		}
+	}
+	return databases, nil
 }
 func recoverMode(err error, msg string) {
 	if err != nil {
