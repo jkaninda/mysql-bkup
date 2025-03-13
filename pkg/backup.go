@@ -136,6 +136,7 @@ func backupAll(db *dbConfig, config *BackupConfig) {
 
 }
 
+// backupTask backup task
 func backupTask(db *dbConfig, config *BackupConfig) {
 	utils.Info("Starting backup task...")
 	startTime = time.Now()
@@ -165,6 +166,8 @@ func backupTask(db *dbConfig, config *BackupConfig) {
 		localBackup(db, config)
 	}
 }
+
+// startMultiBackup start multi backup
 func startMultiBackup(bkConfig *BackupConfig, configFile string) {
 	utils.Info("Starting Multi backup task...")
 	conf, err := readConf(configFile)
@@ -249,6 +252,7 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression, all
 	return runCommandWithCompression("mysqldump", dumpArgs, backupPath)
 }
 
+// runCommandAndSaveOutput runs a command and saves the output to a file
 func runCommandAndSaveOutput(command string, args []string, outputPath string) error {
 	cmd := exec.Command(command, args...)
 	output, err := cmd.Output()
@@ -259,6 +263,7 @@ func runCommandAndSaveOutput(command string, args []string, outputPath string) e
 	return os.WriteFile(outputPath, output, 0644)
 }
 
+// runCommandWithCompression runs a command and compresses the output
 func runCommandWithCompression(command string, args []string, outputPath string) error {
 	cmd := exec.Command(command, args...)
 	stdout, err := cmd.StdoutPipe()
@@ -293,6 +298,8 @@ func runCommandWithCompression(command string, args []string, outputPath string)
 	utils.Info("Database has been backed up")
 	return nil
 }
+
+// localBackup backup database to local storage
 func localBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to local storage")
 	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all, config.singleFile)
@@ -345,6 +352,7 @@ func localBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("The backup of the %s database has been completed in %s", db.dbName, duration)
 }
 
+// encryptBackup encrypt backup
 func encryptBackup(config *BackupConfig) {
 	backupFile, err := os.ReadFile(filepath.Join(tmpPath, config.backupFileName))
 	outputFile := fmt.Sprintf("%s.%s", filepath.Join(tmpPath, config.backupFileName), gpgExtension)
