@@ -182,8 +182,7 @@ jobs:
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
             -e GPG_PASSPHRASE=password \
-            -e DB_NAME=testdb \
-            ${{ env.IMAGE_NAME }}:latest backup --disable-compression --custom-name encrypted-bkup
+            ${{ env.IMAGE_NAME }}:latest backup -d testdb --disable-compression --custom-name encrypted-bkup
           echo "Database encrypted backup completed"
       - name: Test restore encrypted backup | testdb -> testdb2
         run: |
