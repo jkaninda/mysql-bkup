@@ -1,6 +1,7 @@
--- Create the database testdb2
+-- Create the database testdb2 and testdb3
 CREATE DATABASE IF NOT EXISTS testdb2;
-USE testdb2;
+CREATE DATABASE IF NOT EXISTS testdb3;
+USE testdb;
 
 -- Create the 'users' table
 CREATE TABLE users (

@@ -42,7 +42,7 @@ jobs:
       # Build the Docker image
       - name: Build Docker Image
         run: |
-          docker buildx build -t ${{ env.IMAGE_NAME }}:latest --load .
+          docker buildx build --build-arg appVersion=test -t ${{ env.IMAGE_NAME }}:latest --load .
 
       - name: Verify Docker images
         run: |
@@ -51,10 +51,6 @@ jobs:
       - name: Wait for MySQL to be ready
         run: |
           docker run --rm --network host mysql:8 mysqladmin ping -h 127.0.0.1 -uuser -ppassword --wait
-#      - name: Create testdb2
-#        run: |
-#          docker exec mysql8 mysql -u root -proot -e "CREATE DATABASE testdb2;"
-#          echo "Database testdb2 created"
       - name: Test restore
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
@@ -93,13 +89,13 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest backup --disable-compression
           
           echo "Database encrypted backup completed"
-      - name: Test backup all
+      - name: Test backup all databases
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
             -v ./migrations:/backup/ \
             --network host \
             -e DB_HOST=127.0.0.1 \
-            -e DB_USERNAME=user \
+            -e DB_USERNAME=root \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
             ${{ env.IMAGE_NAME }}:latest backup --all-databases
@@ -119,7 +115,7 @@ jobs:
           echo "Database backup completed"
       - name: Test scheduled backup
         run: |
-          docker run -d --rm --name ${{ env.IMAGE_NAME }} \
+          docker run --rm --name ${{ env.IMAGE_NAME }} \
             -v ./migrations:/backup/ \
             --network host \
             -e DB_HOST=127.0.0.1 \
