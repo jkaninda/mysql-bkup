@@ -28,6 +28,7 @@ The `mysql-bkup` CLI provides commands and options to manage MySQL backups effic
 | `--cron-expression`     | `-e`       | Schedules backups using a cron expression (e.g., `0 0 * * *` or `@daily`).              |
 | `--all-databases`       | `-a`       | Backs up all databases separately (e.g., `backup --all-databases`).                     |
 | `--all-in-one`          | `-A`       | Backs up all databases in a single file (e.g., `backup --all-databases --single-file`). |
+| `--custom-name`         | ``         | Sets custom backup name for one time backup                                             |
 | `--help`                | `-h`       | Displays the help message and exits.                                                    |
 | `--version`             | `-V`       | Shows version information and exits.                                                    |
 
