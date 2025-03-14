@@ -33,31 +33,31 @@ jobs:
       # Build the Docker image
       - name: Build Docker Image
         run: |
-          docker buildx build -t ${{vars.IMAGE_NAME}} .
+          docker buildx build -t ${{IMAGE_NAME}} .
       - name: Create docker network
         run: |
           docker network create web
       - name: Test restore
         run: |
-          docker run -d --name ${{vars.IMAGE_NAME}} \
+          docker run -d --name ${{IMAGE_NAME}} \
             -v migrations/:/backup/ \
             --network web \
             -e DB_HOST=mysql \
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
-            ${{vars.IMAGE_NAME}} restore -f init.sql
+            ${{IMAGE_NAME}} restore -f init.sql
 
           echo "Database restore completed"
 
       - name: Test backup
         run: |
-          docker run -d --name ${{vars.IMAGE_NAME}} \
+          docker run -d --name ${{IMAGE_NAME}} \
             -v migrations/:/backup/ \
             --network web \
             -e DB_HOST=mysql \
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
-            ${{vars.IMAGE_NAME}} backup
+            ${{IMAGE_NAME}} backup
           echo "Database backup completed"
