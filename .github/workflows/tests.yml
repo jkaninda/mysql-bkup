@@ -65,19 +65,6 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
-      # Build the Docker image
-      - name: Build Docker Image
-        run: |
-          docker buildx build --build-arg appVersion=test -t ${{ env.IMAGE_NAME }}:latest --load .
-
-      - name: Verify Docker images
-        run: |
-          docker images
-
-      - name: Wait for MySQL to be ready
-        run: |
-          docker run --rm --network host mysql:9 mysqladmin ping -h 127.0.0.1 -uuser -ppassword --wait
       - name: Create Minio container
         run: |
           docker run -d --rm --name minio \
@@ -106,6 +93,18 @@ jobs:
         run: |
           mc mb local/backups
           echo "Bucket backups created successfully."
+      # Build the Docker image
+      - name: Build Docker Image
+        run: |
+          docker buildx build --build-arg appVersion=test -t ${{ env.IMAGE_NAME }}:latest --load .
+
+      - name: Verify Docker images
+        run: |
+          docker images
+
+      - name: Wait for MySQL to be ready
+        run: |
+          docker run --rm --network host mysql:9 mysqladmin ping -h 127.0.0.1 -uuser -ppassword --wait
       - name: Test restore
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
@@ -217,22 +216,6 @@ jobs:
             -e TARGET_DB_PASSWORD=password \
             ${{ env.IMAGE_NAME }}:latest migrate
           echo "Test migrate database testdb -> testdb3 completed"
-      - name: Test backup Minio (s3)
-        run: |
-          docker run --rm --name ${{ env.IMAGE_NAME }} \
-            --network host \
-            -e DB_HOST=127.0.0.1 \
-            -e DB_USERNAME=user \
-            -e DB_PASSWORD=password \
-            -e DB_NAME=testdb \
-            -e AWS_S3_ENDPOINT="http://127.0.0.1:9000" \
-            -e AWS_S3_BUCKET_NAME=backups \
-            -e AWS_ACCESS_KEY=minioadmin \
-            -e AWS_SECRET_KEY=minioadmin \
-            -e AWS_DISABLE_SSL="true" \
-            -e AWS_REGION="eu" \
-            -e AWS_FORCE_PATH_STYLE="true" ${{ env.IMAGE_NAME }}:latest backup -s s3
-          echo "Test backup Minio (s3) completed"
       - name: Test backup all databases
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
@@ -255,6 +238,38 @@ jobs:
             -e TESTDB2_DB_HOST=127.0.0.1 \
             ${{ env.IMAGE_NAME }}:latest backup -c /backup/test_config.yaml
           echo "Database backup completed"
+      - name: Test backup Minio (s3)
+        run: |
+          docker run --rm --name ${{ env.IMAGE_NAME }} \
+            --network host \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_USERNAME=user \
+            -e DB_PASSWORD=password \
+            -e DB_NAME=testdb \
+            -e AWS_S3_ENDPOINT="http://127.0.0.1:9000" \
+            -e AWS_S3_BUCKET_NAME=backups \
+            -e AWS_ACCESS_KEY=minioadmin \
+            -e AWS_SECRET_KEY=minioadmin \
+            -e AWS_DISABLE_SSL="true" \
+            -e AWS_REGION="eu" \
+            -e AWS_FORCE_PATH_STYLE="true" ${{ env.IMAGE_NAME }}:latest backup -s s3  --custom-name minio-backup
+          echo "Test backup Minio (s3) completed"
+      - name: Test restore Minio (s3)
+        run: |
+          docker run --rm --name ${{ env.IMAGE_NAME }} \
+            --network host \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_USERNAME=user \
+            -e DB_PASSWORD=password \
+            -e DB_NAME=testdb \
+            -e AWS_S3_ENDPOINT="http://127.0.0.1:9000" \
+            -e AWS_S3_BUCKET_NAME=backups \
+            -e AWS_ACCESS_KEY=minioadmin \
+            -e AWS_SECRET_KEY=minioadmin \
+            -e AWS_DISABLE_SSL="true" \
+            -e AWS_REGION="eu" \
+            -e AWS_FORCE_PATH_STYLE="true" ${{ env.IMAGE_NAME }}:latest restore -s s3 -f minio-backup.sql.gz
+          echo "Test backup Minio (s3) completed"
       - name: Test scheduled backup
         run: |
           docker run -d --rm --name ${{ env.IMAGE_NAME }} \
