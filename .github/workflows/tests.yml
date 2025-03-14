@@ -160,7 +160,7 @@ jobs:
             -e DB_NAME=testdb \
             ${{ env.IMAGE_NAME }}:latest backup --disable-compression --custom-name encrypted-bkup
           echo "Database encrypted backup completed"
-      - name: Test restore encrypted backup | testdb -> testdb3
+      - name: Test restore encrypted backup | testdb -> testdb2
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
             -v ./migrations:/backup/ \
@@ -169,9 +169,27 @@ jobs:
             -e DB_USERNAME=root \
             -e DB_PASSWORD=password \
             -e GPG_PASSPHRASE=password \
-            -e DB_NAME=testdb3 \
+            -e DB_NAME=testdb2 \
             ${{ env.IMAGE_NAME }}:latest restore -f /backup/encrypted-bkup.sql.gpg
           echo "Test restore encrypted backup completed"
+      - name: Test migrate database testdb -> testdb3
+        run: |
+          docker run --rm --name ${{ env.IMAGE_NAME }} \
+            -v ./migrations:/backup/ \
+            --network host \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_USERNAME=root \
+            -e DB_PASSWORD=password \
+            -e GPG_PASSPHRASE=password \
+            -e DB_NAME=testdb \
+            -e TARGET_DB_HOST=127.0.0.1 \
+            -e TARGET_DB_PORT=3306 \
+            -e TARGET_DB_NAME=testdb3 \
+            -e TARGET_DB_USERNAME=root \
+            -e TARGET_DB_PASSWORD=password \
+            ${{ env.IMAGE_NAME }}:latest migrate
+          echo "Test migrate database testdb -> testdb3 completed"
+
       - name: Test backup all databases
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
