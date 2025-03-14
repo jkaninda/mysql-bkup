@@ -59,19 +59,6 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-      minio:
-        image: minio/minio
-        ports:
-          - 9090:9090
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 5
-        env:
-          MINIO_ACCESS_KEY: minioadmin
-          MINIO_SECRET_KEY: minioadmin
-          MINIO_DEFAULT_BUCKETS: backups
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -91,6 +78,16 @@ jobs:
       - name: Wait for MySQL to be ready
         run: |
           docker run --rm --network host mysql:8 mysqladmin ping -h 127.0.0.1 -uuser -ppassword --wait
+      - name: Create Minio container
+        run: |
+          docker run -d --rm --name minio \
+            --network host \
+            -p 9000:9000
+            -e MINIO_ACCESS_KEY=minioadmin \
+            -e MINIO_SECRET_KEY=minioadmin \
+            -e MINIO_DEFAULT_BUCKETS=backups \
+            minio/minio server /data
+          echo "Create Minio container completed"
       - name: Test restore
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
