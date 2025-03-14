@@ -51,7 +51,7 @@ jobs:
       - name: Test restore
         run: |
           docker run -d --name ${{ env.IMAGE_NAME }} \
-            -v migrations/:/backup/ \
+            -v ./migrations:/backup/ \
             --network web \
             -e DB_HOST=mysql8 \
             -e DB_USERNAME=user \
@@ -64,7 +64,7 @@ jobs:
       - name: Test backup
         run: |
           docker run -d --name ${{ env.IMAGE_NAME }} \
-            -v migrations/:/backup/ \
+            -v ./migrations:/backup/ \
             --network web \
             -e DB_HOST=mysql8 \
             -e DB_USERNAME=user \
