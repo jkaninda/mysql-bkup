@@ -1,3 +1,8 @@
+-- Create the database testdb2
+CREATE DATABASE IF NOT EXISTS testdb2;
+USE testdb2;
+
+-- Create the 'users' table
 CREATE TABLE users (
                        id INT AUTO_INCREMENT PRIMARY KEY,
                        name VARCHAR(100) NOT NULL,
@@ -5,6 +10,7 @@ CREATE TABLE users (
                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create the 'orders' table
 CREATE TABLE orders (
                         id INT AUTO_INCREMENT PRIMARY KEY,
                         user_id INT NOT NULL,

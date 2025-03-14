@@ -19,6 +19,7 @@ jobs:
     services:
       mysql8:
         image: mysql:8
+        container_name: mysql8
         env:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_DATABASE: testdb
@@ -51,10 +52,10 @@ jobs:
       - name: Wait for MySQL to be ready
         run: |
           docker run --rm --network host mysql:8 mysqladmin ping -h 127.0.0.1 -uuser -ppassword --wait
-      - name: Create testdb2
-        run: |
-          docker exec mysql8 mysql -u root -proot -e "CREATE DATABASE testdb2;"
-          echo "Database testdb2 created"
+#      - name: Create testdb2
+#        run: |
+#          docker exec mysql8 mysql -u root -proot -e "CREATE DATABASE testdb2;"
+#          echo "Database testdb2 created"
       - name: Test restore
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
