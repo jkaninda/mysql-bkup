@@ -42,7 +42,7 @@ jobs:
       # Build the Docker image
       - name: Build Docker Image
         run: |
-          docker buildx build -t ${{ env.IMAGE_NAME }} .
+          docker buildx build -t ${{ env.IMAGE_NAME }}:latest .
 
       - name: Create docker network
         run: |
