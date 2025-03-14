@@ -61,7 +61,7 @@ jobs:
             -v ./migrations:/backup/ \
             --network host \
             -e DB_HOST=127.0.0.1 \
-            -e DB_USERNAME=user \
+            -e DB_USERNAME=root \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
             ${{ env.IMAGE_NAME }}:latest restore -f init.sql
