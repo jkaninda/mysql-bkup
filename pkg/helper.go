@@ -26,6 +26,7 @@ package pkg
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	goutils "github.com/jkaninda/go-utils"
 	"github.com/jkaninda/mysql-bkup/utils"
@@ -70,14 +71,13 @@ func deleteTemp() {
 func testDatabaseConnection(db *dbConfig) error {
 	// Create the mysql client config file
 	if err := createMysqlClientConfigFile(*db); err != nil {
-		return fmt.Errorf(err.Error())
+		return errors.New(err.Error())
 	}
 	utils.Info("Connecting to %s database ...", db.dbName)
 	// Set database name for notification error
 	utils.DatabaseName = db.dbName
 
 	// Prepare the command to test the database connection
-	//cmd := exec.Command("mariadb", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
 	cmd := exec.Command("mariadb", fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), db.dbName, "-e", "quit")
 	// Capture the output
 	var out bytes.Buffer

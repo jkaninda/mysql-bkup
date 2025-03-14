@@ -27,6 +27,7 @@ package pkg
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/jkaninda/encryptor"
 	"github.com/jkaninda/go-storage/pkg/local"
@@ -388,7 +389,7 @@ func listDatabases(db dbConfig) ([]string, error) {
 	databases := []string{}
 	// Create the mysql client config file
 	if err := createMysqlClientConfigFile(db); err != nil {
-		return databases, fmt.Errorf(err.Error())
+		return databases, errors.New(err.Error())
 	}
 	utils.Info("Listing databases...")
 	// Step 1: List all databases
