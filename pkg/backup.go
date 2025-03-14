@@ -51,6 +51,7 @@ func StartBackup(cmd *cobra.Command) {
 	if err != nil {
 		dbConf = initDbConfig(cmd)
 		if config.cronExpression == "" {
+			config.allowCustomName = true
 			createBackupTask(dbConf, config)
 		} else {
 			if utils.IsValidCronExpression(config.cronExpression) {
@@ -145,10 +146,17 @@ func backupTask(db *dbConfig, config *BackupConfig) {
 	if config.all && config.allInOne {
 		prefix = "all_databases"
 	}
+
 	// Generate file name
 	backupFileName := fmt.Sprintf("%s_%s.sql.gz", prefix, time.Now().Format("20060102_150405"))
 	if config.disableCompression {
 		backupFileName = fmt.Sprintf("%s_%s.sql", prefix, time.Now().Format("20060102_150405"))
+	}
+	if config.customName != "" && config.allowCustomName && !config.all {
+		backupFileName = fmt.Sprintf("%s.sql.gz", config.customName)
+		if config.disableCompression {
+			backupFileName = fmt.Sprintf("%s.sql", config.customName)
+		}
 	}
 	config.backupFileName = backupFileName
 	s := strings.ToLower(config.storage)
