@@ -2,9 +2,15 @@ name: Tests
 
 on:
   push:
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
+
 env:
   IMAGE_NAME: mysql-bkup
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -27,37 +33,48 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
       # Build the Docker image
       - name: Build Docker Image
         run: |
-          docker buildx build -t ${{IMAGE_NAME}} .
+          docker buildx build -t ${{ env.IMAGE_NAME }} .
+
       - name: Create docker network
         run: |
           docker network create web
+
       - name: Test restore
         run: |
-          docker run -d --name ${{IMAGE_NAME}} \
+          docker run -d --name ${{ env.IMAGE_NAME }} \
             -v migrations/:/backup/ \
             --network web \
-            -e DB_HOST=mysql \
+            -e DB_HOST=mysql8 \
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
-            ${{IMAGE_NAME}} restore -f init.sql
-
+            ${{ env.IMAGE_NAME }} restore -f init.sql
+          
           echo "Database restore completed"
 
       - name: Test backup
         run: |
-          docker run -d --name ${{IMAGE_NAME}} \
+          docker run -d --name ${{ env.IMAGE_NAME }} \
             -v migrations/:/backup/ \
             --network web \
-            -e DB_HOST=mysql \
+            -e DB_HOST=mysql8 \
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
-            ${{IMAGE_NAME}} backup
+            ${{ env.IMAGE_NAME }} backup
+          
           echo "Database backup completed"
+
+      # Cleanup: Stop and remove containers
+      - name: Clean up
+        run: |
+          docker stop ${{ env.IMAGE_NAME }} || true
+          docker rm ${{ env.IMAGE_NAME }} || true
+          docker network rm web || true
