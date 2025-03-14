@@ -57,7 +57,7 @@ jobs:
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
-            ${{ env.IMAGE_NAME }} restore -f init.sql
+            ${{ env.IMAGE_NAME }}:latest restore -f init.sql
           
           echo "Database restore completed"
 
@@ -70,7 +70,7 @@ jobs:
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
-            ${{ env.IMAGE_NAME }} backup
+            ${{ env.IMAGE_NAME }}:latest backup
           
           echo "Database backup completed"
 
