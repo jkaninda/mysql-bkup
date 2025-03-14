@@ -166,10 +166,10 @@ jobs:
             -v ./migrations:/backup/ \
             --network host \
             -e DB_HOST=127.0.0.1 \
-            -e DB_USERNAME=user \
+            -e DB_USERNAME=root \
             -e DB_PASSWORD=password \
             -e GPG_PASSPHRASE=password \
-            -e DB_NAME=testdb \
+            -e DB_NAME=testdb3 \
             ${{ env.IMAGE_NAME }}:latest restore -f /backup/encrypted-bkup.sql.gpg
           echo "Test restore encrypted backup completed"
       - name: Test backup all databases
