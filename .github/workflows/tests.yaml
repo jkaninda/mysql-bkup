@@ -160,7 +160,7 @@ jobs:
             -e DB_NAME=testdb \
             ${{ env.IMAGE_NAME }}:latest backup --disable-compression --custom-name encrypted-bkup
           echo "Database encrypted backup completed"
-      - name: Test restore encrypted backup
+      - name: Test restore encrypted backup | testdb -> testdb3
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
             -v ./migrations:/backup/ \
