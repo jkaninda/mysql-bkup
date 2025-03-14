@@ -95,7 +95,7 @@ jobs:
             -v ./migrations:/backup/ \
             --network host \
             -e DB_HOST=127.0.0.1 \
-            -e DB_PORT=3305 \
+            -e DB_PORT=3308 \
             -e DB_USERNAME=root \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
