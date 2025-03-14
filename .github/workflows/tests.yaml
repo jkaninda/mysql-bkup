@@ -111,9 +111,9 @@ jobs:
             -v ./migrations:/backup/ \
             --network host \
             -e DB_HOST=127.0.0.1 \
-            -e DB_USERNAME_TESTDB2=user \
-            -e DB_PASSWORD_TESTDB2=password \
-            -e DB_HOST_TESTDB2=127.0.0.1 \
+            -e TESTDB2_DB_USERNAME=root \
+            -e TESTDB2_DB_PASSWORD=password \
+            -e TESTDB2_DB_HOST=127.0.0.1 \
             ${{ env.IMAGE_NAME }}:latest backup -c /backup/test_config.yaml
           
           echo "Database backup completed"
