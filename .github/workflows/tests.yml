@@ -1,15 +1,13 @@
 name: Tests
+
 on:
   push:
+    branches:
+      - main
+      - nightly
   pull_request:
-#on:
-#  push:
-#    branches:
-#      - main
-#  pull_request:
-#    branches:
-#      - main
-
+    branches:
+      - main
 env:
   IMAGE_NAME: mysql-bkup
 
