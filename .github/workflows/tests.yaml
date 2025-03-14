@@ -17,8 +17,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
-      mysql8:
-        image: mysql:8
+      mysql:
+        image: mysql:9
         env:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_DATABASE: testdb
@@ -31,7 +31,34 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
-
+      mysql8:
+        image: mysql:8
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: testdb
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+        ports:
+          - 3308:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uuser -ppassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+      mysql5:
+        image: mysql:5
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: testdb
+          MYSQL_USER: user
+          MYSQL_PASSWORD: password
+        ports:
+          - 3305:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uuser -ppassword"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -74,8 +101,34 @@ jobs:
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
             ${{ env.IMAGE_NAME }}:latest backup
-          
+        
           echo "Database backup completed"
+      - name: Test backup Mysql8
+        run: |
+          docker run --rm --name ${{ env.IMAGE_NAME }} \
+            -v ./migrations:/backup/ \
+            --network host \
+            -e DB_PORT=3308 \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_USERNAME=user \
+            -e DB_PASSWORD=password \
+            -e DB_NAME=testdb \
+            ${{ env.IMAGE_NAME }}:latest backup
+          
+          echo "Test backup Mysql8 completed"
+      - name: Test backup Mysql5
+        run: |
+          docker run --rm --name ${{ env.IMAGE_NAME }} \
+            -v ./migrations:/backup/ \
+            --network host \
+            -e DB_PORT=3305 \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_USERNAME=user \
+            -e DB_PASSWORD=password \
+            -e DB_NAME=testdb \
+            ${{ env.IMAGE_NAME }}:latest backup
+          
+          echo "Test backup Mysql5 completed"
       - name: Test encrypted backup
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
@@ -122,7 +175,7 @@ jobs:
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
-            ${{ env.IMAGE_NAME }}:latest backup -e "@every 10"
+            ${{ env.IMAGE_NAME }}:latest backup -e "@every 10s"
           
           echo "Waiting for backup to be done..."
           sleep 30
