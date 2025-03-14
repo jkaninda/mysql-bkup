@@ -88,9 +88,31 @@ jobs:
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
             ${{ env.IMAGE_NAME }}:latest restore -f init.sql
-          
           echo "Database restore completed"
-
+      - name: Test restore Mysql8
+        run: |
+          docker run --rm --name ${{ env.IMAGE_NAME }} \
+            -v ./migrations:/backup/ \
+            --network host \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_PORT=3305 \
+            -e DB_USERNAME=root \
+            -e DB_PASSWORD=password \
+            -e DB_NAME=testdb \
+            ${{ env.IMAGE_NAME }}:latest restore -f init.sql
+          echo "Test restore Mysql8 completed"
+      - name: Test restore Mysql5
+        run: |
+          docker run --rm --name ${{ env.IMAGE_NAME }} \
+            -v ./migrations:/backup/ \
+            --network host \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_PORT=3305 \
+            -e DB_USERNAME=root \
+            -e DB_PASSWORD=password \
+            -e DB_NAME=testdb \
+            ${{ env.IMAGE_NAME }}:latest restore -f init.sql
+          echo "Test restore Mysql5 completed"
       - name: Test backup
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
@@ -101,7 +123,6 @@ jobs:
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
             ${{ env.IMAGE_NAME }}:latest backup
-        
           echo "Database backup completed"
       - name: Test backup Mysql8
         run: |
@@ -114,7 +135,6 @@ jobs:
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
             ${{ env.IMAGE_NAME }}:latest backup
-          
           echo "Test backup Mysql8 completed"
       - name: Test backup Mysql5
         run: |
@@ -127,7 +147,6 @@ jobs:
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
             ${{ env.IMAGE_NAME }}:latest backup
-          
           echo "Test backup Mysql5 completed"
       - name: Test encrypted backup
         run: |
@@ -152,7 +171,6 @@ jobs:
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
             ${{ env.IMAGE_NAME }}:latest backup --all-databases
-          
           echo "Database backup completed"
       - name: Test multiple backup
         run: |
@@ -164,11 +182,10 @@ jobs:
             -e TESTDB2_DB_PASSWORD=password \
             -e TESTDB2_DB_HOST=127.0.0.1 \
             ${{ env.IMAGE_NAME }}:latest backup -c /backup/test_config.yaml
-          
           echo "Database backup completed"
       - name: Test scheduled backup
         run: |
-          docker run --rm --name ${{ env.IMAGE_NAME }} \
+          docker run -d --rm --name ${{ env.IMAGE_NAME }} \
             -v ./migrations:/backup/ \
             --network host \
             -e DB_HOST=127.0.0.1 \
@@ -178,9 +195,9 @@ jobs:
             ${{ env.IMAGE_NAME }}:latest backup -e "@every 10s"
           
           echo "Waiting for backup to be done..."
-          sleep 30
+          sleep 25
           docker logs ${{ env.IMAGE_NAME }}
-          echo "Database backup completed"
+          echo "Test scheduled backup completed"
       # Cleanup: Stop and remove containers
       - name: Clean up
         run: |
