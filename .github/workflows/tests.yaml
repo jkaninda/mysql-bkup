@@ -158,9 +158,20 @@ jobs:
             -e DB_PASSWORD=password \
             -e GPG_PASSPHRASE=password \
             -e DB_NAME=testdb \
-            ${{ env.IMAGE_NAME }}:latest backup --disable-compression
-          
+            ${{ env.IMAGE_NAME }}:latest backup --disable-compression --custom-name encrypted-bkup
           echo "Database encrypted backup completed"
+      - name: Test restore encrypted backup
+        run: |
+          docker run --rm --name ${{ env.IMAGE_NAME }} \
+            -v ./migrations:/backup/ \
+            --network host \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_USERNAME=user \
+            -e DB_PASSWORD=password \
+            -e GPG_PASSPHRASE=password \
+            -e DB_NAME=testdb \
+            ${{ env.IMAGE_NAME }}:latest restore -f /backup/encrypted-bkup.sql.gpg
+          echo "Test restore encrypted backup completed"
       - name: Test backup all databases
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \

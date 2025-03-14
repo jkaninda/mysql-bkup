@@ -52,5 +52,6 @@ func init() {
 	BackupCmd.PersistentFlags().BoolP("disable-compression", "", false, "Disable backup compression")
 	BackupCmd.PersistentFlags().BoolP("all-databases", "a", false, "Backup all databases")
 	BackupCmd.PersistentFlags().BoolP("all-in-one", "A", false, "Backup all databases in a single file")
+	BackupCmd.PersistentFlags().StringP("custom-name", "", "", "Custom backup name")
 
 }

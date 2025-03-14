@@ -79,6 +79,8 @@ type BackupConfig struct {
 	cronExpression     string
 	all                bool
 	allInOne           bool
+	customName         string
+	allowCustomName    bool
 }
 type FTPConfig struct {
 	host       string
@@ -259,6 +261,7 @@ func initBackupConfig(cmd *cobra.Command) *BackupConfig {
 		prune = true
 	}
 	disableCompression, _ = cmd.Flags().GetBool("disable-compression")
+	customName, _ := cmd.Flags().GetString("custom-name")
 	all, _ := cmd.Flags().GetBool("all-databases")
 	allInOne, _ := cmd.Flags().GetBool("all-in-one")
 	if allInOne {
@@ -295,6 +298,7 @@ func initBackupConfig(cmd *cobra.Command) *BackupConfig {
 	config.cronExpression = cronExpression
 	config.all = all
 	config.allInOne = allInOne
+	config.customName = customName
 	return &config
 }
 
