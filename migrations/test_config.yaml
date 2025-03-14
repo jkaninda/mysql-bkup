@@ -1,0 +1,8 @@
+cronExpression: "@every 20s"
+backupRescueMode: false
+databases:
+  - host: mysql
+    port: 3306
+    name: testdb
+    user: user
+    password: password
