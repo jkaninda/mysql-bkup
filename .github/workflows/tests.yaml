@@ -44,16 +44,20 @@ jobs:
         run: |
           docker buildx build -t ${{ env.IMAGE_NAME }}:latest --load .
 
-      - name: Create docker network
+      - name: Verify Docker images
         run: |
-          docker network create web
+          docker images
+
+      - name: Wait for MySQL to be ready
+        run: |
+          docker run --rm --network host mysql:8 mysqladmin ping -h 127.0.0.1 -uuser -ppassword --wait
 
       - name: Test restore
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
             -v ./migrations:/backup/ \
             --network host \
-            -e DB_HOST=mysql8 \
+            -e DB_HOST=127.0.0.1 \
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
@@ -66,7 +70,7 @@ jobs:
           docker run --rm --name ${{ env.IMAGE_NAME }} \
             -v ./migrations:/backup/ \
             --network host \
-            -e DB_HOST=mysql8 \
+            -e DB_HOST=127.0.0.1 \
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
             -e DB_NAME=testdb \
@@ -79,4 +83,3 @@ jobs:
         run: |
           docker stop ${{ env.IMAGE_NAME }} || true
           docker rm ${{ env.IMAGE_NAME }} || true
-          docker network rm web || true
