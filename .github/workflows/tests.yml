@@ -85,7 +85,7 @@ jobs:
             -p 9000:9000 \
             -e MINIO_ACCESS_KEY=minioadmin \
             -e MINIO_SECRET_KEY=minioadmin \
-            -e MINIO_DEFAULT_BUCKETS=backups \
+            -e MINIO_DEFAULT_BUCKETS=test,backups \
             -e MINIO_REGION_NAME="eu" \
             minio/minio server /data
           echo "Create Minio container completed"
