@@ -54,7 +54,6 @@ var dbHVars = []string{
 	"DB_HOST",
 	"DB_PASSWORD",
 	"DB_USERNAME",
-	"DB_NAME",
 }
 var tdbRVars = []string{
 	"TARGET_DB_HOST",

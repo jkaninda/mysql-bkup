@@ -78,7 +78,7 @@ type BackupConfig struct {
 	storage            string
 	cronExpression     string
 	all                bool
-	singleFile         bool
+	allInOne           bool
 }
 type FTPConfig struct {
 	host       string
@@ -253,13 +253,17 @@ func initBackupConfig(cmd *cobra.Command) *BackupConfig {
 	remotePath := utils.GetEnvVariable("REMOTE_PATH", "SSH_REMOTE_PATH")
 	storage = utils.GetEnv(cmd, "storage", "STORAGE")
 	prune := false
+	configFile := os.Getenv("BACKUP_CONFIG_FILE")
 	backupRetention := utils.GetIntEnv("BACKUP_RETENTION_DAYS")
 	if backupRetention > 0 {
 		prune = true
 	}
 	disableCompression, _ = cmd.Flags().GetBool("disable-compression")
-	all, _ := cmd.Flags().GetBool("all")
-	singleFile, _ := cmd.Flags().GetBool("single-file")
+	all, _ := cmd.Flags().GetBool("all-databases")
+	allInOne, _ := cmd.Flags().GetBool("all-in-one")
+	if allInOne {
+		all = true
+	}
 	_, _ = cmd.Flags().GetString("mode")
 	passphrase := os.Getenv("GPG_PASSPHRASE")
 	_ = utils.GetEnv(cmd, "path", "AWS_S3_PATH")
@@ -272,6 +276,10 @@ func initBackupConfig(cmd *cobra.Command) *BackupConfig {
 	} else if passphrase != "" {
 		encryption = true
 		usingKey = false
+	}
+	dbName := os.Getenv("DB_NAME")
+	if dbName == "" && !all && configFile == "" {
+		utils.Fatal("Database name is required, use DB_NAME environment variable or -d flag")
 	}
 	// Initialize backup configs
 	config := BackupConfig{}
@@ -286,7 +294,7 @@ func initBackupConfig(cmd *cobra.Command) *BackupConfig {
 	config.usingKey = usingKey
 	config.cronExpression = cronExpression
 	config.all = all
-	config.singleFile = singleFile
+	config.allInOne = allInOne
 	return &config
 }
 

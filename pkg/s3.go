@@ -39,7 +39,7 @@ func s3Backup(db *dbConfig, config *BackupConfig) {
 
 	utils.Info("Backup database to s3 storage")
 	// Backup database
-	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all, config.singleFile)
+	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all, config.allInOne)
 	if err != nil {
 		recoverMode(err, "Error backing up database")
 		return

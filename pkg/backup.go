@@ -112,7 +112,7 @@ func multiBackupTask(databases []Database, bkConfig *BackupConfig) {
 
 // createBackupTask backup task
 func createBackupTask(db *dbConfig, config *BackupConfig) {
-	if config.all && !config.singleFile {
+	if config.all && !config.allInOne {
 		backupAll(db, config)
 	} else {
 		backupTask(db, config)
@@ -141,7 +141,7 @@ func backupTask(db *dbConfig, config *BackupConfig) {
 	utils.Info("Starting backup task...")
 	startTime = time.Now()
 	prefix := db.dbName
-	if config.all && config.singleFile {
+	if config.all && config.allInOne {
 		prefix = "all_databases"
 	}
 	// Generate file name
@@ -302,7 +302,7 @@ func runCommandWithCompression(command string, args []string, outputPath string)
 // localBackup backup database to local storage
 func localBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to local storage")
-	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all, config.singleFile)
+	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all, config.allInOne)
 	if err != nil {
 		recoverMode(err, "Error backing up database")
 		return

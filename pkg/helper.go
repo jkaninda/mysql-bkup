@@ -37,7 +37,7 @@ import (
 )
 
 func intro() {
-	fmt.Println("Starting MySQL Backup...")
+	fmt.Println("Starting MYSQL-BKUP...")
 	fmt.Printf("Version: %s\n", utils.Version)
 	fmt.Println("Copyright (c) 2024 Jonas Kaninda")
 }

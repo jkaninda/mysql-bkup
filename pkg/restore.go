@@ -57,11 +57,17 @@ func StartRestore(cmd *cobra.Command) {
 }
 func localRestore(dbConf *dbConfig, restoreConf *RestoreConfig) {
 	utils.Info("Restore database from local")
+	basePath := filepath.Dir(restoreConf.file)
+	fileName := filepath.Base(restoreConf.file)
+	restoreConf.file = fileName
+	if basePath == "" || basePath == "." {
+		basePath = storagePath
+	}
 	localStorage := local.NewStorage(local.Config{
-		RemotePath: storagePath,
+		RemotePath: basePath,
 		LocalPath:  tmpPath,
 	})
-	err := localStorage.CopyFrom(restoreConf.file)
+	err := localStorage.CopyFrom(fileName)
 	if err != nil {
 		utils.Fatal("Error copying backup file: %s", err)
 	}
@@ -69,87 +75,79 @@ func localRestore(dbConf *dbConfig, restoreConf *RestoreConfig) {
 
 }
 
-// RestoreDatabase restore database
+// RestoreDatabase restores the database from a backup file
 func RestoreDatabase(db *dbConfig, conf *RestoreConfig) {
 	if conf.file == "" {
 		utils.Fatal("Error, file required")
 	}
-	extension := filepath.Ext(filepath.Join(tmpPath, conf.file))
-	rFile, err := os.ReadFile(filepath.Join(tmpPath, conf.file))
-	outputFile := RemoveLastExtension(filepath.Join(tmpPath, conf.file))
+
+	filePath := filepath.Join(tmpPath, conf.file)
+	rFile, err := os.ReadFile(filePath)
 	if err != nil {
-		utils.Fatal("Error reading backup file: %s ", err)
+		utils.Fatal("Error reading backup file: %v", err)
 	}
+
+	extension := filepath.Ext(filePath)
+	outputFile := RemoveLastExtension(filePath)
 
 	if extension == ".gpg" {
-
-		if conf.usingKey {
-			utils.Info("Decrypting backup using private key...")
-			utils.Warn("Backup decryption using a private key is not fully supported")
-			prKey, err := os.ReadFile(conf.privateKey)
-			if err != nil {
-				utils.Fatal("Error reading public key: %s ", err)
-			}
-			err = encryptor.DecryptWithPrivateKey(rFile, outputFile, prKey, conf.passphrase)
-			if err != nil {
-				utils.Fatal("error during decrypting backup %v", err)
-			}
-			utils.Info("Decrypting backup using private key...done")
-		} else {
-			if conf.passphrase == "" {
-				utils.Error("Error, passphrase or private key required")
-				utils.Fatal("Your file seems to be a GPG file.\nYou need to provide GPG keys. GPG_PASSPHRASE or GPG_PRIVATE_KEY environment variable is required.")
-			} else {
-				utils.Info("Decrypting backup using passphrase...")
-				// decryptWithGPG file
-				err := encryptor.Decrypt(rFile, outputFile, conf.passphrase)
-				if err != nil {
-					utils.Fatal("Error decrypting file %s %v", file, err)
-				}
-				utils.Info("Decrypting backup using passphrase...done")
-				// Update file name
-				conf.file = RemoveLastExtension(file)
-			}
-		}
-
+		decryptBackup(conf, rFile, outputFile)
 	}
 
-	if utils.FileExists(filepath.Join(tmpPath, conf.file)) {
-		err = testDatabaseConnection(db)
+	restorationFile := filepath.Join(tmpPath, conf.file)
+	if !utils.FileExists(restorationFile) {
+		utils.Fatal("File not found: %s", restorationFile)
+	}
+
+	if err := testDatabaseConnection(db); err != nil {
+		utils.Fatal("Error connecting to the database: %v", err)
+	}
+
+	utils.Info("Restoring database...")
+	restoreDatabaseFile(db, restorationFile)
+}
+
+func decryptBackup(conf *RestoreConfig, rFile []byte, outputFile string) {
+	if conf.usingKey {
+		utils.Info("Decrypting backup using private key...")
+		prKey, err := os.ReadFile(conf.privateKey)
 		if err != nil {
-			utils.Fatal("Error connecting to the database %v", err)
+			utils.Fatal("Error reading private key: %v", err)
 		}
-		utils.Info("Restoring database...")
-
-		extension := filepath.Ext(filepath.Join(tmpPath, conf.file))
-		// Restore from a compressed file / .sql.gz
-		if extension == ".gz" {
-			str := "zcat " + filepath.Join(tmpPath, conf.file) + " | mariadb " + fmt.Sprintf("--defaults-file=%s", mysqlClientConfig) + " " + db.dbName
-			output, err := exec.Command("sh", "-c", str).Output()
-			if err != nil {
-				utils.Fatal("Error, in restoring the database  %v output: %v", err, output)
-			}
-			utils.Info("Restoring database... done")
-			utils.Info("Database has been restored")
-			// Delete temp
-			deleteTemp()
-
-		} else if extension == ".sql" {
-			// Restore from SQL file
-			str := "cat " + filepath.Join(tmpPath, conf.file) + " | mariadb " + fmt.Sprintf("--defaults-file=%s", mysqlClientConfig) + " " + db.dbName
-			output, err := exec.Command("sh", "-c", str).Output()
-			if err != nil {
-				utils.Fatal("Error, in restoring the database  %v output: %v", err, output)
-			}
-			utils.Info("Restoring database... done")
-			utils.Info("Database has been restored")
-			// Delete temp
-			deleteTemp()
-		} else {
-			utils.Fatal("Unknown file extension %s", extension)
+		if err := encryptor.DecryptWithPrivateKey(rFile, outputFile, prKey, conf.passphrase); err != nil {
+			utils.Fatal("Error decrypting backup: %v", err)
 		}
-
 	} else {
-		utils.Fatal("File not found in %s", filepath.Join(tmpPath, conf.file))
+		if conf.passphrase == "" {
+			utils.Fatal("Passphrase or private key required for GPG file.")
+		}
+		utils.Info("Decrypting backup using passphrase...")
+		if err := encryptor.Decrypt(rFile, outputFile, conf.passphrase); err != nil {
+			utils.Fatal("Error decrypting file: %v", err)
+		}
+		conf.file = RemoveLastExtension(conf.file)
 	}
+}
+
+func restoreDatabaseFile(db *dbConfig, restorationFile string) {
+	extension := filepath.Ext(restorationFile)
+	var cmdStr string
+
+	switch extension {
+	case ".gz":
+		cmdStr = fmt.Sprintf("zcat %s | mariadb --defaults-file=%s %s", restorationFile, mysqlClientConfig, db.dbName)
+	case ".sql":
+		cmdStr = fmt.Sprintf("cat %s | mariadb --defaults-file=%s %s", restorationFile, mysqlClientConfig, db.dbName)
+	default:
+		utils.Fatal("Unknown file extension: %s", extension)
+	}
+
+	cmd := exec.Command("sh", "-c", cmdStr)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		utils.Fatal("Error restoring database: %v\nOutput: %s", err, string(output))
+	}
+
+	utils.Info("Database has been restored successfully.")
+	deleteTemp()
 }

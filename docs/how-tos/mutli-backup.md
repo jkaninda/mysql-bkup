@@ -34,8 +34,8 @@ Below is an example configuration file (`config.yaml`) that defines multiple dat
 ```yaml
 # Optional: Define a global cron expression for scheduled backups.
 # Example: "@every 20m" (runs every 20 minutes). If omitted, backups run immediately.
-cronExpression: ""
-
+cronExpression: "" # Optional: Define a global cron expression for scheduled backups.
+backupRescueMode: false # Optional: Set to true to enable rescue mode for backups.
 databases:
   - host: mysql1       # Optional: Overrides DB_HOST or uses DB_HOST_DATABASE1.
     port: 3306            # Optional: Default is 5432. Overrides DB_PORT or uses DB_PORT_DATABASE1.
