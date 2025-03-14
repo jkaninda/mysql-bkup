@@ -52,7 +52,7 @@ jobs:
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
             -v ./migrations:/backup/ \
-            --network web \
+            --network host \
             -e DB_HOST=mysql8 \
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
@@ -65,7 +65,7 @@ jobs:
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
             -v ./migrations:/backup/ \
-            --network web \
+            --network host \
             -e DB_HOST=mysql8 \
             -e DB_USERNAME=user \
             -e DB_PASSWORD=password \
