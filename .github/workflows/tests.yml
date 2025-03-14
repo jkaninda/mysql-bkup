@@ -85,10 +85,27 @@ jobs:
             -p 9000:9000 \
             -e MINIO_ACCESS_KEY=minioadmin \
             -e MINIO_SECRET_KEY=minioadmin \
-            -e MINIO_DEFAULT_BUCKETS=test,backups \
             -e MINIO_REGION_NAME="eu" \
             minio/minio server /data
           echo "Create Minio container completed"
+      - name: Install MinIO Client (mc)
+        run: |
+          curl -O https://dl.min.io/client/mc/release/linux-amd64/mc
+          chmod +x mc
+          sudo mv mc /usr/local/bin/
+
+      - name: Wait for MinIO to be ready
+        run: sleep 5
+
+      - name: Configure MinIO Client
+        run: |
+          mc alias set local http://localhost:9000 minioadmin minioadmin
+          mc alias list
+
+      - name: Create MinIO Bucket
+        run: |
+          mc mb local/backups
+          echo "Bucket backups created successfully."
       - name: Test restore
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
