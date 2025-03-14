@@ -212,8 +212,7 @@ jobs:
             -e AWS_ACCESS_KEY=minioadmin \
             -e AWS_SECRET_KEY=minioadmin \
             -e AWS_DISABLE_SSL="true" \
-            -e AWS_FORCE_PATH_STYLE="true" \      
-            ${{ env.IMAGE_NAME }}:latest backup -s s3
+            -e AWS_FORCE_PATH_STYLE="true" ${{ env.IMAGE_NAME }}:latest backup -s s3
           echo "Test backup Minio (s3) completed"
       - name: Test backup all databases
         run: |
