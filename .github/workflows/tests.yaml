@@ -114,7 +114,7 @@ jobs:
             -e DB_USERNAME_TESTDB2=user \
             -e DB_PASSWORD_TESTDB2=password \
             -e DB_HOST_TESTDB2=127.0.0.1 \
-            ${{ env.IMAGE_NAME }}:latest backup -c test_config.yaml
+            ${{ env.IMAGE_NAME }}:latest backup -c /backup/test_config.yaml
           
           echo "Database backup completed"
       - name: Test scheduled backup
