@@ -77,12 +77,12 @@ jobs:
 
       - name: Wait for MySQL to be ready
         run: |
-          docker run --rm --network host mysql:8 mysqladmin ping -h 127.0.0.1 -uuser -ppassword --wait
+          docker run --rm --network host mysql:9 mysqladmin ping -h 127.0.0.1 -uuser -ppassword --wait
       - name: Create Minio container
         run: |
           docker run -d --rm --name minio \
             --network host \
-            -p 9000:9000
+            -p 9000:9000 \
             -e MINIO_ACCESS_KEY=minioadmin \
             -e MINIO_SECRET_KEY=minioadmin \
             -e MINIO_DEFAULT_BUCKETS=backups \
