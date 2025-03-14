@@ -3,6 +3,7 @@
 **MYSQL-BKUP** is a Docker container image designed to **backup, restore, and migrate MySQL databases**.
 It supports a variety of storage options and ensures data security through GPG encryption.
 
+[![Tests](https://github.com/jkaninda/mysql-bkup/actions/workflows/tests.yml/badge.svg)](https://github.com/jkaninda/mysql-bkup/actions/workflows/tests.yml)
 [![Build](https://github.com/jkaninda/mysql-bkup/actions/workflows/release.yml/badge.svg)](https://github.com/jkaninda/mysql-bkup/actions/workflows/release.yml)
 [![Go Report](https://goreportcard.com/badge/github.com/jkaninda/mysql-bkup)](https://goreportcard.com/report/github.com/jkaninda/mysql-bkup)
 ![Docker Image Size (latest by date)](https://img.shields.io/docker/image-size/jkaninda/mysql-bkup?style=flat-square)

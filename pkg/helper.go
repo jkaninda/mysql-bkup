@@ -26,7 +26,9 @@ package pkg
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	goutils "github.com/jkaninda/go-utils"
 	"github.com/jkaninda/mysql-bkup/utils"
 	"gopkg.in/yaml.v3"
 	"os"
@@ -36,7 +38,7 @@ import (
 )
 
 func intro() {
-	fmt.Println("Starting MySQL Backup...")
+	fmt.Println("Starting MYSQL-BKUP...")
 	fmt.Printf("Version: %s\n", utils.Version)
 	fmt.Println("Copyright (c) 2024 Jonas Kaninda")
 }
@@ -65,25 +67,28 @@ func deleteTemp() {
 	}
 }
 
-// TestDatabaseConnection  tests the database connection
+// TestDatabaseConnection tests the database connection
 func testDatabaseConnection(db *dbConfig) error {
-	err := os.Setenv("MYSQL_PWD", db.dbPassword)
-	if err != nil {
-		return fmt.Errorf("failed to set MYSQL_PWD environment variable: %v", err)
+	// Create the mysql client config file
+	if err := createMysqlClientConfigFile(*db); err != nil {
+		return errors.New(err.Error())
 	}
 	utils.Info("Connecting to %s database ...", db.dbName)
 	// Set database name for notification error
 	utils.DatabaseName = db.dbName
-	cmd := exec.Command("mariadb", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName, "-e", "quit")
+
+	// Prepare the command to test the database connection
+	cmd := exec.Command("mariadb", fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), db.dbName, "-e", "quit")
 	// Capture the output
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	cmd.Stderr = &out
-	err = cmd.Run()
-	if err != nil {
-		return fmt.Errorf("failed to connect to %s database: %v", db.dbName, err)
 
+	// Run the command
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to connect to database %s: %v, output: %s", db.dbName, err, out.String())
 	}
+
 	utils.Info("Successfully connected to %s database", db.dbName)
 	return nil
 }
@@ -182,4 +187,17 @@ func RemoveLastExtension(filename string) string {
 		return filename[:idx]
 	}
 	return filename
+}
+
+// Create mysql client config file
+func createMysqlClientConfigFile(db dbConfig) error {
+	caCertPath := goutils.GetStringEnvWithDefault("DB_SSL_CA", "/etc/ssl/certs/ca-certificates.crt")
+	sslMode := goutils.GetStringEnvWithDefault("DB_SSL_MODE", "0")
+	// Create the mysql client config file
+	mysqlClientConfigFile := filepath.Join(tmpPath, "my.cnf")
+	mysqlCl := fmt.Sprintf("[client]\nhost=%s\nport=%s\nuser=%s\npassword=%s\nssl-ca=%s\nssl=%s\n", db.dbHost, db.dbPort, db.dbUserName, db.dbPassword, caCertPath, sslMode)
+	if err := os.WriteFile(mysqlClientConfigFile, []byte(mysqlCl), 0644); err != nil {
+		return fmt.Errorf("failed to create mysql client config file: %v", err)
+	}
+	return nil
 }

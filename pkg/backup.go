@@ -26,6 +26,8 @@ SOFTWARE.
 package pkg
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"github.com/jkaninda/encryptor"
 	"github.com/jkaninda/go-storage/pkg/local"
@@ -33,10 +35,10 @@ import (
 	"github.com/jkaninda/mysql-bkup/utils"
 	"github.com/robfig/cron/v3"
 	"github.com/spf13/cobra"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -49,7 +51,8 @@ func StartBackup(cmd *cobra.Command) {
 	if err != nil {
 		dbConf = initDbConfig(cmd)
 		if config.cronExpression == "" {
-			BackupTask(dbConf, config)
+			config.allowCustomName = true
+			createBackupTask(dbConf, config)
 		} else {
 			if utils.IsValidCronExpression(config.cronExpression) {
 				scheduledMode(dbConf, config)
@@ -83,7 +86,7 @@ func scheduledMode(db *dbConfig, config *BackupConfig) {
 	c := cron.New()
 
 	_, err = c.AddFunc(config.cronExpression, func() {
-		BackupTask(db, config)
+		createBackupTask(db, config)
 		utils.Info("Next backup time is: %v", utils.CronNextTime(config.cronExpression).Format(timeFormat))
 
 	})
@@ -105,28 +108,66 @@ func multiBackupTask(databases []Database, bkConfig *BackupConfig) {
 		if db.Path != "" {
 			bkConfig.remotePath = db.Path
 		}
-		BackupTask(getDatabase(db), bkConfig)
+		createBackupTask(getDatabase(db), bkConfig)
 	}
 }
 
-// BackupTask backups database
-func BackupTask(db *dbConfig, config *BackupConfig) {
+// createBackupTask backup task
+func createBackupTask(db *dbConfig, config *BackupConfig) {
+	if config.all && !config.allInOne {
+		backupAll(db, config)
+	} else {
+		backupTask(db, config)
+	}
+}
+
+// backupAll backup all databases
+func backupAll(db *dbConfig, config *BackupConfig) {
+	databases, err := listDatabases(*db)
+	if err != nil {
+		utils.Fatal("Error listing databases: %s", err)
+	}
+	for _, dbName := range databases {
+		if dbName == "information_schema" || dbName == "performance_schema" || dbName == "mysql" || dbName == "sys" || dbName == "innodb" || dbName == "Database" {
+			continue
+		}
+		db.dbName = dbName
+		config.backupFileName = fmt.Sprintf("%s_%s.sql.gz", dbName, time.Now().Format("20060102_150405"))
+		backupTask(db, config)
+	}
+
+}
+
+// backupTask backup task
+func backupTask(db *dbConfig, config *BackupConfig) {
 	utils.Info("Starting backup task...")
 	startTime = time.Now()
+	prefix := db.dbName
+	if config.all && config.allInOne {
+		prefix = "all_databases"
+	}
+
 	// Generate file name
-	backupFileName := fmt.Sprintf("%s_%s.sql.gz", db.dbName, time.Now().Format("20060102_150405"))
+	backupFileName := fmt.Sprintf("%s_%s.sql.gz", prefix, time.Now().Format("20060102_150405"))
 	if config.disableCompression {
-		backupFileName = fmt.Sprintf("%s_%s.sql", db.dbName, time.Now().Format("20060102_150405"))
+		backupFileName = fmt.Sprintf("%s_%s.sql", prefix, time.Now().Format("20060102_150405"))
+	}
+	if config.customName != "" && config.allowCustomName && !config.all {
+		backupFileName = fmt.Sprintf("%s.sql.gz", config.customName)
+		if config.disableCompression {
+			backupFileName = fmt.Sprintf("%s.sql", config.customName)
+		}
 	}
 	config.backupFileName = backupFileName
-	switch config.storage {
+	s := strings.ToLower(config.storage)
+	switch s {
 	case "local":
 		localBackup(db, config)
-	case "s3", "S3":
+	case "s3":
 		s3Backup(db, config)
-	case "ssh", "SSH", "remote", "sftp":
+	case "ssh", "remote", "sftp":
 		sshBackup(db, config)
-	case "ftp", "FTP":
+	case "ftp":
 		ftpBackup(db, config)
 	case "azure":
 		azureBackup(db, config)
@@ -134,6 +175,8 @@ func BackupTask(db *dbConfig, config *BackupConfig) {
 		localBackup(db, config)
 	}
 }
+
+// startMultiBackup start multi backup
 func startMultiBackup(bkConfig *BackupConfig, configFile string) {
 	utils.Info("Starting Multi backup task...")
 	conf, err := readConf(configFile)
@@ -196,82 +239,79 @@ func startMultiBackup(bkConfig *BackupConfig, configFile string) {
 }
 
 // BackupDatabase backup database
-func BackupDatabase(db *dbConfig, backupFileName string, disableCompression bool) error {
+func BackupDatabase(db *dbConfig, backupFileName string, disableCompression, all, singleFile bool) error {
 	storagePath = os.Getenv("STORAGE_PATH")
-
 	utils.Info("Starting database backup...")
 
-	err := os.Setenv("MYSQL_PWD", db.dbPassword)
-	if err != nil {
-		return fmt.Errorf("failed to set MYSQL_PWD environment variable: %v", err)
+	if err := testDatabaseConnection(db); err != nil {
+		return fmt.Errorf("database connection failed: %w", err)
 	}
-	err = testDatabaseConnection(db)
-	if err != nil {
-		return fmt.Errorf("failed to connect to the database: %v", err)
-	}
-	// Backup Database database
-	utils.Info("Backing up database...")
 
-	// Verify is compression is disabled
-	if disableCompression {
-		// Execute mysqldump
-		cmd := exec.Command("mysqldump",
-			"-h", db.dbHost,
-			"-P", db.dbPort,
-			"-u", db.dbUserName,
-			db.dbName,
-		)
-		output, err := cmd.Output()
-		if err != nil {
-			return fmt.Errorf("failed to backup database: %v", err)
-		}
-
-		// save output
-		file, err := os.Create(filepath.Join(tmpPath, backupFileName))
-		if err != nil {
-			return fmt.Errorf("failed to create backup file: %v", err)
-		}
-		defer func(file *os.File) {
-			err := file.Close()
-			if err != nil {
-				return
-			}
-		}(file)
-
-		_, err = file.Write(output)
-		if err != nil {
-			return err
-		}
-		utils.Info("Database has been backed up")
-
+	dumpArgs := []string{fmt.Sprintf("--defaults-file=%s", mysqlClientConfig)}
+	if all && singleFile {
+		dumpArgs = append(dumpArgs, "--all-databases", "--single-transaction", "--routines", "--triggers")
 	} else {
-		// Execute mysqldump
-		cmd := exec.Command("mysqldump", "-h", db.dbHost, "-P", db.dbPort, "-u", db.dbUserName, db.dbName)
-		stdout, err := cmd.StdoutPipe()
-		if err != nil {
-			return fmt.Errorf("failed to backup database: %v", err)
-		}
-		gzipCmd := exec.Command("gzip")
-		gzipCmd.Stdin = stdout
-		gzipCmd.Stdout, err = os.Create(filepath.Join(tmpPath, backupFileName))
-		err = gzipCmd.Start()
-		if err != nil {
-			return fmt.Errorf("failed to backup database: %v", err)
-		}
-		if err := cmd.Run(); err != nil {
-			log.Fatal(err)
-		}
-		if err := gzipCmd.Wait(); err != nil {
-			log.Fatal(err)
-		}
-
+		dumpArgs = append(dumpArgs, db.dbName)
 	}
+
+	backupPath := filepath.Join(tmpPath, backupFileName)
+	if disableCompression {
+		return runCommandAndSaveOutput("mysqldump", dumpArgs, backupPath)
+	}
+	return runCommandWithCompression("mysqldump", dumpArgs, backupPath)
+}
+
+// runCommandAndSaveOutput runs a command and saves the output to a file
+func runCommandAndSaveOutput(command string, args []string, outputPath string) error {
+	cmd := exec.Command(command, args...)
+	output, err := cmd.Output()
+	if err != nil {
+		return fmt.Errorf("failed to execute %s: %v, output: %s", command, err, string(output))
+	}
+
+	return os.WriteFile(outputPath, output, 0644)
+}
+
+// runCommandWithCompression runs a command and compresses the output
+func runCommandWithCompression(command string, args []string, outputPath string) error {
+	cmd := exec.Command(command, args...)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stdout pipe: %w", err)
+	}
+
+	gzipCmd := exec.Command("gzip")
+	gzipCmd.Stdin = stdout
+	gzipFile, err := os.Create(outputPath)
+	if err != nil {
+		return fmt.Errorf("failed to create gzip file: %w", err)
+	}
+	defer func(gzipFile *os.File) {
+		err := gzipFile.Close()
+		if err != nil {
+			utils.Error("Error closing gzip file: %v", err)
+		}
+	}(gzipFile)
+	gzipCmd.Stdout = gzipFile
+
+	if err := gzipCmd.Start(); err != nil {
+		return fmt.Errorf("failed to start gzip: %w", err)
+	}
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to execute %s: %w", command, err)
+	}
+	if err := gzipCmd.Wait(); err != nil {
+		return fmt.Errorf("failed to wait for gzip completion: %w", err)
+	}
+
 	utils.Info("Database has been backed up")
 	return nil
 }
+
+// localBackup backup database to local storage
 func localBackup(db *dbConfig, config *BackupConfig) {
 	utils.Info("Backup database to local storage")
-	err := BackupDatabase(db, config.backupFileName, disableCompression)
+	err := BackupDatabase(db, config.backupFileName, disableCompression, config.all, config.allInOne)
 	if err != nil {
 		recoverMode(err, "Error backing up database")
 		return
@@ -318,9 +358,10 @@ func localBackup(db *dbConfig, config *BackupConfig) {
 	}
 	// Delete temp
 	deleteTemp()
-	utils.Info("Backup successfully completed in %s", duration)
+	utils.Info("The backup of the %s database has been completed in %s", db.dbName, duration)
 }
 
+// encryptBackup encrypt backup
 func encryptBackup(config *BackupConfig) {
 	backupFile, err := os.ReadFile(filepath.Join(tmpPath, config.backupFileName))
 	outputFile := fmt.Sprintf("%s.%s", filepath.Join(tmpPath, config.backupFileName), gpgExtension)
@@ -350,6 +391,31 @@ func encryptBackup(config *BackupConfig) {
 	}
 
 }
+
+// listDatabases list all databases
+func listDatabases(db dbConfig) ([]string, error) {
+	databases := []string{}
+	// Create the mysql client config file
+	if err := createMysqlClientConfigFile(db); err != nil {
+		return databases, errors.New(err.Error())
+	}
+	utils.Info("Listing databases...")
+	// Step 1: List all databases
+	cmd := exec.Command("mariadb", fmt.Sprintf("--defaults-file=%s", mysqlClientConfig), "-e", "SHOW DATABASES;")
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		return databases, fmt.Errorf("failed to list databases: %s", err)
+	}
+	// Step 2: Parse the output
+	for _, _db := range strings.Split(out.String(), "\n") {
+		if _db != "" {
+			databases = append(databases, _db)
+		}
+	}
+	return databases, nil
+}
 func recoverMode(err error, msg string) {
 	if err != nil {
 		if backupRescueMode {
@@ -360,6 +426,7 @@ func recoverMode(err error, msg string) {
 		} else {
 			utils.Error("Error: %s", msg)
 			utils.Fatal("Error: %v", err)
+			return
 		}
 	}
 

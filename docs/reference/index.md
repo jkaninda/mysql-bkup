@@ -6,28 +6,30 @@ nav_order: 3
 
 # Configuration Reference
 
-Backup, restore, and migration targets, schedules, and retention policies are configured using **environment variables** or **CLI flags**.
-
----
+MySQL backup, restore, and migration processes can be configured using **environment variables** or **CLI flags**.
 
 ## CLI Utility Usage
 
-| Option                  | Short Flag | Description                                                                   |
-|-------------------------|------------|-------------------------------------------------------------------------------|
-| `pg-bkup`               | `bkup`     | CLI utility for managing PostgreSQL backups.                                  |
-| `backup`                |            | Perform a backup operation.                                                   |
-| `restore`               |            | Perform a restore operation.                                                  |
-| `migrate`               |            | Migrate a database from one instance to another.                              |
-| `--storage`             | `-s`       | Storage type (`local`, `s3`, `ssh`, etc.). Default: `local`.                  |
-| `--file`                | `-f`       | File name for restoration.                                                    |
-| `--path`                |            | Path for storage (e.g., `/custom_path` for S3 or `/home/foo/backup` for SSH). |
-| `--config`              | `-c`       | Configuration file for multi database backup. (e.g: `/backup/config.yaml`).   |
-| `--dbname`              | `-d`       | Database name.                                                                |
-| `--port`                | `-p`       | Database port. Default: `3306`.                                               |
-| `--disable-compression` |            | Disable compression for database backups.                                     |
-| `--cron-expression`     | `-e`       | Cron expression for scheduled backups (e.g., `0 0 * * *` or `@daily`).        |
-| `--help`                | `-h`       | Display help message and exit.                                                |
-| `--version`             | `-V`       | Display version information and exit.                                         |
+The `mysql-bkup` CLI provides commands and options to manage MySQL backups efficiently.
+
+| Option                  | Short Flag | Description                                                                             |
+|-------------------------|------------|-----------------------------------------------------------------------------------------|
+| `mysql-bkup`            | `bkup`     | CLI tool for managing MySQL backups, restoration, and migration.                        |
+| `backup`                |            | Executes a backup operation.                                                            |
+| `restore`               |            | Restores a database from a backup file.                                                 |
+| `migrate`               |            | Migrates a database from one instance to another.                                       |
+| `--storage`             | `-s`       | Specifies the storage type (`local`, `s3`, `ssh`, etc.). Default: `local`.              |
+| `--file`                | `-f`       | Defines the backup file name for restoration.                                           |
+| `--path`                |            | Sets the storage path (e.g., `/custom_path` for S3 or `/home/foo/backup` for SSH).      |
+| `--config`              | `-c`       | Provides a configuration file for multi-database backups (e.g., `/backup/config.yaml`). |
+| `--dbname`              | `-d`       | Specifies the database name to back up or restore.                                      |
+| `--port`                | `-p`       | Defines the database port. Default: `3306`.                                             |
+| `--disable-compression` |            | Disables compression for database backups.                                              |
+| `--cron-expression`     | `-e`       | Schedules backups using a cron expression (e.g., `0 0 * * *` or `@daily`).              |
+| `--all-databases`       | `-a`       | Backs up all databases separately (e.g., `backup --all-databases`).                     |
+| `--all-in-one`          | `-A`       | Backs up all databases in a single file (e.g., `backup --all-databases --single-file`). |
+| `--help`                | `-h`       | Displays the help message and exits.                                                    |
+| `--version`             | `-V`       | Shows version information and exits.                                                    |
 
 ---
 
@@ -40,6 +42,8 @@ Backup, restore, and migration targets, schedules, and retention policies are co
 | `DB_NAME`                      | Optional (if provided via `-d` flag) | Database name.                                                             |
 | `DB_USERNAME`                  | Required                             | Database username.                                                         |
 | `DB_PASSWORD`                  | Required                             | Database password.                                                         |
+| `DB_SSL_CA`                    | Optional                             | Database client CA certificate file                                        |
+| `DB_SSL_MODE`                  | Optional(`0 or 1`) default: `0`      | Database client Enable CA validation                                       |
 | `AWS_ACCESS_KEY`               | Required for S3 storage              | AWS S3 Access Key.                                                         |
 | `AWS_SECRET_KEY`               | Required for S3 storage              | AWS S3 Secret Key.                                                         |
 | `AWS_BUCKET_NAME`              | Required for S3 storage              | AWS S3 Bucket Name.                                                        |
