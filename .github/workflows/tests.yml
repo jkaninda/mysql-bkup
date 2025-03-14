@@ -59,6 +59,19 @@ jobs:
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
+      minio:
+        image: minio/minio
+        ports:
+          - 9090:9090
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+        env:
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+          MINIO_DEFAULT_BUCKETS: backups
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -189,7 +202,23 @@ jobs:
             -e TARGET_DB_PASSWORD=password \
             ${{ env.IMAGE_NAME }}:latest migrate
           echo "Test migrate database testdb -> testdb3 completed"
-
+      - name: Test backup Minio (s3)
+        run: |
+          docker run --rm --name ${{ env.IMAGE_NAME }} \
+            -v ./migrations:/backup/ \
+            --network host \
+            -e DB_HOST=127.0.0.1 \
+            -e DB_USERNAME=user \
+            -e DB_PASSWORD=password \
+            -e DB_NAME=testdb \
+            -e AWS_S3_ENDPOINT=http://127.0.0.1:9000 \
+            -e AWS_S3_BUCKET_NAME=backups \
+            -e AWS_ACCESS_KEY=minioadmin \
+            -e AWS_SECRET_KEY=minioadmin \
+            -e AWS_DISABLE_SSL=true \
+            -e AWS_FORCE_PATH_STYLE=true \      
+            ${{ env.IMAGE_NAME }}:latest backup -s s3
+          echo "Test backup Minio (s3) completed"
       - name: Test backup all databases
         run: |
           docker run --rm --name ${{ env.IMAGE_NAME }} \
