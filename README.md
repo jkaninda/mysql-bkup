@@ -37,7 +37,7 @@ It supports a variety of storage options and ensures data security through GPG e
 ## Use Cases
 
 - **Automated Recurring Backups:** Schedule regular backups for MySQL databases.
-- **Cross-Environment Migration:** Easily migrate your MySQL databases across different environments using supported storage options.
+- **Cross-Environment Migration:** Easily migrate MySQL databases across different environments using `migration` feature.
 - **Secure Backup Management:** Protect your data with GPG encryption.
 
 

@@ -7,7 +7,7 @@ nav_order: 12
 
 # Backup All Databases
 
-MySQL-Bkup supports backing up all databases on the server using the `--all-databases` (`-a`) flag. By default, this creates separate backup files for each database. If you prefer a single backup file, you can use the `--all-in-on`e (`-A`) flag.
+MySQL-Bkup supports backing up all databases on the server using the `--all-databases` (`-a`) flag. By default, this creates separate backup files for each database. If you prefer a single backup file, you can use the `--all-in-one` (`-A`) flag.
 
 Backing up all databases is useful for creating a snapshot of the entire database server, whether for disaster recovery or migration purposes.
 ## Backup Modes
@@ -21,7 +21,7 @@ Using --all-databases without --all-in-one creates individual backup files for e
 - Can be more manageable in cases where different databases have different retention policies.
 - Might take slightly longer due to multiple file operations.
 - It is the default behavior when using the `--all-databases` flag.
-- It does not backup system databases (`information_schema`, `performance_schema`, `mysql`, `sys`, `innodb`).
+- It does not backup system databases (`information_schema`, `performance_schema`, `mysql`, `sys`, `innodb`,...).
 
 **Command:**
 
