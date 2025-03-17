@@ -19,7 +19,7 @@ The configuration file can be mounted into the container at `/config/config.yaml
 
 ### Key Features:
 - **Global Environment Variables**: Use these for databases that share the same configuration.
-- **Database-Specific Overrides**: Override global settings for individual databases by specifying them in the configuration file or using the database name as a suffix in the variable name (e.g., `DB_HOST_DATABASE1`).
+- **Database-Specific Overrides**: Override global settings for individual databases by specifying them in the configuration file or using the database name as a prefix or suffix in the variable name (e.g., `DB_HOST_DATABASENAME` or `DATABASENAME_DB_HOST`).
 - **Global Cron Expression**: Define a global `cronExpression` in the configuration file to schedule backups for all databases. If omitted, backups will run immediately.
 - **Configuration File Path**: Specify the configuration file path using:
     - The `BACKUP_CONFIG_FILE` environment variable.
@@ -89,7 +89,7 @@ services:
     environment:
       ## Specify the path to the configuration file
       - BACKUP_CONFIG_FILE=/backup/config.yaml
-    # Ensure the pg-bkup container is connected to the same network as your database
+    # Ensure the mysql-bkup container is connected to the same network as your database
     networks:
       - web
 
