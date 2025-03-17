@@ -117,6 +117,9 @@ func createBackupTask(db *dbConfig, config *BackupConfig) {
 	if config.all && !config.allInOne {
 		backupAll(db, config)
 	} else {
+		if db.dbName == "" && !config.all {
+			utils.Fatal("Database name is required, use DB_NAME environment variable or -d flag")
+		}
 		backupTask(db, config)
 	}
 }
@@ -249,8 +252,10 @@ func BackupDatabase(db *dbConfig, backupFileName string, disableCompression, all
 
 	dumpArgs := []string{fmt.Sprintf("--defaults-file=%s", mysqlClientConfig)}
 	if all && singleFile {
+		utils.Info("Backing up all databases...")
 		dumpArgs = append(dumpArgs, "--all-databases", "--single-transaction", "--routines", "--triggers")
 	} else {
+		utils.Info("Backing up %s database...", db.dbName)
 		dumpArgs = append(dumpArgs, db.dbName)
 	}
 
