@@ -43,7 +43,7 @@ It is a lightweight, multi-architecture solution compatible with **Docker**, **D
 
 ## 💡Use Cases
 
-- **Scheduled Backups**: Automate recurring backups using Docker cron or Kubernetes CronJobs.
+- **Scheduled Backups**: Automate recurring backups using Docker or Kubernetes.
 - **Disaster Recovery:** Quickly restore backups to a clean MySQL instance.
 - **Database Migration**: Seamlessly move data across environments using the built-in `migrate` feature.
 - **Secure Archiving:** Keep backups encrypted and safely stored in the cloud or remote servers.
