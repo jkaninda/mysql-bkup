@@ -3,6 +3,13 @@
 **MYSQL-BKUP** is a Docker container image designed to **backup, restore, and migrate MySQL databases**.
 It supports a variety of storage options and ensures data security through GPG encryption.
 
+**MYSQL-BKUP** is designed for seamless deployment on **Docker** and **Kubernetes**, simplifying MySQL backup, restoration, and migration across environments.
+It is a lightweight, multi-architecture solution compatible with **Docker**, **Docker Swarm**, **Kubernetes**, and other container orchestration platforms.
+
+
+
+
+
 [![Tests](https://github.com/jkaninda/mysql-bkup/actions/workflows/tests.yml/badge.svg)](https://github.com/jkaninda/mysql-bkup/actions/workflows/tests.yml)
 [![Build](https://github.com/jkaninda/mysql-bkup/actions/workflows/release.yml/badge.svg)](https://github.com/jkaninda/mysql-bkup/actions/workflows/release.yml)
 [![Go Report](https://goreportcard.com/badge/github.com/jkaninda/mysql-bkup)](https://goreportcard.com/report/github.com/jkaninda/mysql-bkup)
@@ -12,9 +19,9 @@ It supports a variety of storage options and ensures data security through GPG e
 
 ## Features
 
-- **Storage Options:**
-    - Local storage
-    - AWS S3 or any S3-compatible object storage
+- **Flexible Storage Backends:**
+    - Local filesystem
+    - Amazon S3 & S3-compatible storage (e.g., MinIO, Wasabi)
     - FTP
     - SSH-compatible storage
     - Azure Blob storage
@@ -34,16 +41,19 @@ It supports a variety of storage options and ensures data security through GPG e
         - **Telegram**
         - **Email**
 
-## Use Cases
+## 💡Use Cases
 
-- **Automated Recurring Backups:** Schedule regular backups for MySQL databases.
-- **Cross-Environment Migration:** Easily migrate MySQL databases across different environments using `migration` feature.
-- **Secure Backup Management:** Protect your data with GPG encryption.
+- **Scheduled Backups**: Automate recurring backups using Docker cron or Kubernetes CronJobs.
+- **Disaster Recovery:** Quickly restore backups to a clean MySQL instance.
+- **Database Migration**: Seamlessly move data across environments using the built-in `migrate` feature.
+- **Secure Archiving:** Keep backups encrypted and safely stored in the cloud or remote servers.
 
 
-Successfully tested on:
+## ✅ Verified Platforms:
+MYSQL-BKUP has been tested and runs successfully on:
+
 - Docker
-- Docker in Swarm mode
+- Docker Swarm
 - Kubernetes
 - OpenShift
 
