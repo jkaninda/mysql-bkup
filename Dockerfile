@@ -18,9 +18,12 @@ ARG BACKUP_TMP_DIR="/tmp/backup"
 ARG TEMPLATES_DIR="/config/templates"
 ARG appVersion=""
 ENV VERSION=${appVersion}
-LABEL author="Jonas Kaninda"
-LABEL version=${appVersion}
-LABEL github="github.com/jkaninda/mysql-bkup"
+LABEL org.opencontainers.image.title="mysql-bkup"
+LABEL org.opencontainers.image.description="A lightweight MySQL backup and restore tool"
+LABEL org.opencontainers.image.licenses="MIT"
+LABEL org.opencontainers.image.authors="Jonas Kaninda <me@jonaskaninda.com>"
+LABEL org.opencontainers.image.version=${appVersion}
+LABEL org.opencontainers.image.source="https://github.com/jkaninda/mysql-bkup"
 
 RUN apk --update add --no-cache mysql-client mariadb-connector-c tzdata ca-certificates
 RUN mkdir -p $WORKDIR $BACKUPDIR $TEMPLATES_DIR $BACKUP_TMP_DIR && \
