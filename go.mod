@@ -1,6 +1,6 @@
 module github.com/jkaninda/mysql-bkup
 
-go 1.23.2
+go 1.24.5
 
 require github.com/spf13/pflag v1.0.6 // indirect
 
@@ -8,7 +8,7 @@ require (
 	github.com/go-mail/mail v2.3.1+incompatible
 	github.com/jkaninda/encryptor v0.0.0-20241111100652-926393c9437e
 	github.com/jkaninda/go-storage v0.1.3
-	github.com/jkaninda/go-utils v0.1.1
+	github.com/jkaninda/go-utils v0.1.3
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/cobra v1.9.1
 	gopkg.in/yaml.v3 v3.0.1
