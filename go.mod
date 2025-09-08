@@ -2,7 +2,7 @@ module github.com/jkaninda/mysql-bkup
 
 go 1.23.2
 
-require github.com/spf13/pflag v1.0.6 // indirect
+require github.com/spf13/pflag v1.0.9 // indirect
 
 require (
 	github.com/go-mail/mail v2.3.1+incompatible
@@ -10,7 +10,7 @@ require (
 	github.com/jkaninda/go-storage v0.1.3
 	github.com/jkaninda/go-utils v0.1.1
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/spf13/cobra v1.9.1
+	github.com/spf13/cobra v1.10.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
