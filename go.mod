@@ -10,7 +10,7 @@ require (
 	github.com/jkaninda/go-storage v0.1.3
 	github.com/jkaninda/go-utils v0.1.4
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/spf13/cobra v1.10.1
+	github.com/spf13/cobra v1.10.2
 	gopkg.in/yaml.v3 v3.0.1
 )
 
