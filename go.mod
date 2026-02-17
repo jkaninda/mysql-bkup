@@ -1,8 +1,8 @@
 module github.com/jkaninda/mysql-bkup
 
-go 1.24.5
+go 1.26.0
 
-require github.com/spf13/pflag v1.0.9 // indirect
+require github.com/spf13/pflag v1.0.10 // indirect
 
 require (
 	github.com/go-mail/mail v2.3.1+incompatible
@@ -21,7 +21,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.1.0 // indirect
 	github.com/ProtonMail/go-mime v0.0.0-20230322103455-7d82a3887f2f // indirect
 	github.com/ProtonMail/gopenpgp/v2 v2.8.0 // indirect
-	github.com/aws/aws-sdk-go v1.55.5 // indirect
+	github.com/aws/aws-sdk-go v1.55.8 // indirect
 	github.com/bramvdbogaerde/go-scp v1.5.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
