@@ -8,7 +8,7 @@ require (
 	github.com/go-mail/mail v2.3.1+incompatible
 	github.com/jkaninda/encryptor v0.0.0-20241111100652-926393c9437e
 	github.com/jkaninda/go-storage v0.1.3
-	github.com/jkaninda/go-utils v0.1.3
+	github.com/jkaninda/go-utils v0.1.4
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/spf13/cobra v1.10.1
 	gopkg.in/yaml.v3 v3.0.1
