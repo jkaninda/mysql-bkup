@@ -11,16 +11,16 @@ services:
       - DB_PORT=3306
       - DB_HOST=mysql
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
       ## AWS configurations
       - AWS_S3_ENDPOINT=https://s3.amazonaws.com
       - AWS_S3_BUCKET_NAME=backup
-      - AWS_REGION="us-west-2"
+      - AWS_REGION=us-west-2
       - AWS_ACCESS_KEY=xxxx
       - AWS_SECRET_KEY=xxxxx
       ## In case you are using S3 alternative such as Minio and your Minio instance is not secured, you change it to true
-      - AWS_DISABLE_SSL="false"
+      - AWS_DISABLE_SSL=false
       - AWS_FORCE_PATH_STYLE=true # true for S3 alternative such as Minio
       # See: https://jkaninda.github.io/mysql-bkup/reference/#predefined-schedules
       - BACKUP_CRON_EXPRESSION=@daily #@every 5m|@weekly | @monthly |0 1 * * *

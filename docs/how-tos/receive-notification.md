@@ -7,7 +7,7 @@ nav_order: 13
 
 # Receive Notifications
 
-You can configure the system to send email or Telegram notifications when a backup succeeds or fails. 
+You can configure the system to send email (SMTP or Posta) or Telegram notifications when a backup succeeds or fails. 
 
 This section explains how to set up and customize notifications.
 
@@ -31,7 +31,7 @@ services:
       - DB_PORT=3306
       - DB_HOST=mysql
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
       ## SMTP Configuration
       - MAIL_HOST=smtp.example.com
@@ -41,7 +41,8 @@ services:
       - MAIL_FROM=Backup Jobs <backup@example.com>
       ## Multiple recipients separated by a comma
       - MAIL_TO=me@example.com,team@example.com,manager@example.com
-      - MAIL_SKIP_TLS=false
+      ## Only for SMTP servers with a self-signed certificate
+      #- MAIL_INSECURE_SKIP_VERIFY=true
       ## Time format for notifications
       - TIME_FORMAT=2006-01-02 at 15:04:05
       ## Backup reference (e.g., database/cluster name or server name)
@@ -51,6 +52,44 @@ services:
 
 networks:
   web:
+```
+
+---
+
+## Posta Notifications
+
+[Posta](https://github.com/goposta/posta) can deliver the notification emails instead of an SMTP server. Set the Posta URL, an API key with the `send` scope and the recipients. By default the same HTML email is sent (with a plain-text version). To use a template stored in Posta instead, set `POSTA_TEMPLATE` (and optionally `POSTA_TEMPLATE_ERROR` for failures); the notification fields (`database`, `file`, `duration`, `storage`, `location`, `size`, `backup_size`, `sha256`, `encryption`, `error`, `time`, `success`, `tool`...) are passed as template data.
+
+### Example: Posta Notification Configuration
+
+```yaml
+services:
+  mysql-bkup:
+    image: jkaninda/mysql-bkup
+    container_name: mysql-bkup
+    command: backup
+    volumes:
+      - ./backup:/backup
+    environment:
+      - DB_PORT=3306
+      - DB_HOST=db
+      - DB_NAME=database
+      - DB_USER=username
+      - DB_PASSWORD=password
+      ## Posta
+      - POSTA_URL=https://posta.example.com
+      - POSTA_API_KEY=psk_your_api_key
+      - POSTA_FROM=Backup Jobs <backup@example.com>
+      ## Multiple recipients separated by a comma (default MAIL_TO)
+      - POSTA_TO=me@example.com,team@example.com
+      ## Optional: templates stored in Posta
+      #- POSTA_TEMPLATE=backup-success
+      #- POSTA_TEMPLATE_ERROR=backup-failure
+      #- POSTA_LANGUAGE=en
+      ## Only for account-wide API keys
+      #- POSTA_WORKSPACE_ID=42
+      ## Only notify failures
+      #- NOTIFY_ON=failure
 ```
 
 ---
@@ -73,7 +112,7 @@ services:
       - DB_PORT=3306
       - DB_HOST=mysql
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
       ## Telegram Configuration
       - TG_TOKEN=[BOT ID]:[BOT TOKEN]
@@ -191,7 +230,7 @@ Backup Reference: {{.BackupReference}}
 
 ## Key Notes
 
-- **SMTP Configuration**: Ensure your SMTP server supports TLS unless `MAIL_SKIP_TLS` is set to `true`.
+- **SMTP Configuration**: Ensure your SMTP server supports TLS unless `MAIL_INSECURE_SKIP_VERIFY` is set to `true`. `MAIL_TLS=starttls|tls|none` selects the TLS mode. The 1.x variable `MAIL_SKIP_TLS` is still read with its documented meaning (`true` = skip certificate verification); 1.x had it inverted. Slack (`SLACK_WEBHOOK_URL`), Discord (`DISCORD_WEBHOOK_URL`), ntfy (`NTFY_URL`), generic webhooks (`WEBHOOK_URL`, `WEBHOOK_SECRET`) and healthchecks.io pings (`HEALTHCHECK_PING_URL`) are also available; `NOTIFY_ON=always|failure|success` filters them.
 - **Telegram Configuration**: Obtain your bot token and chat ID from Telegram.
 - **Custom Templates**: Mount custom templates to `/config/templates` to override default notifications.
 - **Time Format**: Use the `TIME_FORMAT` environment variable to customize the timestamp format in notifications.

@@ -19,7 +19,7 @@ docker run --rm --network your_network_name \
   -v $PWD/backup:/backup/ \
   -e "DB_HOST=dbhost" \
   -e "DB_PORT=3306" \
-  -e "DB_USERNAME=username" \
+  -e "DB_USER=username" \
   -e "DB_PASSWORD=password" \
   jkaninda/mysql-bkup backup -d database_name
 ```
@@ -42,7 +42,7 @@ docker run --rm --network your_network_name \
   -v $PWD/backup:/backup/ \
   -e "DB_HOST=dbhost" \
   -e "DB_PORT=3306" \
-  -e "DB_USERNAME=username" \
+  -e "DB_USER=username" \
   -e "DB_PASSWORD=password" \
   jkaninda/mysql-bkup backup --all-databases --disable-compression
 ```
@@ -60,7 +60,7 @@ docker run --rm --network your_network_name \
   -v $PWD/backup:/backup/ \
   -e "DB_HOST=dbhost" \
   -e "DB_PORT=3306" \
-  -e "DB_USERNAME=username" \
+  -e "DB_USER=username" \
   -e "DB_PASSWORD=password" \
   jkaninda/mysql-bkup restore -d database_name -f backup_file.sql.gz
 ```
@@ -73,7 +73,7 @@ Below is an example of a `docker-compose.yml` file for running a one-time backup
 
 ```yaml
 services:
-  pg-bkup:
+  mysql-bkup:
     # In production, pin your image tag to a specific release version instead of `latest`.
     # See available releases: https://github.com/jkaninda/mysql-bkup/releases
     image: jkaninda/mysql-bkup
@@ -85,7 +85,7 @@ services:
       - DB_PORT=3306
       - DB_HOST=mysql
       - DB_NAME=foo
-      - DB_USERNAME=bar
+      - DB_USER=bar
       - DB_PASSWORD=password
       - TZ=Europe/Paris
     networks:
@@ -105,7 +105,7 @@ You can schedule recurring backups using the `--cron-expression` or `-e` flag:
 docker run --rm --network network_name \
   -v $PWD/backup:/backup/ \
   -e "DB_HOST=hostname" \
-  -e "DB_USERNAME=user" \
+  -e "DB_USER=user" \
   -e "DB_PASSWORD=password" \
   jkaninda/mysql-bkup backup -d dbName --cron-expression "@every 15m"
 ```
@@ -147,7 +147,7 @@ spec:
           env:
             - name: DB_HOST
               value: "mysql"
-            - name: DB_USERNAME
+            - name: DB_USER
               value: "user"
             - name: DB_PASSWORD
               value: "password"
@@ -187,7 +187,7 @@ spec:
               env:
                 - name: DB_HOST
                   value: "mysql"
-                - name: DB_USERNAME
+                - name: DB_USER
                   value: "user"
                 - name: DB_PASSWORD
                   value: "password"

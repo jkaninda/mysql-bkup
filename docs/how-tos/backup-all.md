@@ -30,7 +30,7 @@ docker run --rm --network your_network_name \
   -v $PWD/backup:/backup/ \
   -e "DB_HOST=dbhost" \
   -e "DB_PORT=3306" \
-  -e "DB_USERNAME=username" \
+  -e "DB_USER=username" \
   -e "DB_PASSWORD=password" \
   jkaninda/mysql-bkup backup --all-databases
 ```
@@ -50,7 +50,7 @@ docker run --rm --network your_network_name \
   -v $PWD/backup:/backup/ \
   -e "DB_HOST=dbhost" \
   -e "DB_PORT=3306" \
-  -e "DB_USERNAME=username" \
+  -e "DB_USER=username" \
   -e "DB_PASSWORD=password" \
   jkaninda/mysql-bkup backup --all-in-one
 ```

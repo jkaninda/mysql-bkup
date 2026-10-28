@@ -45,9 +45,9 @@ services:
       - DB_PORT=3306
       - DB_HOST=postgres
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
-    # Ensure the pg-bkup container is connected to the same network as your database
+    # Ensure the mysql-bkup container is connected to the same network as your database
     networks:
       - web
 

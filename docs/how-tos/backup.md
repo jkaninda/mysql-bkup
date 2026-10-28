@@ -43,7 +43,7 @@ services:
       - DB_PORT=3306
       - DB_HOST=mysql
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
 
     # Ensure the mysql-bkup container is connected to the same network as your database
@@ -64,7 +64,7 @@ You can also run backups directly using the Docker CLI:
 docker run --rm --network your_network_name \
   -v $PWD/backup:/backup/ \
   -e "DB_HOST=dbhost" \
-  -e "DB_USERNAME=username" \
+  -e "DB_USER=username" \
   -e "DB_PASSWORD=password" \
   jkaninda/pg-bkup backup -d database_name
 ```
@@ -92,7 +92,7 @@ services:
       - DB_PORT=3306
       - DB_HOST=mysql
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
       ## Optional: Define a cron schedule for recurring backups
       - BACKUP_CRON_EXPRESSION=@midnight

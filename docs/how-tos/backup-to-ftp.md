@@ -50,10 +50,10 @@ services:
       - DB_PORT=3306
       - DB_HOST=mysql
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
       ## FTP Configuration
-      - FTP_HOST="hostname"
+      - FTP_HOST=hostname
       - FTP_PORT=21
       - FTP_USER=user
       - FTP_PASSWORD=password
