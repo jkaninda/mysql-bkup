@@ -193,6 +193,8 @@ databases:
 
 Dumps use `--single-transaction --routines --triggers --events --hex-blob --quick`, plus `--no-tablespaces --set-gtid-purged=OFF` on MySQL. A single-database dump has no `CREATE DATABASE`/`USE`, so it can be restored under another name.
 
+Restores into a named database (`-d`) also accept dumps written elsewhere: the `CREATE DATABASE`, `DROP DATABASE` and `USE` statements of a `mysqldump --databases` dump are skipped, so its objects land in the target database whatever the source was called (a dump of several databases is refused). `DEFINER` clauses are removed when the restoring user may not name another definer (`RESTORE_NO_DEFINER=auto`): views, triggers, routines and events then belong to that user. Dumps from MariaDB and from older MySQL versions restore into MySQL 8: the MariaDB sandbox line is dropped for the Oracle client, MariaDB's `utf8mb4_uca1400_ai_ci` (`_as_ci`, `_as_cs`) collations become `utf8mb4_0900_*`, and `sql_mode` values keep only the modes MySQL 8 knows (`NO_AUTO_CREATE_USER` goes). Data is never rewritten. On MySQL with binary logging on (the default), creating functions and triggers without `SUPER` also needs the server setting `log_bin_trust_function_creators=1`.
+
 The image is based on Debian 13 (trixie) slim. Oracle publishes its client for `amd64` and `arm64` only: on `arm/v7` the image has the MariaDB tools only, and MySQL servers are dumped with `mariadb-dump` (a warning is logged). `MYSQL_CLIENT=mysql|mariadb` forces one family.
 
 TLS: `DB_SSL_MODE=disabled` (default, as in 1.x) `| preferred | required | verify_ca | verify_identity`, with `DB_SSL_CA` (used for the verify modes), `DB_SSL_CERT`, `DB_SSL_KEY`. 1.x values `0` and `1` still mean disabled and required. With the MariaDB client, `verify_ca` also checks the host name.
@@ -423,6 +425,7 @@ Generated with `mysql-bkup config --env-docs`. Every secret also accepts `<NAME>
 | `TARGET_DB_SSL_MODE` |  | `disabled` |  | migrate: target TLS mode (same values as DB_SSL_MODE) |
 | `TARGET_DB_SSL_CA` |  | `/etc/ssl/certs/ca-certificates.crt` |  | migrate: target CA certificate file |
 | `MYSQL_CLIENT` |  | `auto` |  | Client tools: auto (mariadb-dump for MariaDB, Oracle mysqldump for MySQL), mysql or mariadb (auto, mysql, mariadb) |
+| `RESTORE_NO_DEFINER` |  | `auto` |  | Remove DEFINER clauses on restore (views, triggers, routines and events then belong to the restoring user); auto = when that user lacks SET_USER_ID/SUPER (auto, true, false) |
 
 
 ## Available image registries

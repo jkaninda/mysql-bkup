@@ -540,6 +540,218 @@ func TestUploadsAndCorruption(t *testing.T) {
 	})
 }
 
+// dumpDatabases runs the server's own dump client (not mysql-bkup) with
+// --databases, as a dump made elsewhere and uploaded would be.
+func (s *dbServer) dumpDatabases(t *testing.T, dbs ...string) []byte {
+	t.Helper()
+	bin := "mysqldump"
+	if s.mariadb {
+		bin = "mariadb-dump"
+	}
+	args := append([]string{"exec", "-e", "MYSQL_PWD=" + rootPW, s.name, bin, "-uroot", "-h127.0.0.1",
+		"--routines", "--triggers", "--events", "--add-drop-database", "--databases"}, dbs...)
+	out, err := exec.Command("docker", args...).Output()
+	if err != nil {
+		t.Fatalf("%s: %v", bin, err)
+	}
+	return out
+}
+
+// mailer (re)creates the user mailer with privileges on dbs only (Miabi's
+// per-database users), recreating each database empty. Function and trigger
+// creation by non-SUPER users is allowed (see TestForeignDump).
+func (s *dbServer) mailer(t *testing.T, dbs ...string) {
+	t.Helper()
+	const user = "mailer"
+	pw := strings.NewReplacer(`\`, `\\`, `'`, `\'`).Replace(appPW)
+	q := fmt.Sprintf("DROP USER IF EXISTS '%[1]s'@'%%'; CREATE USER '%[1]s'@'%%' IDENTIFIED BY '%[2]s'; SET GLOBAL log_bin_trust_function_creators = 1;", user, pw)
+	for _, db := range dbs {
+		q += fmt.Sprintf(" DROP DATABASE IF EXISTS %[1]s; CREATE DATABASE %[1]s; GRANT ALL ON %[1]s.* TO '%[2]s'@'%%';", db, user)
+	}
+	s.mustSQL(t, q)
+}
+
+func serverOf(t *testing.T, mariadb bool) *dbServer {
+	t.Helper()
+	needDocker(t)
+	for _, s := range servers {
+		if s.mariadb == mariadb {
+			return s
+		}
+	}
+	t.Skip("no such server")
+	return nil
+}
+
+func writeFile(t *testing.T, dir, name string, b []byte) {
+	t.Helper()
+	if err := os.WriteFile(filepath.Join(dir, name), b, 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// TestCrossFlavourUploads: a mariadb-dump uploaded into MySQL (its sandbox
+// line, MariaDB definers) and a mysqldump uploaded into MariaDB, each into a
+// database of another name by a user with privileges on it only.
+func TestCrossFlavourUploads(t *testing.T) {
+	maria, mysql := serverOf(t, true), serverOf(t, false)
+	for _, c := range []struct {
+		name     string
+		src, dst *dbServer
+	}{
+		{"mariadb to mysql", maria, mysql},
+		{"mysql to mariadb", mysql, maria},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			c.src.loadFixture(t, "posta")
+			want := c.src.fingerprint(t, "posta")
+			c.dst.mailer(t, "mail")
+			store := setEnv(t, c.dst, "mailer", appPW)
+			writeFile(t, store, "posta.sql", c.src.dumpDatabases(t, "posta"))
+			out := mustRun(t, "restore", "-d", "mail", "-f", "posta.sql")
+			if got := c.dst.fingerprint(t, "mail"); got != want {
+				t.Fatalf("restored differs:\n got %s\nwant %s\n%s", got, want, out)
+			}
+		})
+	}
+}
+
+// classicDump is a hand-written dump in the style of the classicmodels sample
+// database: lowercase statements, USE without a semicolon, latin1.
+const classicDump = `/*!40101 SET NAMES utf8 */;
+/*!40101 SET SQL_MODE=''*/;
+create database if not exists ` + "`classicmodels`" + ` /*!40100 DEFAULT CHARACTER SET latin1 */;
+use classicmodels
+DROP TABLE IF EXISTS ` + "`customers`" + `;
+CREATE TABLE ` + "`customers`" + ` (
+  ` + "`customerNumber`" + ` int(11) NOT NULL,
+  ` + "`customerName`" + ` varchar(50) NOT NULL,
+  PRIMARY KEY (` + "`customerNumber`" + `)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+insert  into ` + "`customers`" + `(` + "`customerNumber`,`customerName`" + `) values (103,'Atelier graphique'),(112,'Signal Gift Stores'),(114,'Australian Collectors, Co.');
+`
+
+// TestHandWrittenUpload: the classicmodels-style file, gzipped, uploaded into
+// a database of another name.
+func TestHandWrittenUpload(t *testing.T) {
+	forEachServer(t, func(t *testing.T, s *dbServer) {
+		s.mailer(t, "blog")
+		store := setEnv(t, s, "mailer", appPW)
+		var gz bytes.Buffer
+		zw := gzip.NewWriter(&gz)
+		_, _ = zw.Write([]byte(classicDump))
+		_ = zw.Close()
+		writeFile(t, store, "classicmodels.sql.gz", gz.Bytes())
+		mustRun(t, "restore", "-d", "blog", "-f", "classicmodels.sql.gz")
+		if got := s.mustSQL(t, "SELECT COUNT(*) FROM blog.customers"); got != "3" {
+			t.Fatalf("rows: %s", got)
+		}
+		if got := s.mustSQL(t, "SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME = 'classicmodels'"); got != "0" {
+			t.Fatal("the source database was created")
+		}
+	})
+}
+
+// TestDefinerModes: RESTORE_NO_DEFINER auto, true and false.
+func TestDefinerModes(t *testing.T) {
+	s := serverOf(t, false)
+	s.loadFixture(t, "posta")
+	// mysqldump cannot dump a view whose definer does not exist.
+	s.mustSQL(t, "DROP USER IF EXISTS 'ghost'@'%'; CREATE USER 'ghost'@'%'; CREATE DEFINER=`ghost`@`%` VIEW posta.v_ghost AS SELECT 1 AS one")
+	s.mailer(t, "mail_strict")
+	store := setEnv(t, s, "mailer", appPW)
+	writeFile(t, store, "posta.sql", s.dumpDatabases(t, "posta"))
+	viewDefiner := func(db string) string {
+		return s.mustSQL(t, "SELECT DEFINER FROM information_schema.VIEWS WHERE TABLE_SCHEMA = '"+db+"' AND TABLE_NAME = 'v_ghost'")
+	}
+
+	t.Setenv("RESTORE_NO_DEFINER", "false")
+	if out, code := run(t, "restore", "-d", "mail_strict", "-f", "posta.sql"); code == 0 {
+		t.Fatalf("restore with foreign definers as a database user succeeded:\n%s", out)
+	}
+
+	setEnv(t, s, "root", rootPW)
+	t.Setenv("STORAGE_PATH", store)
+	s.mustSQL(t, "DROP DATABASE IF EXISTS mail_auto; DROP DATABASE IF EXISTS mail_strip")
+	t.Setenv("RESTORE_NO_DEFINER", "auto")
+	mustRun(t, "restore", "-d", "mail_auto", "-f", "posta.sql")
+	if got := viewDefiner("mail_auto"); got != "ghost@%" {
+		t.Fatalf("auto as root: definer %q", got)
+	}
+	t.Setenv("RESTORE_NO_DEFINER", "true")
+	mustRun(t, "restore", "-d", "mail_strip", "-f", "posta.sql")
+	if got := viewDefiner("mail_strip"); !strings.HasPrefix(got, "root@") {
+		t.Fatalf("true as root: definer %q", got)
+	}
+}
+
+// TestMigrateToDatabaseUser: MySQL to MariaDB into a database of another name,
+// as a target user with privileges on it only (definers of the source).
+func TestMigrateToDatabaseUser(t *testing.T) {
+	src, dst := serverOf(t, false), serverOf(t, true)
+	src.loadFixture(t, "posta")
+	want := src.fingerprint(t, "posta")
+	dst.mailer(t, "mail")
+	setEnv(t, src, "root", rootPW)
+	t.Setenv("TARGET_DB_HOST", dst.name)
+	t.Setenv("TARGET_DB_USERNAME", "mailer")
+	t.Setenv("TARGET_DB_PASSWORD", appPW)
+	t.Setenv("TARGET_DB_NAME", "mail")
+	mustRun(t, "migrate", "-d", "posta")
+	if got := dst.fingerprint(t, "mail"); got != want {
+		t.Fatalf("migrated differs:\n got %s\nwant %s", got, want)
+	}
+}
+
+// TestForeignDump: a dump written elsewhere (mysqldump --databases: CREATE
+// DATABASE, USE, definers of the source server) uploaded into a database of
+// another name, by a user with privileges on that database only (Miabi).
+func TestForeignDump(t *testing.T) {
+	forEachServer(t, func(t *testing.T, s *dbServer) {
+		s.loadFixture(t, "posta")
+		want := s.fingerprint(t, "posta")
+		dump := func(dbs ...string) []byte { return s.dumpDatabases(t, dbs...) }
+		// With binary logging on (MySQL's default), only SUPER may create
+		// functions and triggers unless log_bin_trust_function_creators is set:
+		// a server setting, not something a restore can change.
+		s.mustSQL(t, fmt.Sprintf(`DROP USER IF EXISTS 'mailer'@'%%'; CREATE USER 'mailer'@'%%' IDENTIFIED BY '%s';
+DROP DATABASE IF EXISTS mail; CREATE DATABASE mail; GRANT ALL ON mail.* TO 'mailer'@'%%';
+DROP DATABASE IF EXISTS mail_root; SET GLOBAL log_bin_trust_function_creators = 1;`,
+			strings.NewReplacer(`\`, `\\`, `'`, `\'`).Replace(appPW)))
+		store := setEnv(t, s, "mailer", appPW)
+		if err := os.WriteFile(filepath.Join(store, "posta.sql"), dump("posta"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		out := mustRun(t, "restore", "-d", "mail", "-f", "posta.sql")
+		if got := s.fingerprint(t, "mail"); got != want {
+			t.Fatalf("restored differs:\n got %s\nwant %s\n%s", got, want, out)
+		}
+		if got := s.mustSQL(t, "SELECT DISTINCT DEFINER FROM information_schema.VIEWS WHERE TABLE_SCHEMA = 'mail'"); got != "mailer@%" {
+			t.Fatalf("view definer %q", got)
+		}
+		if got := s.fingerprint(t, "posta"); got != want {
+			t.Fatal("the source database was touched")
+		}
+
+		// root may keep the source definers (auto).
+		setEnv(t, s, "root", rootPW)
+		t.Setenv("STORAGE_PATH", store)
+		mustRun(t, "restore", "-d", "mail_root", "-f", "posta.sql")
+		if got := s.mustSQL(t, "SELECT DISTINCT DEFINER FROM information_schema.VIEWS WHERE TABLE_SCHEMA = 'mail_root'"); !strings.HasPrefix(got, "root@") {
+			t.Fatalf("definer not kept: %q", got)
+		}
+
+		// Two databases cannot go into one.
+		s.loadFixture(t, "other")
+		if err := os.WriteFile(filepath.Join(store, "two.sql"), dump("posta", "other"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if out, code := run(t, "restore", "-d", "mail_two", "-f", "two.sql"); code == 0 || !strings.Contains(out, "more than one database") {
+			t.Fatalf("restore of two databases: exit %d\n%s", code, out)
+		}
+	})
+}
+
 // TestMiabiS3: Miabi's exact S3 argv and env against MinIO.
 func TestMiabiS3(t *testing.T) {
 	forEachServer(t, func(t *testing.T, s *dbServer) {
