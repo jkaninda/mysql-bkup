@@ -40,28 +40,28 @@ databases:
   - host: mysql1       # Optional: Overrides DB_HOST or uses DB_HOST_DATABASE1.
     port: 3306            # Optional: Default is 5432. Overrides DB_PORT or uses DB_PORT_DATABASE1.
     name: database1       # Required: Database name.
-    user: database1       # Optional: Overrides DB_USERNAME or uses DB_USERNAME_DATABASE1.
+    user: database1       # Optional: Overrides DB_USER or uses DB_USER_DATABASE1.
     password: password    # Optional: Overrides DB_PASSWORD or uses DB_PASSWORD_DATABASE1.
     path: /s3-path/database1  # Required: Backup path for SSH, FTP, or S3 (e.g., /home/toto/backup/).
 
   - host: mysql2       # Optional: Overrides DB_HOST or uses DB_HOST_LLAP.
     port: 3306            # Optional: Default is 5432. Overrides DB_PORT or uses DB_PORT_LLAP.
     name: lldap           # Required: Database name.
-    user: lldap           # Optional: Overrides DB_USERNAME or uses DB_USERNAME_LLAP.
+    user: lldap           # Optional: Overrides DB_USER or uses DB_USER_LLAP.
     password: password    # Optional: Overrides DB_PASSWORD or uses DB_PASSWORD_LLAP.
     path: /s3-path/lldap  # Required: Backup path for SSH, FTP, or S3 (e.g., /home/toto/backup/).
 
   - host: mysql3       # Optional: Overrides DB_HOST or uses DB_HOST_KEYCLOAK.
     port: 3306            # Optional: Default is 5432. Overrides DB_PORT or uses DB_PORT_KEYCLOAK.
     name: keycloak        # Required: Database name.
-    user: keycloak        # Optional: Overrides DB_USERNAME or uses DB_USERNAME_KEYCLOAK.
+    user: keycloak        # Optional: Overrides DB_USER or uses DB_USER_KEYCLOAK.
     password: password    # Optional: Overrides DB_PASSWORD or uses DB_PASSWORD_KEYCLOAK.
     path: /s3-path/keycloak  # Required: Backup path for SSH, FTP, or S3 (e.g., /home/toto/backup/).
 
   - host: mysql4       # Optional: Overrides DB_HOST or uses DB_HOST_JOPLIN.
     port: 3306            # Optional: Default is 5432. Overrides DB_PORT or uses DB_PORT_JOPLIN.
     name: joplin          # Required: Database name.
-    user: joplin          # Optional: Overrides DB_USERNAME or uses DB_USERNAME_JOPLIN.
+    user: joplin          # Optional: Overrides DB_USER or uses DB_USER_JOPLIN.
     password: password    # Optional: Overrides DB_PASSWORD or uses DB_PASSWORD_JOPLIN.
     path: /s3-path/joplin  # Required: Backup path for SSH, FTP, or S3 (e.g., /home/toto/backup/).
 ```

@@ -46,7 +46,7 @@ spec:
             value: ""
           - name: DB_NAME
             value: ""
-          - name: DB_USERNAME
+          - name: DB_USER
             value: ""
           # Use Kubernetes Secrets for sensitive data like passwords
           - name: DB_PASSWORD
@@ -104,20 +104,20 @@ spec:
             value: ""
           - name: DB_NAME
             value: "dbname"
-          - name: DB_USERNAME
+          - name: DB_USER
             value: "postgres"
           # Use Kubernetes Secrets for sensitive data like passwords
           - name: DB_PASSWORD
             value: ""
-          - name: SSH_HOST_NAME
+          - name: SFTP_HOST
             value: "xxx"
-          - name: SSH_PORT
+          - name: SFTP_PORT
             value: "22"
-          - name: SSH_USER
+          - name: SFTP_USER
             value: "xxx"
-          - name: SSH_PASSWORD
+          - name: SFTP_PASSWORD
             value: "xxxx"
-          - name: SSH_REMOTE_PATH
+          - name: REMOTE_PATH
             value: "/home/toto/backup"
           # Optional: Required if you want to encrypt your backup
           - name: GPG_PASSPHRASE
@@ -161,20 +161,20 @@ spec:
             value: ""
           - name: DB_NAME
             value: "dbname"
-          - name: DB_USERNAME
+          - name: DB_USER
             value: "postgres"
           # Use Kubernetes Secrets for sensitive data like passwords
           - name: DB_PASSWORD
             value: ""
-          - name: SSH_HOST_NAME
+          - name: SFTP_HOST
             value: "xxx"
-          - name: SSH_PORT
+          - name: SFTP_PORT
             value: "22"
-          - name: SSH_USER
+          - name: SFTP_USER
             value: "xxx"
-          - name: SSH_PASSWORD
+          - name: SFTP_PASSWORD
             value: "xxxx"
-          - name: SSH_REMOTE_PATH
+          - name: REMOTE_PATH
             value: "/home/toto/backup"
           # Optional: Required if your backup was encrypted
           #- name: GPG_PASSPHRASE
@@ -220,20 +220,20 @@ spec:
                 value: ""
               - name: DB_NAME
                 value: "test"
-              - name: DB_USERNAME
+              - name: DB_USER
                 value: "postgres"
               # Use Kubernetes Secrets for sensitive data like passwords
               - name: DB_PASSWORD
                 value: ""
-              - name: SSH_HOST_NAME
+              - name: SFTP_HOST
                 value: "192.168.1.16"
-              - name: SSH_PORT
+              - name: SFTP_PORT
                 value: "2222"
-              - name: SSH_USER
+              - name: SFTP_USER
                 value: "jkaninda"
-              - name: SSH_REMOTE_PATH
+              - name: REMOTE_PATH
                 value: "/config/backup"
-              - name: SSH_PASSWORD
+              - name: SFTP_PASSWORD
                 value: "password"
               # Optional: Required if you want to encrypt your backup
               #- name: GPG_PASSPHRASE
@@ -283,20 +283,20 @@ spec:
                 value: ""
               - name: DB_NAME
                 value: "test"
-              - name: DB_USERNAME
+              - name: DB_USER
                 value: "postgres"
               # Use Kubernetes Secrets for sensitive data like passwords
               - name: DB_PASSWORD
                 value: ""
-              - name: SSH_HOST_NAME
+              - name: SFTP_HOST
                 value: "192.168.1.16"
-              - name: SSH_PORT
+              - name: SFTP_PORT
                 value: "2222"
-              - name: SSH_USER
+              - name: SFTP_USER
                 value: "jkaninda"
-              - name: SSH_REMOTE_PATH
+              - name: REMOTE_PATH
                 value: "/config/backup"
-              - name: SSH_PASSWORD
+              - name: SFTP_PASSWORD
                 value: "password"
               # Optional: Required if you want to encrypt your backup
               #- name: GPG_PASSPHRASE
@@ -341,7 +341,7 @@ spec:
             value: "3306"
           - name: DB_NAME
             value: "dbname"
-          - name: DB_USERNAME
+          - name: DB_USER
             value: "username"
           - name: DB_PASSWORD
             value: "password"
@@ -352,7 +352,7 @@ spec:
             value: "3306"
           - name: TARGET_DB_NAME
             value: "dbname"
-          - name: TARGET_DB_USERNAME
+          - name: TARGET_DB_USER
             value: "username"
           - name: TARGET_DB_PASSWORD
             value: "password"

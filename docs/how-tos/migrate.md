@@ -45,14 +45,14 @@ services:
       - DB_PORT=3306
       - DB_HOST=mysql
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
 
       ## Target Database
-      - TARGET_DB_HOST=target-postgres
+      - TARGET_DB_HOST=target-mysql
       - TARGET_DB_PORT=3306
       - TARGET_DB_NAME=dbname
-      - TARGET_DB_USERNAME=username
+      - TARGET_DB_USER=username
       - TARGET_DB_PASSWORD=password
 
     # Ensure the mysql-bkup container is connected to the same network as your database
@@ -78,14 +78,14 @@ Save your source and target database connection details in an environment file (
 DB_HOST=postgres
 DB_PORT=3306
 DB_NAME=dbname
-DB_USERNAME=username
+DB_USER=username
 DB_PASSWORD=password
 
 ## Target Database
-TARGET_DB_HOST=target-postgres
+TARGET_DB_HOST=target-mysql
 TARGET_DB_PORT=3306
 TARGET_DB_NAME=dbname
-TARGET_DB_USERNAME=username
+TARGET_DB_USER=username
 TARGET_DB_PASSWORD=password
 ```
 
@@ -95,12 +95,15 @@ TARGET_DB_PASSWORD=password
 docker run --rm --network your_network_name \
   --env-file your-env \
   -v $PWD/backup:/backup/ \
-  jkaninda/pg-bkup migrate
+  jkaninda/mysql-bkup migrate
 ```
 
 ---
 
 ## Key Notes
 
+- **Streaming**: the dump is piped straight into the target server; no file is written. The target database is created if it does not exist, and `TARGET_DB_NAME` defaults to the source name.
+- **All databases**: `migrate --all-databases` copies every database (system databases excluded, `--exclude-db` / `BACKUP_EXCLUDE_DATABASES` honoured) under the same names.
+- **MySQL and MariaDB**: source and target may be different flavours; each side uses its own client. Objects that only exist in one flavour (for example MySQL-only collations on old MariaDB versions) can make a cross-flavour migration fail.
 - **Irreversible Operation**: The `migrate` command directly transfers data from the source to the target database. Ensure you have a backup of the target database before proceeding.
 - **Network Configuration**: Ensure the `mysql-bkup` container is connected to the same network as your source and target databases.

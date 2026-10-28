@@ -1,13 +1,14 @@
 version: "2"
 run:
   allow-parallel-runners: true
+  build-tags:
+    - integration
 linters:
   default: none
   enable:
     - copyloopvar
     - dupl
     - errcheck
-    - ginkgolinter
     - goconst
     - gocyclo
     - govet
@@ -22,6 +23,10 @@ linters:
     - unparam
     - unused
   settings:
+    goconst:
+      min-occurrences: 4
+    lll:
+      line-length: 160
     revive:
       rules:
         - name: comment-spacings
@@ -31,11 +36,10 @@ linters:
       - linters:
           - dupl
           - lll
-        path: pkg/*
-      - linters:
-          - dupl
-          - lll
-        path: cmd/*
+          - goconst
+          - errcheck
+          - prealloc
+        path: _test\.go
     paths:
       - third_party$
       - builtin$

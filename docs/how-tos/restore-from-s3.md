@@ -44,7 +44,7 @@ services:
       - DB_PORT=3306
       - DB_HOST=mysql
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
       ## AWS S3 Configuration
       - AWS_S3_ENDPOINT=https://s3.amazonaws.com
@@ -56,7 +56,7 @@ services:
       - AWS_DISABLE_SSL=false
       ## Optional: Enable path-style access for S3 alternatives like Minio
       - AWS_FORCE_PATH_STYLE=false
-    # Ensure the pg-bkup container is connected to the same network as your database
+    # Ensure the mysql-bkup container is connected to the same network as your database
     networks:
       - web
 

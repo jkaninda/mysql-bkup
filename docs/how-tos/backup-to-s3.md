@@ -42,14 +42,14 @@ services:
     # In production, lock your image tag to a specific release version
     # instead of using `latest`. Check https://github.com/jkaninda/pg-bkup/releases
     # for available releases.
-    image: jkaninda/pg-bkup
+    image: jkaninda/mysql-bkup
     container_name: pg-bkup
     command: backup --storage s3 -d database --path /my-custom-path
     environment:
       - DB_PORT=5432
       - DB_HOST=postgres
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
       ## AWS Configuration
       - AWS_S3_ENDPOINT=https://s3.amazonaws.com
@@ -58,7 +58,7 @@ services:
       - AWS_ACCESS_KEY=xxxx
       - AWS_SECRET_KEY=xxxxx
       ## Optional: Disable SSL for S3 alternatives like Minio
-      - AWS_DISABLE_SSL="false"
+      - AWS_DISABLE_SSL=false
       ## Optional: Enable path-style access for S3 alternatives like Minio
       - AWS_FORCE_PATH_STYLE=false
 
@@ -91,7 +91,7 @@ services:
       - DB_PORT=3306
       - DB_HOST=mysql
       - DB_NAME=database
-      - DB_USERNAME=username
+      - DB_USER=username
       - DB_PASSWORD=password
       ## AWS Configuration
       - AWS_S3_ENDPOINT=https://s3.amazonaws.com
@@ -104,11 +104,11 @@ services:
       ## Optional: Delete old backups after a specified number of days
       #- BACKUP_RETENTION_DAYS=7
       ## Optional: Disable SSL for S3 alternatives like Minio
-      - AWS_DISABLE_SSL="false"
+      - AWS_DISABLE_SSL=false
       ## Optional: Enable path-style access for S3 alternatives like Minio
       - AWS_FORCE_PATH_STYLE=false
 
-    # Ensure the pg-bkup container is connected to the same network as your database
+    # Ensure the mysql-bkup container is connected to the same network as your database
     networks:
       - web
 
@@ -122,5 +122,5 @@ networks:
 
 - **Cron Expression**: Use the `--cron-expression` flag or `BACKUP_CRON_EXPRESSION` environment variable to define the backup schedule. For example, `0 1 * * *` runs the backup daily at 1:00 AM.
 - **Backup Retention**: Optionally, use the `BACKUP_RETENTION_DAYS` environment variable to automatically delete backups older than a specified number of days.
-- **S3 Alternatives**: If using an S3 alternative like Minio, set `AWS_DISABLE_SSL="true"` and `AWS_FORCE_PATH_STYLE="true"` as needed.
+- **S3 Alternatives**: If using an S3 alternative like Minio, set `AWS_DISABLE_SSL=true` and `AWS_FORCE_PATH_STYLE=true` as needed. In the Compose list syntax, do not quote values: the quotes would become part of the value.
 

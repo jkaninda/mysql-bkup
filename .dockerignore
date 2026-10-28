@@ -1,0 +1,30 @@
+# Only the Go sources are needed to build the image.
+.git
+.github
+.idea
+.history
+.DS_Store
+.env
+.env.*
+*.env
+backup/
+backups/
+data/
+bin/
+dist/
+vendor/
+docs/
+examples/
+migrations/
+test.md
+compose.yaml
+docker-compose*.yaml
+# Binaries and dumps
+mysql-bkup
+mysql-bkup-*
+*.sql
+*.sql.gz
+*.gpg
+*.age
+*.tar
+*.gz
