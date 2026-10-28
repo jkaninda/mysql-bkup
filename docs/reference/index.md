@@ -249,6 +249,7 @@ Run `mysql-bkup config` to see the resolved configuration and where each value c
 | `TARGET_DB_SSL_MODE` |  | `disabled` |  | migrate: target TLS mode (same values as DB_SSL_MODE) |
 | `TARGET_DB_SSL_CA` |  | `/etc/ssl/certs/ca-certificates.crt` |  | migrate: target CA certificate file |
 | `MYSQL_CLIENT` |  | `auto` |  | Client tools: auto (mariadb-dump for MariaDB, Oracle mysqldump for MySQL), mysql or mariadb (auto, mysql, mariadb) |
+| `RESTORE_NO_DEFINER` |  | `auto` |  | Remove DEFINER clauses on restore (views, triggers, routines and events then belong to the restoring user); auto = when that user lacks SET_USER_ID/SUPER (auto, true, false) |
 
 
 ## Scheduled Backups

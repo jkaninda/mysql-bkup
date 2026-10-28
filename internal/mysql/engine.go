@@ -21,6 +21,9 @@ import (
 // Engine-specific settings.
 const (
 	SettingClient = "MYSQL_CLIENT"
+	// RestoreNoDefiner removes DEFINER clauses on restore: auto (when the
+	// restoring user may not name another definer), true or false.
+	RestoreNoDefiner = "RESTORE_NO_DEFINER"
 )
 
 // AllInOneName is the target (and default artifact) name of --all-in-one backups.
@@ -93,6 +96,12 @@ func (e *Engine) Settings(r *config.Registry) {
 		Key: SettingClient, Default: ClientAuto, Enum: []string{ClientAuto, ClientMySQL, ClientMariaDB},
 		Group: config.GroupDatabase,
 		Usage: "Client tools: auto (mariadb-dump for MariaDB, Oracle mysqldump for MySQL), mysql or mariadb",
+	})
+	r.Add(config.Setting{
+		Key: RestoreNoDefiner, Default: "auto", Enum: []string{"auto", "true", "false"},
+		Group: config.GroupDatabase,
+		Usage: "Remove DEFINER clauses on restore (views, triggers, routines and events then belong " +
+			"to the restoring user); auto = when that user lacks SET_USER_ID/SUPER",
 	})
 }
 
@@ -373,12 +382,56 @@ func (e *Engine) Restore(ctx context.Context, t engine.Target, r io.Reader, info
 		return err
 	}
 	slog.Default().Info("Restoring database", "database", db, "file", info.File, "client", tl.name)
+	in := RestoreFilter(r, e.filterOptions(ctx, t.Values, c, tl, db))
+	defer func() { _ = in.Close() }()
 	return withOptionFile(t.Values, c, tl, func(cnf string) error {
 		return execx.Run(ctx, execx.Cmd{
 			Name: tl.path, Args: append([]string{"--defaults-extra-file=" + cnf}, args...),
-			Stdin: r, Log: slog.Default(), StderrLevel: slog.LevelWarn,
+			Stdin: in, Log: slog.Default(), StderrLevel: slog.LevelWarn,
 		})
 	})
+}
+
+// filterOptions describes how a dump restored into db through tl is adapted.
+func (e *Engine) filterOptions(ctx context.Context, v *config.Values, c Conn, tl tool, db string) FilterOptions {
+	o := FilterOptions{Target: db, NoDefiner: e.noDefiner(ctx, v, c, tl), OracleClient: !tl.mariadb}
+	if srv, err := e.server(ctx, v, c); err == nil {
+		o.MySQLServer = !srv.mariadb
+	}
+	return o
+}
+
+// noDefiner resolves RESTORE_NO_DEFINER for the restoring user.
+func (e *Engine) noDefiner(ctx context.Context, v *config.Values, c Conn, tl tool) bool {
+	switch v.String(RestoreNoDefiner) {
+	case "true":
+		return true
+	case "false":
+		return false
+	}
+	grants, err := query(ctx, v, c, tl, "SHOW GRANTS")
+	if err != nil {
+		slog.Default().Warn("Could not read the restoring user's grants; removing DEFINER clauses", "error", err)
+		return true
+	}
+	return !canSetDefiner(grants)
+}
+
+// canSetDefiner reports whether SHOW GRANTS output allows naming another
+// definer: SUPER, SET_USER_ID / SET_ANY_DEFINER (MySQL 8) or SET USER (MariaDB).
+func canSetDefiner(grants string) bool {
+	for _, line := range strings.Split(strings.ToUpper(grants), "\n") {
+		privs, _, global := strings.Cut(line, " ON *.* ")
+		if !global {
+			continue
+		}
+		for _, p := range []string{"ALL PRIVILEGES", "SUPER", "SET_USER_ID", "SET_ANY_DEFINER", "SET USER"} {
+			if strings.Contains(privs, p) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // MigrateTargets implements engine.Migrator: DB_NAME → TARGET_DB_NAME (default
@@ -454,6 +507,8 @@ func (e *Engine) Migrate(ctx context.Context, source, target engine.Target) erro
 		cancel()
 	}
 	pr, pw := io.Pipe()
+	in := RestoreFilter(pr, e.filterOptions(ctx, target.Values, tc, restTool, target.Name))
+	defer func() { _ = in.Close() }()
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
@@ -475,7 +530,7 @@ func (e *Engine) Migrate(ctx context.Context, source, target engine.Target) erro
 	err = withOptionFile(target.Values, tc, restTool, func(cnf string) error {
 		return execx.Run(ctx, execx.Cmd{
 			Name: restTool.path, Args: append([]string{"--defaults-extra-file=" + cnf}, restArgs...),
-			Stdin: pr, Log: slog.Default(), StderrLevel: slog.LevelWarn,
+			Stdin: in, Log: slog.Default(), StderrLevel: slog.LevelWarn,
 		})
 	})
 	if err != nil {
